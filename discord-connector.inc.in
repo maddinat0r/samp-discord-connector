@@ -1,0 +1,32 @@
+/* Discord Connector
+ * Version @DCC_PLUGIN_VERSION@
+ * made by maddinat0r
+ */
+
+
+#if defined dcconnector_included
+	#endinput
+#endif
+#define dcconnector_included
+
+
+
+#if !defined E_LOGLEVEL
+enum E_LOGLEVEL
+{
+	NONE = 0,
+	DEBUG = 1,
+	INFO = 2,
+	WARNING = 4,
+	ERROR = 8,
+	
+	ALL = ERROR | WARNING | INFO | DEBUG
+};
+#endif
+
+
+
+// natives
+
+
+// callbacks

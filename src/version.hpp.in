@@ -1,0 +1,3 @@
+#pragma once
+
+#define PLUGIN_VERSION "@DCC_PLUGIN_VERSION@"
