@@ -3,8 +3,6 @@ project(discord-connector)
 
 set(DCC_PLUGIN_VERSION "0.1")
 
-option (BUILD_TESTS "Build tests" OFF)
-
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/libs/cmake")
 
 if(UNIX)
@@ -16,16 +14,22 @@ endif()
 
 
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.58 QUIET)
+find_package(Boost 1.58 QUIET COMPONENTS system)
 
 if(NOT Boost_FOUND)
 	set(BOOST_ROOT "${BOOST_ROOT}" CACHE PATH "Set the Boost root folder.")
-	mark_as_advanced(CLEAR BOOST_ROOT)
-	message(FATAL_ERROR "Could NOT find Boost; specify additional path.")
+	set(BOOST_LIBRARYDIR "${BOOST_LIBRARYDIR}" CACHE PATH "Set the Boost library folder.")
+	mark_as_advanced(CLEAR BOOST_ROOT BOOST_LIBRARYDIR)
+	message(FATAL_ERROR "Could NOT find Boost; specify additional paths.")
 endif()
-mark_as_advanced(BOOST_ROOT Boost_DIR)
+mark_as_advanced(BOOST_ROOT BOOST_LIBRARYDIR Boost_DIR)
 
 include_directories("${Boost_INCLUDE_DIR}")
+
+if(MSVC)
+	#needed for Boost's auto-link feature
+	link_directories("${Boost_LIBRARY_DIRS}")
+endif()
 
 
 option(LOGCORE_INSTALL_DEV OFF)
