@@ -1,0 +1,32 @@
+language: cpp
+sudo: required
+dist: trusty
+
+env:
+  matrix:
+    - BUILD_TYPE=Release
+    - BUILD_TYPE=Debug
+
+addons:
+  apt:
+    packages:
+    - cmake
+    - g++-multilib
+
+before_install:
+  - wget "http://sourceforge.net/projects/boost/files/boost/1.62.0/boost_1_62_0.tar.gz"
+  - tar xzf boost_1_62_0.tar.gz
+
+install:
+  - cd boost_1_62_0/
+  - if [ ! -f "b2" ]; then sudo bash bootstrap.sh --prefix=/usr/local --with-libraries=system; fi
+  - sudo ./b2 variant=${BUILD_TYPE,,} link=static threading=multi address-model=32 runtime-link=shared -j2 -d0 install
+  - cd ..
+  - sudo ldconfig
+
+before_script:
+  - cmake . -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBOOST_ROOT=boost_1_62_0
+
+script:
+  - make -j2
+  - make install
