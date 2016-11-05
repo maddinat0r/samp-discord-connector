@@ -38,6 +38,8 @@ add_samp_plugin(discord-connector
 	CError.hpp
 	CLog.cpp
 	CLog.hpp
+	CNetwork.cpp
+	CNetwork.hpp
 	CSingleton.hpp
 	main.cpp
 	misc.hpp
@@ -74,7 +76,12 @@ target_compile_features(discord-connector PUBLIC
 add_dependencies(discord-connector log-core fmt)
 
 if(MSVC)
-	add_definitions(-D_CRT_SECURE_NO_WARNINGS -DNOMINMAX -D_ENABLE_ATOMIC_ALIGNMENT_FIX)
+	add_definitions(
+		-D_CRT_SECURE_NO_WARNINGS 
+		-DNOMINMAX 
+		-D_ENABLE_ATOMIC_ALIGNMENT_FIX 
+		-D_WIN32_WINNT=0x0600
+		-D_SCL_SECURE_NO_WARNINGS)
 endif()
 
 target_link_libraries(discord-connector log-core fmt)
