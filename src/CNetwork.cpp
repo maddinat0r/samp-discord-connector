@@ -1,4 +1,5 @@
 #include "CNetwork.hpp"
+#include "CLog.hpp"
 
 #include <memory>
 #include <beast/http.hpp>
@@ -37,10 +38,14 @@ void CNetwork::HttpGet(const std::string &token, std::string const &url,
 	beast::http::async_write(
 		m_HttpSocket,
 		req, 
-		[this, callback](boost::system::error_code ec)
+		[this, url, callback](boost::system::error_code ec)
 		{
-			if (!ec)
+			if (ec)
+			{
+				CLog::Get()->Log(LogLevel::ERROR, "Error while sending HTTP GET request to '{}': {}",
+					url, ec.message());
 				return ;
+			}
 
 			auto sb = std::make_shared<beast::streambuf>();
 			auto response = std::make_shared<beast::http::response<beast::http::streambuf_body>>();
@@ -48,10 +53,14 @@ void CNetwork::HttpGet(const std::string &token, std::string const &url,
 				m_HttpSocket, 
 				*sb, 
 				*response,
-				[this, callback, sb, response](boost::system::error_code ec)
+				[url, callback, sb, response](boost::system::error_code ec)
 				{
-					if (!ec)
+					if (ec)
+					{
+						CLog::Get()->Log(LogLevel::ERROR, "Error while retrieving HTTP GET response to '{}': {}",
+							url, ec.message());
 						return ;
+					}
 
 					callback({ response->status, response->reason, beast::to_string(sb->data()) });
 				}
@@ -72,11 +81,14 @@ void CNetwork::HttpPost(const std::string &token, std::string const &url, std::s
 	beast::http::async_write(
 		m_HttpSocket,
 		req,
-		[this](boost::system::error_code ec)
+		[url](boost::system::error_code ec)
 		{
-			if (!ec)
+			if (ec)
+			{
+				CLog::Get()->Log(LogLevel::ERROR, "Error while sending HTTP POST request to '{}': {}",
+					url, ec.message());
 				return ;
-
+			}
 		}
 	);
 }
