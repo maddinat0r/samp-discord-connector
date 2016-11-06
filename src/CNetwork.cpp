@@ -13,8 +13,16 @@ CNetwork::CNetwork()
 
 	// connect to REST API
 	asio::ip::tcp::resolver r{ m_IoService };
-	asio::connect(m_HttpsStream.lowest_layer(),
-		r.resolve(boost::asio::ip::tcp::resolver::query{ "discordapp.com/api", "https" }));
+	boost::system::error_code resolve_error;
+	auto target = r.resolve({ "discordapp.com", "https" }, resolve_error);
+	if (resolve_error)
+	{
+		CLog::Get()->Log(LogLevel::ERROR, "Can't resolve Discord API URL: {} ({})",
+			resolve_error.message(), resolve_error.value());
+		CSingleton::Destroy();
+		return;
+	}
+	asio::connect(m_HttpsStream.lowest_layer(), target);
 
 	// SSL handshake
 	m_HttpsStream.handshake(asio::ssl::stream_base::client);
@@ -22,22 +30,49 @@ CNetwork::CNetwork()
 	// retrieve WebSocket host URL
 	HttpGet("", "/gateway", [this](HttpGetResponse res)
 	{
+		if (res.status != 200)
+		{
+			CLog::Get()->Log(LogLevel::ERROR, "Can't retrieve Discord gateway URL: {} ({})",
+				res.reason, res.status);
+			return;
+		}
 		auto json = json::parse(res.body);
 		std::string url = json["url"];
+		size_t protocol_pos = url.find("wss://");
+		if (protocol_pos != std::string::npos)
+			url.erase(protocol_pos, 6); // 6 = length of "wss://"
 
 		m_WssStream.set_verify_mode(asio::ssl::verify_none);
 
+		// connect to gateway
 		asio::ip::tcp::resolver r{ m_IoService };
-		asio::connect(m_WebSocket.next_layer().lowest_layer(),
-			r.resolve(asio::ip::tcp::resolver::query{ url, "wss" }));
+		boost::system::error_code resolve_error;
+		auto target = r.resolve({ url, "https" }, resolve_error);
+		if (resolve_error)
+		{
+			CLog::Get()->Log(LogLevel::ERROR, "Can't resolve Discord gateway URL '{}': {} ({})",
+				url, resolve_error.message(), resolve_error.value());
+			return;
+		}
+		asio::connect(m_WebSocket.next_layer().lowest_layer(), target);
 		m_WssStream.handshake(asio::ssl::stream_base::client);
 		m_WebSocket.handshake(url, "/");
+	});
+
+	m_IoThread = new std::thread([this]()
+	{ 
+		m_IoService.run();
 	});
 }
 
 CNetwork::~CNetwork()
 {
-	
+	if (m_IoThread)
+	{
+		m_IoThread->join();
+		delete m_IoThread;
+		m_IoThread = nullptr;
+	}
 }
 
 void CNetwork::HttpWriteRequest(std::string const &token, std::string const &method,
@@ -45,8 +80,9 @@ void CNetwork::HttpWriteRequest(std::string const &token, std::string const &met
 {
 	beast::http::request<beast::http::string_body> req;
 	req.method = method;
-	req.url = url;
+	req.url = "/api" + url;
 	req.version = 11;
+	req.headers.replace("Host", "discordapp.com");
 	if (!token.empty())
 		req.headers.replace("Authorization", "Bot " + token);
 	req.body = content;
@@ -101,7 +137,8 @@ void CNetwork::HttpGet(const std::string &token, std::string const &url,
 	{
 		HttpReadResponse([callback](SharedStreambuf_t sb, SharedResponse_t resp)
 		{
-			callback({ resp->status, resp->reason, beast::to_string(sb->data()) });
+			callback({ resp->status, resp->reason, beast::to_string(resp->body.data()),
+				beast::to_string(sb->data()) });
 		});
 	});
 }

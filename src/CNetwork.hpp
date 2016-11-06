@@ -5,6 +5,7 @@
 #include <string>
 #include <functional>
 #include <memory>
+#include <thread>
 #include <beast/http.hpp>
 #include <beast/websocket.hpp>
 #include <beast/websocket/ssl.hpp>
@@ -24,6 +25,7 @@ public:
 		int status;
 		std::string reason;
 		std::string body;
+		std::string additional_data;
 	};
 	using HttpGetCallback_t = std::function<void(HttpGetResponse)>;
 
@@ -33,6 +35,7 @@ private:
 
 private: // variables
 	asio::io_service m_IoService;
+	std::thread *m_IoThread = nullptr;
 	asio::ssl::context m_SslContext{ asio::ssl::context::sslv23 };
 	asio::ssl::stream<asio::ip::tcp::socket> m_HttpsStream{ m_IoService, m_SslContext };
 	asio::ssl::stream<asio::ip::tcp::socket> m_WssStream{ m_IoService, m_SslContext };
