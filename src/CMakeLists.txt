@@ -12,7 +12,7 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/libs/samp-log-core/include
 	${PROJECT_SOURCE_DIR}/libs/samp-log-core/libs/cppformat
 	${PROJECT_SOURCE_DIR}/libs/beast/include
-	${PROJECT_SOURCE_DIR}/libs/json
+	${PROJECT_SOURCE_DIR}/libs/rapidjson/include
 )
 
 configure_file(

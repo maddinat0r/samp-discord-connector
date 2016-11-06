@@ -10,3 +10,6 @@
 [submodule "libs/beast"]
 	path = libs/beast
 	url = https://github.com/vinniefalco/Beast.git
+[submodule "libs/rapidjson"]
+	path = libs/rapidjson
+	url = https://github.com/miloyip/rapidjson.git

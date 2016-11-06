@@ -2,9 +2,9 @@
 #include "CLog.hpp"
 
 #include <beast/core/to_string.hpp>
-#include <json.hpp>
+#include <rapidjson/document.h>
 
-using json = nlohmann::json;
+namespace json = rapidjson;
 
 
 CNetwork::CNetwork()
@@ -36,8 +36,11 @@ CNetwork::CNetwork()
 				res.reason, res.status);
 			return;
 		}
-		auto json = json::parse(res.body);
-		std::string url = json["url"];
+		json::Document json;
+		json.Parse(res.body.c_str());
+		std::string url(json["url"].GetString());
+
+		// get rid of protocol
 		size_t protocol_pos = url.find("wss://");
 		if (protocol_pos != std::string::npos)
 			url.erase(protocol_pos, 6); // 6 = length of "wss://"
