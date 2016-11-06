@@ -85,7 +85,7 @@ if(MSVC)
 		-D_SCL_SECURE_NO_WARNINGS)
 endif()
 
-target_link_libraries(discord-connector log-core fmt)
+target_link_libraries(discord-connector log-core fmt OpenSSL::SSL)
 
 if(UNIX)
 	if(NOT APPLE)

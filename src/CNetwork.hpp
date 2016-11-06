@@ -5,10 +5,14 @@
 #include <string>
 #include <functional>
 #include <memory>
-#include <boost/asio.hpp>
 #include <beast/http.hpp>
+#include <beast/websocket.hpp>
+#include <beast/websocket/ssl.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
 
 
+namespace asio = boost::asio;
 
 
 class CNetwork : public CSingleton<CNetwork>
@@ -28,8 +32,11 @@ private:
 	~CNetwork();
 
 private: // variables
-	boost::asio::io_service m_IoService;
-	boost::asio::ip::tcp::socket m_HttpSocket;
+	asio::io_service m_IoService;
+	asio::ssl::context m_SslContext{ asio::ssl::context::sslv23 };
+	asio::ssl::stream<asio::ip::tcp::socket> m_HttpsStream{ m_IoService, m_SslContext };
+	asio::ssl::stream<asio::ip::tcp::socket> m_WssStream{ m_IoService, m_SslContext };
+	beast::websocket::stream<decltype(m_WssStream)&> m_WebSocket{ m_WssStream };
 
 private: // functions
 	using SharedStreambuf_t = std::shared_ptr<beast::streambuf>;

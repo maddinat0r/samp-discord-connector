@@ -6,24 +6,38 @@
 
 using json = nlohmann::json;
 
-CNetwork::CNetwork() :
-	m_HttpSocket(m_IoService)
+
+CNetwork::CNetwork()
 {
-	boost::asio::ip::tcp::resolver r{ m_IoService };
-	boost::asio::connect(m_HttpSocket,
-		r.resolve(boost::asio::ip::tcp::resolver::query{ "https://discordapp.com/api", "http" }));
+	m_HttpsStream.set_verify_mode(asio::ssl::verify_none);
+
+	// connect to REST API
+	asio::ip::tcp::resolver r{ m_IoService };
+	asio::connect(m_HttpsStream.lowest_layer(),
+		r.resolve(boost::asio::ip::tcp::resolver::query{ "discordapp.com/api", "https" }));
+
+	// SSL handshake
+	m_HttpsStream.handshake(asio::ssl::stream_base::client);
 
 	// retrieve WebSocket host URL
 	HttpGet("", "/gateway", [this](HttpGetResponse res)
 	{
 		auto json = json::parse(res.body);
 		std::string url = json["url"];
+
+		m_WssStream.set_verify_mode(asio::ssl::verify_none);
+
+		asio::ip::tcp::resolver r{ m_IoService };
+		asio::connect(m_WebSocket.next_layer().lowest_layer(),
+			r.resolve(asio::ip::tcp::resolver::query{ url, "wss" }));
+		m_WssStream.handshake(asio::ssl::stream_base::client);
+		m_WebSocket.handshake(url, "/");
 	});
 }
 
 CNetwork::~CNetwork()
 {
-	m_HttpSocket.close();
+	
 }
 
 void CNetwork::HttpWriteRequest(std::string const &token, std::string const &method,
@@ -40,7 +54,7 @@ void CNetwork::HttpWriteRequest(std::string const &token, std::string const &met
 	beast::http::prepare(req);
 
 	beast::http::async_write(
-		m_HttpSocket,
+		m_HttpsStream,
 		req,
 		[url, method, callback](boost::system::error_code ec)
 		{
@@ -62,7 +76,7 @@ void CNetwork::HttpReadResponse(HttpReadResponseCallback_t &&callback)
 	auto sb = std::make_shared<beast::streambuf>();
 	auto response = std::make_shared<beast::http::response<beast::http::streambuf_body>>();
 	beast::http::async_read(
-		m_HttpSocket,
+		m_HttpsStream,
 		*sb,
 		*response,
 		[callback, sb, response](boost::system::error_code ec)
