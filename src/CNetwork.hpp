@@ -4,7 +4,9 @@
 
 #include <string>
 #include <functional>
+#include <memory>
 #include <boost/asio.hpp>
+#include <beast/http.hpp>
 
 
 
@@ -30,8 +32,13 @@ private: // variables
 	boost::asio::ip::tcp::socket m_HttpSocket;
 
 private: // functions
-	void HttpRequest(const std::string &token, std::string const &method, 
-		std::string const &url, std::string const &content);
+	using SharedStreambuf_t = std::shared_ptr<beast::streambuf>;
+	using SharedResponse_t = std::shared_ptr<beast::http::response<beast::http::streambuf_body>>;
+	using HttpReadResponseCallback_t = std::function<void(SharedStreambuf_t, SharedResponse_t)>;
+
+	void HttpWriteRequest(const std::string &token, std::string const &method,
+		std::string const &url, std::string const &content, std::function<void()> &&callback);
+	void HttpReadResponse(HttpReadResponseCallback_t &&callback);
 
 public: // functions
 	void HttpGet(const std::string &token, std::string const &url,
