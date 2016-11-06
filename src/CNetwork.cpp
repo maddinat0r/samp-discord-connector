@@ -2,7 +2,9 @@
 #include "CLog.hpp"
 
 #include <beast/core/to_string.hpp>
+#include <json.hpp>
 
+using json = nlohmann::json;
 
 CNetwork::CNetwork() :
 	m_HttpSocket(m_IoService)
@@ -11,6 +13,12 @@ CNetwork::CNetwork() :
 	boost::asio::connect(m_HttpSocket,
 		r.resolve(boost::asio::ip::tcp::resolver::query{ "https://discordapp.com/api", "http" }));
 
+	// retrieve WebSocket host URL
+	HttpGet("", "/gateway", [this](HttpGetResponse res)
+	{
+		auto json = json::parse(res.body);
+		std::string url = json["url"];
+	});
 }
 
 CNetwork::~CNetwork()
