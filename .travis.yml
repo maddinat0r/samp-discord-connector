@@ -7,13 +7,16 @@ env:
     - BUILD_TYPE=Release
     - BUILD_TYPE=Debug
 
-addons:
-  apt:
-    packages:
-    - cmake
-    - g++-multilib
 
 before_install:
+  - sudo dpkg --add-architecture i386
+  - sudo apt-get update
+  - sudo apt-get -yq --no-install-suggests --no-install-recommends --force-yes install g++-multilib libssl-dev:i386
+  - sudo apt-get -yq --force-yes remove libssl-dev libssl
+  
+  - wget "https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.sh"
+  - sudo sh cmake-3.6.3-Linux-x86_64.sh --exclude-subdir --prefix=/usr
+  
   - wget "http://sourceforge.net/projects/boost/files/boost/1.62.0/boost_1_62_0.tar.gz"
   - tar xzf boost_1_62_0.tar.gz
 
@@ -25,7 +28,7 @@ install:
   - sudo ldconfig
 
 before_script:
-  - cmake . -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBOOST_ROOT=boost_1_62_0
+  - cmake . -D_OPENSSL_LIBDIR="/usr/lib/i386-linux-gnu" -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
 
 script:
   - make -j2
