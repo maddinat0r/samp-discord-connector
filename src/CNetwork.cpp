@@ -7,8 +7,9 @@
 using json = nlohmann::json;
 
 
-CNetwork::CNetwork()
+void CNetwork::Initialize(std::string &&token)
 {
+	m_Token = std::move(token);
 	m_HttpsStream.set_verify_mode(asio::ssl::verify_none);
 
 	// connect to REST API
@@ -36,8 +37,10 @@ CNetwork::CNetwork()
 				res.reason, res.status);
 			return;
 		}
-		auto json = json::parse(res.body);
-		std::string url = json["url"];
+		auto gateway_res = json::parse(res.body);
+		std::string url = gateway_res["url"];
+
+		// get rid of protocol
 		size_t protocol_pos = url.find("wss://");
 		if (protocol_pos != std::string::npos)
 			url.erase(protocol_pos, 6); // 6 = length of "wss://"
@@ -46,17 +49,48 @@ CNetwork::CNetwork()
 
 		// connect to gateway
 		asio::ip::tcp::resolver r{ m_IoService };
-		boost::system::error_code resolve_error;
-		auto target = r.resolve({ url, "https" }, resolve_error);
-		if (resolve_error)
+		boost::system::error_code error;
+		auto target = r.resolve({ url, "https" }, error);
+		if (error)
 		{
 			CLog::Get()->Log(LogLevel::ERROR, "Can't resolve Discord gateway URL '{}': {} ({})",
-				url, resolve_error.message(), resolve_error.value());
+				url, error.message(), error.value());
 			return;
 		}
-		asio::connect(m_WebSocket.next_layer().lowest_layer(), target);
+		asio::connect(m_WssStream.lowest_layer(), target);
 		m_WssStream.handshake(asio::ssl::stream_base::client);
-		m_WebSocket.handshake(url, "/");
+
+		error.clear();
+		m_WebSocket.handshake(url, "/", error);
+		if (error)
+		{
+			CLog::Get()->Log(LogLevel::ERROR, "Can't upgrade to WSS protocol: {} ({})",
+				error.message(), error.value());
+			return;
+		}
+
+		Read();
+
+		json identify_payload = {
+			{ "op", 2 },
+			{ "d", {
+				{ "token", m_Token },
+				{ "v", 5 },
+				{ "compress", false },
+				{ "large_threshold", 100 },
+				{ "properties", {
+					{ "$os", "Windows" },
+					{ "$browser", "boost::asio" },
+					{ "$device", "SA-MP DCC plugin" },
+					{ "$referrer", "" },
+					{ "$referring_domain", "" }
+                }}
+            }}
+		};
+
+		CLog::Get()->Log(LogLevel::DEBUG, "identify payload: {}", identify_payload.dump(4));
+		
+		m_WebSocket.write(asio::buffer(identify_payload.dump()));
 	});
 
 	m_IoThread = new std::thread([this]()
@@ -74,6 +108,29 @@ CNetwork::~CNetwork()
 		m_IoThread = nullptr;
 	}
 }
+
+void CNetwork::Read()
+{
+	m_WebSocket.async_read(m_WebSocketOpcode, m_WebSocketBuffer,
+		std::bind(&CNetwork::OnRead, this, std::placeholders::_1));
+}
+
+void CNetwork::OnRead(boost::system::error_code ec)
+{
+	if (ec)
+	{
+		CLog::Get()->Log(LogLevel::ERROR, "Can't read from Discord websocket gateway: {} ({})",
+			ec.message(), ec.value());
+	}
+	else
+	{
+		json result = json::parse(beast::to_string(m_WebSocketBuffer.data()));
+		CLog::Get()->Log(LogLevel::DEBUG, "OnRead: data: {}", result.dump(4));
+		m_WebSocketBuffer.consume(m_WebSocketBuffer.size());
+	}
+	Read();
+}
+
 
 void CNetwork::HttpWriteRequest(std::string const &token, std::string const &method,
 	std::string const &url, std::string const &content, std::function<void()> &&callback)

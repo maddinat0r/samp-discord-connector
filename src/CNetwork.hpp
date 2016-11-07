@@ -30,7 +30,7 @@ public:
 	using HttpGetCallback_t = std::function<void(HttpGetResponse)>;
 
 private:
-	CNetwork();
+	CNetwork() = default;
 	~CNetwork();
 
 private: // variables
@@ -41,7 +41,16 @@ private: // variables
 	asio::ssl::stream<asio::ip::tcp::socket> m_WssStream{ m_IoService, m_SslContext };
 	beast::websocket::stream<decltype(m_WssStream)&> m_WebSocket{ m_WssStream };
 
+	beast::streambuf m_WebSocketBuffer;
+	beast::websocket::opcode m_WebSocketOpcode;
+
+	std::string m_Token;
+
 private: // functions
+	void Read();
+	void OnRead(boost::system::error_code ec);
+
+
 	using SharedStreambuf_t = std::shared_ptr<beast::streambuf>;
 	using SharedResponse_t = std::shared_ptr<beast::http::response<beast::http::streambuf_body>>;
 	using HttpReadResponseCallback_t = std::function<void(SharedStreambuf_t, SharedResponse_t)>;
@@ -51,6 +60,8 @@ private: // functions
 	void HttpReadResponse(HttpReadResponseCallback_t &&callback);
 
 public: // functions
+	void Initialize(std::string &&token);
+
 	void HttpGet(const std::string &token, std::string const &url,
 		HttpGetCallback_t &&callback);
 	void HttpPost(const std::string &token, std::string const &url, 
