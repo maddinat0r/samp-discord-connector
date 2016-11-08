@@ -14,19 +14,36 @@ void CNetwork::Initialize(std::string &&token)
 
 	// connect to REST API
 	asio::ip::tcp::resolver r{ m_IoService };
-	boost::system::error_code resolve_error;
-	auto target = r.resolve({ "discordapp.com", "https" }, resolve_error);
-	if (resolve_error)
+	boost::system::error_code error;
+	auto target = r.resolve({ "discordapp.com", "https" }, error);
+	if (error)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Can't resolve Discord API URL: {} ({})",
-			resolve_error.message(), resolve_error.value());
+			error.message(), error.value());
 		CSingleton::Destroy();
 		return;
 	}
-	asio::connect(m_HttpsStream.lowest_layer(), target);
+
+	error.clear();
+	asio::connect(m_HttpsStream.lowest_layer(), target, error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::ERROR, "Can't connect to Discord API: {} ({})",
+			error.message(), error.value());
+		CSingleton::Destroy();
+		return;
+	}
 
 	// SSL handshake
-	m_HttpsStream.handshake(asio::ssl::stream_base::client);
+	error.clear();
+	m_HttpsStream.handshake(asio::ssl::stream_base::client, error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::ERROR, "Can't establish secured connection to Discord API: {} ({})",
+			error.message(), error.value());
+		CSingleton::Destroy();
+		return;
+	}
 
 	// retrieve WebSocket host URL
 	HttpGet("", "/gateway", [this](HttpGetResponse res)
@@ -57,8 +74,24 @@ void CNetwork::Initialize(std::string &&token)
 				url, error.message(), error.value());
 			return;
 		}
-		asio::connect(m_WssStream.lowest_layer(), target);
-		m_WssStream.handshake(asio::ssl::stream_base::client);
+
+		error.clear();
+		asio::connect(m_WssStream.lowest_layer(), target, error);
+		if (error)
+		{
+			CLog::Get()->Log(LogLevel::ERROR, "Can't connect to Discord gateway: {} ({})",
+				error.message(), error.value());
+			return;
+		}
+
+		error.clear();
+		m_WssStream.handshake(asio::ssl::stream_base::client, error);
+		if (error)
+		{
+			CLog::Get()->Log(LogLevel::ERROR, "Can't establish secured connection to Discord gateway: {} ({})",
+				error.message(), error.value());
+			return;
+		}
 
 		error.clear();
 		m_WebSocket.handshake(url, "/", error);
