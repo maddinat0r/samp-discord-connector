@@ -47,8 +47,8 @@ private: // variables
 	std::string m_Token;
 
 private: // functions
-	void Read();
-	void OnRead(boost::system::error_code ec);
+	void WsRead();
+	void OnWsRead(boost::system::error_code ec);
 
 
 	using SharedStreambuf_t = std::shared_ptr<beast::streambuf>;

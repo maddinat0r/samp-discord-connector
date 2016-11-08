@@ -102,7 +102,7 @@ void CNetwork::Initialize(std::string &&token)
 			return;
 		}
 
-		Read();
+		WsRead();
 
 #ifdef WIN32
 		string os_name = "Windows";
@@ -148,13 +148,13 @@ CNetwork::~CNetwork()
 	}
 }
 
-void CNetwork::Read()
+void CNetwork::WsRead()
 {
 	m_WebSocket.async_read(m_WebSocketOpcode, m_WebSocketBuffer,
-		std::bind(&CNetwork::OnRead, this, std::placeholders::_1));
+		std::bind(&CNetwork::OnWsRead, this, std::placeholders::_1));
 }
 
-void CNetwork::OnRead(boost::system::error_code ec)
+void CNetwork::OnWsRead(boost::system::error_code ec)
 {
 	if (ec)
 	{
@@ -167,7 +167,7 @@ void CNetwork::OnRead(boost::system::error_code ec)
 		CLog::Get()->Log(LogLevel::DEBUG, "OnRead: data: {}", result.dump(4));
 		m_WebSocketBuffer.consume(m_WebSocketBuffer.size());
 	}
-	Read();
+	WsRead();
 }
 
 
