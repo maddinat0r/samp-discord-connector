@@ -160,13 +160,14 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Can't read from Discord websocket gateway: {} ({})",
 			ec.message(), ec.value());
+
+		return;
 	}
-	else
-	{
-		json result = json::parse(beast::to_string(m_WebSocketBuffer.data()));
-		CLog::Get()->Log(LogLevel::DEBUG, "OnRead: data: {}", result.dump(4));
-		m_WebSocketBuffer.consume(m_WebSocketBuffer.size());
-	}
+
+	json result = json::parse(beast::to_string(m_WebSocketBuffer.data()));
+	CLog::Get()->Log(LogLevel::DEBUG, "OnRead: data: {}", result.dump(4));
+	m_WebSocketBuffer.consume(m_WebSocketBuffer.size());
+
 	WsRead();
 }
 
