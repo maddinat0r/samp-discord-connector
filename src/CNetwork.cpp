@@ -104,6 +104,12 @@ void CNetwork::Initialize(std::string &&token)
 
 		Read();
 
+#ifdef WIN32
+		string os_name = "Windows";
+#else
+		string os_name = "Linux";
+#endif
+
 		json identify_payload = {
 			{ "op", 2 },
 			{ "d", {
@@ -112,7 +118,7 @@ void CNetwork::Initialize(std::string &&token)
 				{ "compress", false },
 				{ "large_threshold", 100 },
 				{ "properties", {
-					{ "$os", "Windows" },
+					{ "$os", os_name },
 					{ "$browser", "boost::asio" },
 					{ "$device", "SA-MP DCC plugin" },
 					{ "$referrer", "" },
