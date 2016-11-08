@@ -1,16 +1,19 @@
 #pragma once
 
 #include "CSingleton.hpp"
+#include "types.hpp"
 
 #include <string>
 #include <functional>
 #include <memory>
 #include <thread>
+#include <chrono>
 #include <beast/http.hpp>
 #include <beast/websocket.hpp>
 #include <beast/websocket/ssl.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
+#include <boost/asio/steady_timer.hpp>
 
 
 namespace asio = boost::asio;
@@ -44,11 +47,21 @@ private: // variables
 	beast::streambuf m_WebSocketBuffer;
 	beast::websocket::opcode m_WebSocketOpcode;
 
+	std::string m_GatewayUrl;
 	std::string m_Token;
+	uint64_t m_SequenceNumber = 0;
+	std::string m_SessionId;
+	asio::steady_timer m_HeartbeatTimer{ m_IoService };
+	std::chrono::steady_clock::duration m_HeartbeatInterval;
 
 private: // functions
+	bool WsConnect();
+	void WsDisconnect();
+	void WsIdentify();
+	void WsSendResumePayload();
 	void WsRead();
 	void OnWsRead(boost::system::error_code ec);
+	void DoHeartbeat(boost::system::error_code ec);
 
 
 	using SharedStreambuf_t = std::shared_ptr<beast::streambuf>;

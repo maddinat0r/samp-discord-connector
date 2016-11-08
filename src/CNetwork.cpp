@@ -4,6 +4,8 @@
 #include <beast/core/to_string.hpp>
 #include <json.hpp>
 
+#include <unordered_map>
+
 using json = nlohmann::json;
 
 
@@ -55,81 +57,20 @@ void CNetwork::Initialize(std::string &&token)
 			return;
 		}
 		auto gateway_res = json::parse(res.body);
-		std::string url = gateway_res["url"];
+		m_GatewayUrl = gateway_res["url"];
 
 		// get rid of protocol
-		size_t protocol_pos = url.find("wss://");
+		size_t protocol_pos = m_GatewayUrl.find("wss://");
 		if (protocol_pos != std::string::npos)
-			url.erase(protocol_pos, 6); // 6 = length of "wss://"
+			m_GatewayUrl.erase(protocol_pos, 6); // 6 = length of "wss://"
 
 		m_WssStream.set_verify_mode(asio::ssl::verify_none);
 
-		// connect to gateway
-		asio::ip::tcp::resolver r{ m_IoService };
-		boost::system::error_code error;
-		auto target = r.resolve({ url, "https" }, error);
-		if (error)
-		{
-			CLog::Get()->Log(LogLevel::ERROR, "Can't resolve Discord gateway URL '{}': {} ({})",
-				url, error.message(), error.value());
+		if (!WsConnect())
 			return;
-		}
-
-		error.clear();
-		asio::connect(m_WssStream.lowest_layer(), target, error);
-		if (error)
-		{
-			CLog::Get()->Log(LogLevel::ERROR, "Can't connect to Discord gateway: {} ({})",
-				error.message(), error.value());
-			return;
-		}
-
-		error.clear();
-		m_WssStream.handshake(asio::ssl::stream_base::client, error);
-		if (error)
-		{
-			CLog::Get()->Log(LogLevel::ERROR, "Can't establish secured connection to Discord gateway: {} ({})",
-				error.message(), error.value());
-			return;
-		}
-
-		error.clear();
-		m_WebSocket.handshake(url, "/", error);
-		if (error)
-		{
-			CLog::Get()->Log(LogLevel::ERROR, "Can't upgrade to WSS protocol: {} ({})",
-				error.message(), error.value());
-			return;
-		}
 
 		WsRead();
-
-#ifdef WIN32
-		string os_name = "Windows";
-#else
-		string os_name = "Linux";
-#endif
-
-		json identify_payload = {
-			{ "op", 2 },
-			{ "d", {
-				{ "token", m_Token },
-				{ "v", 5 },
-				{ "compress", false },
-				{ "large_threshold", 100 },
-				{ "properties", {
-					{ "$os", os_name },
-					{ "$browser", "boost::asio" },
-					{ "$device", "SA-MP DCC plugin" },
-					{ "$referrer", "" },
-					{ "$referring_domain", "" }
-                }}
-            }}
-		};
-
-		CLog::Get()->Log(LogLevel::DEBUG, "identify payload: {}", identify_payload.dump(4));
-		
-		m_WebSocket.write(asio::buffer(identify_payload.dump()));
+		WsIdentify();
 	});
 
 	m_IoThread = new std::thread([this]()
@@ -140,12 +81,130 @@ void CNetwork::Initialize(std::string &&token)
 
 CNetwork::~CNetwork()
 {
+	WsDisconnect();
 	if (m_IoThread)
 	{
 		m_IoThread->join();
 		delete m_IoThread;
 		m_IoThread = nullptr;
 	}
+}
+
+bool CNetwork::WsConnect()
+{
+	asio::ip::tcp::resolver r{ m_IoService };
+	boost::system::error_code error;
+	auto target = r.resolve({ m_GatewayUrl, "https" }, error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::ERROR, "Can't resolve Discord gateway URL '{}': {} ({})",
+			m_GatewayUrl, error.message(), error.value());
+		return false;
+	}
+
+	error.clear();
+	asio::connect(m_WssStream.lowest_layer(), target, error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::ERROR, "Can't connect to Discord gateway: {} ({})",
+			error.message(), error.value());
+		return false;
+	}
+
+	error.clear();
+	m_WssStream.handshake(asio::ssl::stream_base::client, error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::ERROR, "Can't establish secured connection to Discord gateway: {} ({})",
+			error.message(), error.value());
+		return false;
+	}
+
+	error.clear();
+	m_WebSocket.handshake(m_GatewayUrl, "/", error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::ERROR, "Can't upgrade to WSS protocol: {} ({})",
+			error.message(), error.value());
+		return false;
+	}
+
+	return true;
+}
+
+void CNetwork::WsDisconnect()
+{
+	boost::system::error_code error;
+	m_WebSocket.close(beast::websocket::close_code::normal, error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::WARNING, "Error while sending WS close frame: {} ({})",
+			error.message(), error.value());
+	}
+
+	error.clear();
+	m_WssStream.lowest_layer().shutdown(asio::ip::tcp::socket::shutdown_both, error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::WARNING, "Error while shutting down WS connection: {} ({})",
+			error.message(), error.value());
+	}
+
+	error.clear();
+	m_WssStream.lowest_layer().close(error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::WARNING, "Error while closing WS connection: {} ({})",
+			error.message(), error.value());
+	}
+
+	m_HeartbeatTimer.cancel();
+}
+
+void CNetwork::WsIdentify()
+{
+#ifdef WIN32
+	string os_name = "Windows";
+#else
+	string os_name = "Linux";
+#endif
+
+	json identify_payload = {
+		{ "op", 2 },
+		{ "d",{
+			{ "token", m_Token },
+			{ "v", 5 },
+			{ "compress", false },
+			{ "large_threshold", 100 },
+			{ "properties",{
+				{ "$os", os_name },
+				{ "$browser", "boost::asio" },
+				{ "$device", "SA-MP DCC plugin" },
+				{ "$referrer", "" },
+				{ "$referring_domain", "" }
+			} }
+		} }
+	};
+
+	m_WebSocket.write(asio::buffer(identify_payload.dump()));
+}
+
+void CNetwork::WsSendResumePayload()
+{
+	if (!WsConnect())
+		return;
+
+	WsRead();
+
+	json resume_payload = {
+		{ "op", 6 },
+		{ "d", {
+			{ "token", m_Token },
+			{ "session_id", m_SessionId },
+			{ "seq", m_SequenceNumber }
+		}}
+	};
+	m_WebSocket.write(asio::buffer(resume_payload.dump()));
 }
 
 void CNetwork::WsRead()
@@ -168,7 +227,76 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 	CLog::Get()->Log(LogLevel::DEBUG, "OnRead: data: {}", result.dump(4));
 	m_WebSocketBuffer.consume(m_WebSocketBuffer.size());
 
+	switch (result["op"].get<int>())
+	{
+		case 0:
+		{
+			m_SequenceNumber = result["s"];
+
+			enum class events_t
+			{
+				READY,
+				GUILD_CREATE
+			};
+
+			static std::unordered_map<std::string, events_t> events_map{
+				{ "READY", events_t::READY },
+			};
+
+			auto it = events_map.find(result["t"]);
+			if (it != events_map.end())
+			{
+				switch (it->second)
+				{
+					case  events_t::READY:
+					{
+						json &data = result["d"];
+						m_HeartbeatInterval = std::chrono::milliseconds(data["heartbeat_interval"]);
+						m_SessionId = data["session_id"];
+
+						// start heartbeat
+						DoHeartbeat({ });
+					} break;
+
+				}
+			}
+			else
+			{
+				CLog::Get()->Log(LogLevel::ERROR, "Unknown gateway event '{}'", result["t"].get<std::string>());
+			}
+		} 
+		break;
+		case 7: // reconnect
+			WsDisconnect();
+			WsConnect();
+			WsSendResumePayload();
+			DoHeartbeat({ });
+			break;
+		case 9: // invalid session
+			WsIdentify();
+			break;
+	}
+
 	WsRead();
+}
+
+void CNetwork::DoHeartbeat(boost::system::error_code ec)
+{
+	if (ec)
+	{
+		CLog::Get()->Log(LogLevel::ERROR, "Heartbeat error: {} ({})",
+			ec.message(), ec.value());
+		return;
+	}
+
+	json heartbeat_payload = {
+		{ "op", 1 },
+		{ "d", m_SequenceNumber }
+	};
+	m_WebSocket.write(asio::buffer(heartbeat_payload.dump()));
+
+	m_HeartbeatTimer.expires_from_now(m_HeartbeatInterval);
+	m_HeartbeatTimer.async_wait(std::bind(&CNetwork::DoHeartbeat, this, std::placeholders::_1));
 }
 
 
