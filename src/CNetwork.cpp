@@ -2,11 +2,8 @@
 #include "CLog.hpp"
 
 #include <beast/core/to_string.hpp>
-#include <json.hpp>
 
 #include <unordered_map>
-
-using json = nlohmann::json;
 
 
 void CNetwork::Initialize(std::string &&token)
@@ -226,45 +223,70 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 	json result = json::parse(beast::to_string(m_WebSocketBuffer.data()));
 	m_WebSocketBuffer.consume(m_WebSocketBuffer.size());
 
-	switch (result["op"].get<int>())
+	int payload_opcode = result["op"].get<int>();
+	switch (payload_opcode)
 	{
 		case 0:
 		{
 			m_SequenceNumber = result["s"];
 
-			enum class events_t
-			{
-				READY,
-				GUILD_CREATE
+			static const std::unordered_map<std::string, WsEvent> events_map{
+				{ "READY", WsEvent::READY },
+				{ "RESUMED", WsEvent::RESUMED },
+				{ "CHANNEL_CREATE", WsEvent::CHANNEL_CREATE },
+				{ "CHANNEL_UPDATE", WsEvent::CHANNEL_UPDATE },
+				{ "CHANNEL_DELETE", WsEvent::CHANNEL_DELETE },
+				{ "GUILD_CREATE", WsEvent::GUILD_CREATE },
+				{ "GUILD_UPDATE", WsEvent::GUILD_UPDATE },
+				{ "GUILD_DELETE", WsEvent::GUILD_DELETE },
+				{ "GUILD_BAN_ADD", WsEvent::GUILD_BAN_ADD },
+				{ "GUILD_BAN_REMOVE", WsEvent::GUILD_BAN_REMOVE },
+				{ "GUILD_EMOJIS_UPDATE", WsEvent::GUILD_EMOJIS_UPDATE },
+				{ "GUILD_INTEGRATIONS_UPDATE", WsEvent::GUILD_INTEGRATIONS_UPDATE },
+				{ "GUILD_MEMBER_ADD", WsEvent::GUILD_MEMBER_ADD },
+				{ "GUILD_MEMBER_REMOVE", WsEvent::GUILD_MEMBER_REMOVE },
+				{ "GUILD_MEMBER_UPDATE", WsEvent::GUILD_MEMBER_UPDATE },
+				{ "GUILD_MEMBERS_CHUNK", WsEvent::GUILD_MEMBERS_CHUNK },
+				{ "GUILD_ROLE_CREATE", WsEvent::GUILD_ROLE_CREATE },
+				{ "GUILD_ROLE_UPDATE", WsEvent::GUILD_ROLE_UPDATE },
+				{ "GUILD_ROLE_DELETE", WsEvent::GUILD_ROLE_DELETE },
+				{ "MESSAGE_CREATE", WsEvent::MESSAGE_CREATE },
+				{ "MESSAGE_UPDATE", WsEvent::MESSAGE_UPDATE },
+				{ "MESSAGE_DELETE", WsEvent::MESSAGE_DELETE },
+				{ "MESSAGE_DELETE_BULK", WsEvent::MESSAGE_DELETE_BULK },
+				{ "PRESENCE_UPDATE", WsEvent::PRESENCE_UPDATE },
+				{ "TYPING_START", WsEvent::TYPING_START },
+				{ "USER_SETTINGS_UPDATE", WsEvent::USER_SETTINGS_UPDATE },
+				{ "USER_UPDATE", WsEvent::USER_UPDATE },
+				{ "VOICE_STATE_UPDATE", WsEvent::VOICE_STATE_UPDATE },
+				{ "VOICE_SERVER_UPDATE", WsEvent::VOICE_SERVER_UPDATE }
 			};
 
-			static std::unordered_map<std::string, events_t> events_map{
-				{ "READY", events_t::READY },
-			};
-
-			auto it = events_map.find(result["t"]);
+			auto it = events_map.find(result["t"].get<std::string>());
 			if (it != events_map.end())
 			{
-				switch (it->second)
+				json &data = result["d"];
+				WsEvent event = it->second;
+				switch (event)
 				{
-					case  events_t::READY:
-					{
-						json &data = result["d"];
+					case WsEvent::READY:
 						m_HeartbeatInterval = std::chrono::milliseconds(data["heartbeat_interval"]);
 						m_SessionId = data["session_id"];
 
 						// start heartbeat
 						DoHeartbeat({ });
-					} break;
-
+						break;
 				}
+
+				auto ev_it = m_EventMap.find(event);
+				if (ev_it != m_EventMap.end())
+					ev_it->second(data);
 			}
 			else
 			{
-				CLog::Get()->Log(LogLevel::ERROR, "Unknown gateway event '{}'", result["t"].get<std::string>());
+				CLog::Get()->Log(LogLevel::WARNING, "Unknown gateway event '{}'", result["t"].get<std::string>());
 			}
-		} 
-		break;
+		} break;
 		case 7: // reconnect
 			WsDisconnect();
 			WsConnect();
@@ -274,6 +296,8 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 		case 9: // invalid session
 			WsIdentify();
 			break;
+		default:
+			CLog::Get()->Log(LogLevel::WARNING, "Unhandled payload opcode '{}'", payload_opcode);
 	}
 
 	WsRead();

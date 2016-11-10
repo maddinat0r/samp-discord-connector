@@ -4,10 +4,12 @@
 #include "types.hpp"
 
 #include <string>
+#include <map>
 #include <functional>
 #include <memory>
 #include <thread>
 #include <chrono>
+#include <json.hpp>
 #include <beast/http.hpp>
 #include <beast/websocket.hpp>
 #include <beast/websocket/ssl.hpp>
@@ -16,6 +18,7 @@
 #include <boost/asio/steady_timer.hpp>
 
 
+using json = nlohmann::json;
 namespace asio = boost::asio;
 
 
@@ -31,6 +34,40 @@ public:
 		std::string additional_data;
 	};
 	using HttpGetCallback_t = std::function<void(HttpGetResponse)>;
+
+	enum class WsEvent
+	{
+		READY,
+		RESUMED,
+		CHANNEL_CREATE,
+		CHANNEL_UPDATE,
+		CHANNEL_DELETE,
+		GUILD_CREATE,
+		GUILD_UPDATE,
+		GUILD_DELETE,
+		GUILD_BAN_ADD,
+		GUILD_BAN_REMOVE,
+		GUILD_EMOJIS_UPDATE,
+		GUILD_INTEGRATIONS_UPDATE,
+		GUILD_MEMBER_ADD,
+		GUILD_MEMBER_REMOVE,
+		GUILD_MEMBER_UPDATE,
+		GUILD_MEMBERS_CHUNK,
+		GUILD_ROLE_CREATE,
+		GUILD_ROLE_UPDATE,
+		GUILD_ROLE_DELETE,
+		MESSAGE_CREATE,
+		MESSAGE_UPDATE,
+		MESSAGE_DELETE,
+		MESSAGE_DELETE_BULK,
+		PRESENCE_UPDATE,
+		TYPING_START,
+		USER_SETTINGS_UPDATE,
+		USER_UPDATE,
+		VOICE_STATE_UPDATE,
+		VOICE_SERVER_UPDATE
+	};
+	using WsEventCallback_t = std::function<void(json &)>;
 
 private:
 	CNetwork() = default;
@@ -53,6 +90,7 @@ private: // variables
 	std::string m_SessionId;
 	asio::steady_timer m_HeartbeatTimer{ m_IoService };
 	std::chrono::steady_clock::duration m_HeartbeatInterval;
+	std::map<WsEvent, WsEventCallback_t> m_EventMap;
 
 private: // functions
 	bool WsConnect();
@@ -77,4 +115,9 @@ public: // functions
 
 	void HttpGet(std::string const &url, HttpGetCallback_t &&callback);
 	void HttpPost(std::string const &url, std::string const &content);
+
+	void WsRegisterEvent(WsEvent event, WsEventCallback_t &&callback)
+	{
+		m_EventMap.emplace(event, std::move(callback));
+	}
 };
