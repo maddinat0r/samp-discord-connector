@@ -2,7 +2,9 @@ version: '{build}'
 image: Visual Studio 2015
 
 configuration:
-    - Debug
+    # OpenSSL static libs are not compiled with msvc14
+    #- Debug 
+    # links to dynamic OpenSSL libs
     - Release
 
 platform: x86
