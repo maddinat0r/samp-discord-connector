@@ -39,6 +39,8 @@ add_samp_plugin(discord-connector
 	CError.hpp
 	CLog.cpp
 	CLog.hpp
+	CMessage.cpp
+	CMessage.hpp
 	CNetwork.cpp
 	CNetwork.hpp
 	CSingleton.hpp
