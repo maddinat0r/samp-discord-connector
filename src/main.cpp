@@ -24,6 +24,7 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 	logprintf = (logprintf_t) ppData[PLUGIN_DATA_LOGPRINTF];
 	
 	samplog::Init();
+	CLog::Get()->SetLogLevel(static_cast<LogLevel>(LogLevel::DEBUG | LogLevel::INFO | LogLevel::WARNING | LogLevel::ERROR));
 	
 	logprintf(" >> plugin.dc-connector: " PLUGIN_VERSION " successfully loaded.");
 	return true;
