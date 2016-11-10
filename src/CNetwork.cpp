@@ -285,6 +285,7 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 			else
 			{
 				CLog::Get()->Log(LogLevel::WARNING, "Unknown gateway event '{}'", result["t"].get<std::string>());
+				CLog::Get()->Log(LogLevel::DEBUG, "UGE res: {}", result.dump(4));
 			}
 		} break;
 		case 7: // reconnect
@@ -298,6 +299,7 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 			break;
 		default:
 			CLog::Get()->Log(LogLevel::WARNING, "Unhandled payload opcode '{}'", payload_opcode);
+			CLog::Get()->Log(LogLevel::DEBUG, "UPO res: {}", result.dump(4));
 	}
 
 	WsRead();
