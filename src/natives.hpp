@@ -12,4 +12,6 @@
 namespace Native
 {
 	//AMX_DECLARE_NATIVE(native_name);
+	AMX_DECLARE_NATIVE(DCC_Connect);
+	AMX_DECLARE_NATIVE(DCC_SendMessage);
 };

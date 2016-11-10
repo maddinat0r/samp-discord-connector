@@ -52,6 +52,8 @@ PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 extern "C" const AMX_NATIVE_INFO native_list[] =
 {
 	//AMX_DEFINE_NATIVE(native_name)
+	AMX_DEFINE_NATIVE(DCC_Connect)
+	AMX_DEFINE_NATIVE(DCC_SendMessage)
 	
 	{ NULL, NULL }
 };

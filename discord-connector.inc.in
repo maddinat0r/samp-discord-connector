@@ -27,6 +27,9 @@ enum E_LOGLEVEL
 
 
 // natives
+native DCC_Connect(const bot_token[]);
+native DCC_SendMessage(const channel_id[], const message[]);
 
 
 // callbacks
+forward DCC_OnMessageCreate(const author[], const message[], const channel_id[]);
