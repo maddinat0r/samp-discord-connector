@@ -3,15 +3,26 @@ sudo: required
 dist: trusty
 
 env:
-  matrix:
-    - BUILD_TYPE=Release
-    - BUILD_TYPE=Debug
+    global:
+        - CC=gcc-4.9
+        - CXX=g++-4.9
+    matrix:
+        - BUILD_TYPE=Release
+        - BUILD_TYPE=Debug
 
+addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+        packages:
+            - g++-4.9-multilib
 
 before_install:
+  - sudo update-alternatives  --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 99 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+  - sudo update-alternatives --auto gcc
   - sudo dpkg --add-architecture i386
   - sudo apt-get update
-  - sudo apt-get -yq --no-install-suggests --no-install-recommends --force-yes install g++-multilib libssl-dev:i386
+  - sudo apt-get -yq --no-install-suggests --no-install-recommends --force-yes install libssl-dev:i386
   - sudo apt-get -yq --force-yes remove libssl-dev libssl
   
   - wget "https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.sh"
@@ -33,3 +44,4 @@ before_script:
 script:
   - make -j2
   - make package
+
