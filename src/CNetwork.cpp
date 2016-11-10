@@ -328,21 +328,22 @@ void CNetwork::DoHeartbeat(boost::system::error_code ec)
 void CNetwork::HttpWriteRequest(std::string const &method,
 	std::string const &url, std::string const &content, std::function<void()> &&callback)
 {
-	beast::http::request<beast::http::string_body> req;
-	req.method = method;
-	req.url = "/api" + url;
-	req.version = 11;
-	req.headers.replace("Host", "discordapp.com");
-	if (!token.empty())
-		req.headers.replace("Authorization", "Bot " + token);
-	req.body = content;
+	auto req = std::make_shared<beast::http::request<beast::http::string_body>>();
+	req->method = method;
+	req->url = "/api" + url;
+	req->version = 11;
+	req->headers.replace("Host", "discordapp.com");
+	if (!content.empty())
+		req->headers.replace("Content-Type", "application/json");
+	req->headers.replace("Authorization", "Bot " + m_Token);
+	req->body = content;
 
-	beast::http::prepare(req);
+	beast::http::prepare(*req);
 
 	beast::http::async_write(
 		m_HttpsStream,
-		req,
-		[url, method, callback](boost::system::error_code ec)
+		*req,
+		[req, url, method, callback](boost::system::error_code ec)
 		{
 			if (ec)
 			{
