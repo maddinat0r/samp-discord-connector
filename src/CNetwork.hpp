@@ -68,15 +68,13 @@ private: // functions
 	using SharedResponse_t = std::shared_ptr<beast::http::response<beast::http::streambuf_body>>;
 	using HttpReadResponseCallback_t = std::function<void(SharedStreambuf_t, SharedResponse_t)>;
 
-	void HttpWriteRequest(const std::string &token, std::string const &method,
+	void HttpWriteRequest(std::string const &method,
 		std::string const &url, std::string const &content, std::function<void()> &&callback);
 	void HttpReadResponse(HttpReadResponseCallback_t &&callback);
 
 public: // functions
 	void Initialize(std::string &&token);
 
-	void HttpGet(const std::string &token, std::string const &url,
-		HttpGetCallback_t &&callback);
-	void HttpPost(const std::string &token, std::string const &url, 
-		std::string const &content);
+	void HttpGet(std::string const &url, HttpGetCallback_t &&callback);
+	void HttpPost(std::string const &url, std::string const &content);
 };

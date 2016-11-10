@@ -48,7 +48,7 @@ void CNetwork::Initialize(std::string &&token)
 	}
 
 	// retrieve WebSocket host URL
-	HttpGet("", "/gateway", [this](HttpGetResponse res)
+	HttpGet("/gateway", [this](HttpGetResponse res)
 	{
 		if (res.status != 200)
 		{
@@ -299,7 +299,7 @@ void CNetwork::DoHeartbeat(boost::system::error_code ec)
 }
 
 
-void CNetwork::HttpWriteRequest(std::string const &token, std::string const &method,
+void CNetwork::HttpWriteRequest(std::string const &method,
 	std::string const &url, std::string const &content, std::function<void()> &&callback)
 {
 	beast::http::request<beast::http::string_body> req;
@@ -354,10 +354,9 @@ void CNetwork::HttpReadResponse(HttpReadResponseCallback_t &&callback)
 }
 
 
-void CNetwork::HttpGet(const std::string &token, std::string const &url,
-	HttpGetCallback_t &&callback)
+void CNetwork::HttpGet(std::string const &url, HttpGetCallback_t &&callback)
 {
-	HttpWriteRequest(token, "GET", url, "", [this, callback]()
+	HttpWriteRequest("GET", url, "", [this, callback]()
 	{
 		HttpReadResponse([callback](SharedStreambuf_t sb, SharedResponse_t resp)
 		{
@@ -367,7 +366,7 @@ void CNetwork::HttpGet(const std::string &token, std::string const &url,
 	});
 }
 
-void CNetwork::HttpPost(const std::string &token, std::string const &url, std::string const &content)
+void CNetwork::HttpPost(std::string const &url, std::string const &content)
 {
-	HttpWriteRequest(token, "POST", url, content, nullptr);
+	HttpWriteRequest("POST", url, content, nullptr);
 }
