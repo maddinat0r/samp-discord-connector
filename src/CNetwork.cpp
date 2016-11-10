@@ -164,9 +164,9 @@ void CNetwork::WsDisconnect()
 void CNetwork::WsIdentify()
 {
 #ifdef WIN32
-	string os_name = "Windows";
+	std::string os_name = "Windows";
 #else
-	string os_name = "Linux";
+	std::string os_name = "Linux";
 #endif
 
 	json identify_payload = {
@@ -224,7 +224,6 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 	}
 
 	json result = json::parse(beast::to_string(m_WebSocketBuffer.data()));
-	CLog::Get()->Log(LogLevel::DEBUG, "OnRead: data: {}", result.dump(4));
 	m_WebSocketBuffer.consume(m_WebSocketBuffer.size());
 
 	switch (result["op"].get<int>())

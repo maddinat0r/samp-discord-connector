@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <functional>
 #include <tuple>
 
 using std::shared_ptr;
@@ -14,4 +13,3 @@ class CCallback;
 
 using Callback_t = shared_ptr<CCallback>;
 
-using DispatchFunction_t = std::function < void() >;

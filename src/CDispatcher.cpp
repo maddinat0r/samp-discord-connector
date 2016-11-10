@@ -1,7 +1,7 @@
 #include "CDispatcher.hpp"
 
 
-void CDispatcher::Dispatch(DispatchFunction_t &&func)
+void CDispatcher::Dispatch(Function_t &&func)
 {
 	std::lock_guard<std::mutex> lock_guard(m_QueueMtx);
 	return m_Queue.push(std::move(func));
