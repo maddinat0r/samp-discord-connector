@@ -273,8 +273,8 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 						break;
 				}
 
-				auto ev_it = m_EventMap.find(event);
-				if (ev_it != m_EventMap.end())
+				auto event_range = m_EventMap.equal_range(event);
+				for (auto ev_it = event_range.first; ev_it != event_range.second; ++ev_it)
 					ev_it->second(data);
 			}
 			else
