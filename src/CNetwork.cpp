@@ -188,11 +188,6 @@ void CNetwork::WsIdentify()
 
 void CNetwork::WsSendResumePayload()
 {
-	if (!WsConnect())
-		return;
-
-	WsRead();
-
 	json resume_payload = {
 		{ "op", 6 },
 		{ "d", {
