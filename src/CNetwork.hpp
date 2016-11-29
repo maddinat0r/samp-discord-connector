@@ -4,7 +4,7 @@
 #include "types.hpp"
 
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <functional>
 #include <memory>
 #include <thread>
@@ -90,7 +90,7 @@ private: // variables
 	std::string m_SessionId;
 	asio::steady_timer m_HeartbeatTimer{ m_IoService };
 	std::chrono::steady_clock::duration m_HeartbeatInterval;
-	std::unordered_multimap<WsEvent, WsEventCallback_t> m_EventMap;
+	std::multimap<WsEvent, WsEventCallback_t> m_EventMap;
 
 private: // functions
 	bool WsConnect();
