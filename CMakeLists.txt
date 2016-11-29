@@ -16,8 +16,6 @@ endif()
 set(OPENSSL_USE_STATIC_LIBS ON)
 find_package(OpenSSL REQUIRED)
 
-include_directories(${OPENSSL_INCLUDE_DIR})
-
 
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.58 QUIET COMPONENTS system)
@@ -27,14 +25,6 @@ if(NOT Boost_FOUND)
 	set(BOOST_LIBRARYDIR "${BOOST_LIBRARYDIR}" CACHE PATH "Set the Boost library folder.")
 	mark_as_advanced(CLEAR BOOST_ROOT BOOST_LIBRARYDIR)
 	message(FATAL_ERROR "Could NOT find Boost; specify additional paths.")
-endif()
-mark_as_advanced(BOOST_ROOT BOOST_LIBRARYDIR Boost_DIR)
-
-include_directories("${Boost_INCLUDE_DIR}")
-
-if(MSVC)
-	#needed for Boost's auto-link feature
-	link_directories("${Boost_LIBRARY_DIRS}")
 endif()
 
 

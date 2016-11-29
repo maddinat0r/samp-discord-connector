@@ -6,14 +6,6 @@ set(SAMP_SDK_ROOT "${PROJECT_SOURCE_DIR}/libs/sdk")
 find_package(SAMPSDK REQUIRED)
 
 set(DCC_PLUGIN_CONFIG_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/config_headers")
-include_directories(
-	${SAMPSDK_INCLUDE_DIR}
-	${DCC_PLUGIN_CONFIG_INCLUDE_DIR}
-	${PROJECT_SOURCE_DIR}/libs/samp-log-core/include
-	${PROJECT_SOURCE_DIR}/libs/samp-log-core/libs/cppformat
-	${PROJECT_SOURCE_DIR}/libs/beast/include
-	${PROJECT_SOURCE_DIR}/libs/json
-)
 
 configure_file(
 	"../discord-connector.inc.in"
@@ -34,6 +26,8 @@ add_samp_plugin(discord-connector
 	${SAMPSDK_DIR}/amx/getch.c
 	CCallback.cpp
 	CCallback.hpp
+	CChannel.cpp
+	CChannel.hpp
 	CDispatcher.cpp
 	CDispatcher.hpp
 	CError.hpp
@@ -76,10 +70,22 @@ target_compile_features(discord-connector PUBLIC
 	cxx_variadic_templates
 )
 
+set_property(TARGET discord-connector PROPERTY INCLUDE_DIRECTORIES
+	${OPENSSL_INCLUDE_DIR}
+	${Boost_INCLUDE_DIR}
+	${SAMPSDK_INCLUDE_DIR}
+	${DCC_PLUGIN_CONFIG_INCLUDE_DIR}
+	${PROJECT_SOURCE_DIR}/libs/samp-log-core/include
+	${PROJECT_SOURCE_DIR}/libs/samp-log-core/libs/cppformat
+	${PROJECT_SOURCE_DIR}/libs/beast/include
+	${PROJECT_SOURCE_DIR}/libs/json
+)
+
 add_dependencies(discord-connector log-core fmt)
 
 if(MSVC)
 	add_definitions(
+		-DBOOST_ALL_NO_LIB #disable auto-linking
 		-D_CRT_SECURE_NO_WARNINGS 
 		-DNOMINMAX 
 		-D_ENABLE_ATOMIC_ALIGNMENT_FIX 
@@ -87,7 +93,7 @@ if(MSVC)
 		-D_SCL_SECURE_NO_WARNINGS)
 endif()
 
-target_link_libraries(discord-connector log-core fmt OpenSSL::SSL)
+target_link_libraries(discord-connector log-core fmt OpenSSL::SSL Boost::system)
 
 if(UNIX)
 	if(NOT APPLE)
