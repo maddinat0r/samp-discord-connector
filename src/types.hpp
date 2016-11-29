@@ -1,15 +1,13 @@
 #pragma once
 
 #include <memory>
-#include <tuple>
-
-using std::shared_ptr;
-using std::unique_ptr;
-using std::tuple;
+#include <string>
 
 
 class CCallback;
+class CChannel;
 
 
-using Callback_t = shared_ptr<CCallback>;
-
+using Callback_t = std::shared_ptr<CCallback>;
+using Channel_t = std::unique_ptr<CChannel>;
+using Snowflake_t = std::string;
