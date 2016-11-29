@@ -56,28 +56,58 @@ AMX_DECLARE_NATIVE(Native::DCC_Connect)
 				}
 			});
 		});
-	CNetwork::Get()->Initialize(amx_GetCppString(amx, params[1]));
 	CChannelManager::Get()->Initialize();
+	CNetwork::Get()->Initialize(amx_GetCppString(amx, params[1]));
 
 	cell ret_val = 1;
 	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
-// native DCC_SendMessage(const channel_id[], const message[]);
-AMX_DECLARE_NATIVE(Native::DCC_SendMessage)
+// native DCC_SendChannelMessage(DCC_Channel:channel, const message[]);
+AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
 {
-	CScopedDebugInfo dbg_info(amx, "DCC_SendMessage", "ss");
+	CScopedDebugInfo dbg_info(amx, "DCC_SendMessage", "ds");
 
-	std::string 
-		channel_id = amx_GetCppString(amx, params[1]),
-		message = amx_GetCppString(amx, params[2]);
-	json data = {
-		{ "content", message }
-	};
-	CNetwork::Get()->HttpPost("/channels/" + channel_id + "/messages", data.dump());
+	ChannelId_t channelid = static_cast<ChannelId_t>(params[1]);
+	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
 
-	cell ret_val = 1;
+	channel->SendMessage(amx_GetCppString(amx, params[2]));
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_FindChannelByName(const channel_name[]);
+AMX_DECLARE_NATIVE(Native::DCC_FindChannelByName)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_FindChannelByName", "s");
+
+	std::string const channel_name = amx_GetCppString(amx, params[1]);
+	Channel_t const &channel = CChannelManager::Get()->FindChannelByName(channel_name);
+
+	cell ret_val = channel ? channel->GetPawnId() : 0;
+
 	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
+
+// native DCC_FindChannelById(const channel_id[]);
+AMX_DECLARE_NATIVE(Native::DCC_FindChannelById)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_FindChannelById", "s");
+
+	Snowflake_t const channel_id = amx_GetCppString(amx, params[1]);
+	Channel_t const &channel = CChannelManager::Get()->FindChannelById(channel_id);
+
+	cell ret_val = channel ? channel->GetPawnId() : 0;
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	return ret_val;
+}
+

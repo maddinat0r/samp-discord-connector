@@ -17,6 +17,8 @@
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/steady_timer.hpp>
 
+#undef SendMessage // Windows at its finest
+
 
 using json = nlohmann::json;
 namespace asio = boost::asio;

@@ -13,21 +13,27 @@ using json = nlohmann::json;
 class CChannel
 {
 public:
-	CChannel(json &data);
+	CChannel(ChannelId_t pawn_id, json &data);
 	~CChannel() = default;
 
 private:
+	const ChannelId_t m_PawnId;
+
 	Snowflake_t
 		m_Id,
 		m_GuildId;
 
-	bool m_IsPrivate;
+	bool m_IsPrivate = false;
 
 	std::string
 		m_Name,
 		m_Topic;
 
 public:
+	inline ChannelId_t GetPawnId() const
+	{
+		return m_PawnId;
+	}
 	inline Snowflake_t const &GetId() const
 	{
 		return m_Id;
@@ -44,6 +50,8 @@ public:
 	{
 		return m_Topic;
 	}
+
+	void SendMessage(std::string &&msg);
 
 };
 
@@ -62,5 +70,7 @@ public:
 	void Initialize();
 
 	void AddChannel(json &data);
-	Channel_t const &FindChannel(unsigned int id);
+	Channel_t const &FindChannel(ChannelId_t id);
+	Channel_t const &FindChannelByName(std::string const &name);
+	Channel_t const &FindChannelById(Snowflake_t const &sfid);
 };

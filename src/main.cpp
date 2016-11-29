@@ -53,7 +53,9 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 {
 	//AMX_DEFINE_NATIVE(native_name)
 	AMX_DEFINE_NATIVE(DCC_Connect)
-	AMX_DEFINE_NATIVE(DCC_SendMessage)
+	AMX_DEFINE_NATIVE(DCC_SendChannelMessage)
+	AMX_DEFINE_NATIVE(DCC_FindChannelByName)
+	AMX_DEFINE_NATIVE(DCC_FindChannelById)
 	
 	{ NULL, NULL }
 };
