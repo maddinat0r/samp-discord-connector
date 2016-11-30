@@ -59,7 +59,7 @@ void CChannelManager::AddChannel(json &data)
 	while (m_Channels.find(id) != m_Channels.end())
 		++id;
 
-	m_Channels.emplace(id, Channel_t(id, data));
+	m_Channels.emplace(id, Channel_t(new CChannel(id, data)));
 }
 
 Channel_t const &CChannelManager::FindChannel(ChannelId_t id)
