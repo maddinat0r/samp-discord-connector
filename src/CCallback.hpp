@@ -48,17 +48,17 @@ private: //variables
 private: // functions
 	// cell
 	template<typename... Tv>
-	void PushArgs(cell value, Tv... other_values)
+	void PushArgs(cell value, Tv&&... other_values)
 	{
-		PushArgs(other_values...);
+		PushArgs(std::forward<Tv>(other_values)...);
 		amx_Push(m_AmxInstance, value);
 	}
 
 	// C string
 	template<typename... Tv>
-	void PushArgs(const char *value, Tv... other_values)
+	void PushArgs(const char *value, Tv&&... other_values)
 	{
-		PushArgs(other_values...);
+		PushArgs(std::forward<Tv>(other_values)...);
 
 		cell tmp_addr;
 		amx_PushString(m_AmxInstance, &tmp_addr, nullptr, value, 0, 0);
@@ -69,9 +69,9 @@ private: // functions
 
 	// std string
 	template<typename... Tv>
-	void PushArgs(std::string const &value, Tv... other_values)
+	void PushArgs(std::string const &value, Tv&&... other_values)
 	{
-		PushArgs(other_values...);
+		PushArgs(std::forward<Tv>(other_values)...);
 
 		cell tmp_addr;
 		amx_PushString(m_AmxInstance, &tmp_addr, nullptr, value.c_str(), 0, 0);
@@ -82,9 +82,9 @@ private: // functions
 
 	// cell array
 	template<size_t N, typename... Tv>
-	void PushArgs(const cell(&array)[N], Tv... other_values)
+	void PushArgs(const cell(&array)[N], Tv&&... other_values)
 	{
-		PushArgs(other_values...);
+		PushArgs(std::forward<Tv>(other_values)...);
 
 		cell tmp_addr;
 		amx_PushArray(m_AmxInstance, &tmp_addr, nullptr, array, N);
@@ -95,10 +95,9 @@ private: // functions
 
 	// reference
 	template<size_t N, typename... Tv>
-	void PushArgs(cell *value, Tv... other_values)
+	void PushArgs(cell *value, Tv&&... other_values)
 	{
-		PushArgs(other_values...);
-
+		PushArgs(std::forward<Tv>(other_values)...);
 		amx_PushAddress(m_AmxInstance, value);
 	}
 
@@ -109,9 +108,9 @@ public: //functions
 	bool Execute();
 
 	template<typename... Tv>
-	bool Execute(Tv... params)
+	bool Execute(Tv&&... params)
 	{
-		PushArgs(params...);
+		PushArgs(std::forward<Tv>(params)...);
 		return Execute();
 	}
 
