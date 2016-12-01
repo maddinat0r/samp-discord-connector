@@ -12,14 +12,15 @@ using json = nlohmann::json;
 class CMessage
 {
 public:
-	CMessage(json data);
+	CMessage(json &data);
 	~CMessage() = default;
 
 private:
 	std::string
 		m_Author,
-		m_Content,
-		m_ChannelId;
+		m_Content;
+
+	Snowflake_t m_ChannelId;
 
 public:
 	std::string const &GetAuthor() const
@@ -30,7 +31,7 @@ public:
 	{
 		return m_Content;
 	}
-	std::string const &GetChannelId() const
+	Snowflake_t const &GetChannelId() const
 	{
 		return m_ChannelId;
 	}

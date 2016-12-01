@@ -43,6 +43,11 @@ public:
 		return T::ModuleName;
 	}
 
+	operator ErrorType() const
+	{
+		return type();
+	}
+
 	void set(ErrorType type, string &&msg)
 	{
 		m_Type = type;
