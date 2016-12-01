@@ -70,6 +70,89 @@ AMX_DECLARE_NATIVE(Native::DCC_FindChannelById)
 	return ret_val;
 }
 
+// native DCC_IsChannelPrivate(DCC_Channel:channel, &bool:is_private);
+AMX_DECLARE_NATIVE(Native::DCC_IsChannelPrivate)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_IsChannelPrivate", "dr");
+
+	ChannelId_t channelid = params[1];
+	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
+
+	cell *dest = nullptr;
+	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = channel->IsPrivate() ? 1 : 0;
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_GetChannelName(DCC_Channel:channel, dest[], max_size = sizeof dest);
+AMX_DECLARE_NATIVE(Native::DCC_GetChannelName)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetChannelName", "drd");
+
+	ChannelId_t channelid = params[1];
+	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
+
+	cell ret_val = amx_SetCppString(amx, params[2], channel->GetName(), params[3]) == AMX_ERR_NONE;
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	return ret_val;
+}
+
+// native DCC_GetChannelId(DCC_Channel:channel, dest[], max_size = sizeof dest);
+AMX_DECLARE_NATIVE(Native::DCC_GetChannelId)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetChannelId", "drd");
+
+	ChannelId_t channelid = params[1];
+	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
+
+	cell ret_val = amx_SetCppString(amx, params[2], channel->GetId(), params[3]) == AMX_ERR_NONE;
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	return ret_val;
+}
+
+// native DCC_GetChannelTopic(DCC_Channel:channel, dest[], max_size = sizeof dest);
+AMX_DECLARE_NATIVE(Native::DCC_GetChannelTopic)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetChannelTopic", "drd");
+
+	ChannelId_t channelid = params[1];
+	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
+
+	cell ret_val = amx_SetCppString(amx, params[2], channel->GetTopic(), params[3]) == AMX_ERR_NONE;
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	return ret_val;
+}
+
 // native DCC_SendChannelMessage(DCC_Channel:channel, const message[]);
 AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
 {

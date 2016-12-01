@@ -32,6 +32,11 @@ native DCC_Connect(const bot_token[]);
 native DCC_Channel:DCC_FindChannelByName(const channel_name[]);
 native DCC_Channel:DCC_FindChannelById(const channel_id[]);
 
+native DCC_IsChannelPrivate(DCC_Channel:channel, &bool:is_private);
+native DCC_GetChannelName(DCC_Channel:channel, dest[], max_size = sizeof dest);
+native DCC_GetChannelId(DCC_Channel:channel, dest[], max_size = sizeof dest);
+native DCC_GetChannelTopic(DCC_Channel:channel, dest[], max_size = sizeof dest);
+
 native DCC_SendChannelMessage(DCC_Channel:channel, const message[]);
 
 

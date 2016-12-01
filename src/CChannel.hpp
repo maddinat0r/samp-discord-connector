@@ -45,6 +45,10 @@ public:
 	{
 		return m_Id;
 	}
+	inline bool IsPrivate() const
+	{
+		return m_IsPrivate;
+	}
 	inline Snowflake_t const &GetGuildId() const
 	{
 		return m_GuildId;
