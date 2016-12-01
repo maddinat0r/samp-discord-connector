@@ -30,7 +30,7 @@ AMX_DECLARE_NATIVE(Native::native_name)
 // native DCC_Connect(const bot_token[]);
 AMX_DECLARE_NATIVE(Native::DCC_Connect)
 {
-	CScopedDebugInfo dbg_info(amx, "DCC_Connect", "s");
+	CScopedDebugInfo dbg_info(amx, "DCC_Connect", "*");
 
 	CChannelManager::Get()->Initialize(amx);
 	CNetwork::Get()->Initialize(amx_GetCppString(amx, params[1]));
