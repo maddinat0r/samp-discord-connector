@@ -42,25 +42,6 @@ AMX_DECLARE_NATIVE(Native::DCC_Connect)
 	return ret_val;
 }
 
-// native DCC_SendChannelMessage(DCC_Channel:channel, const message[]);
-AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
-{
-	CScopedDebugInfo dbg_info(amx, "DCC_SendMessage", "ds");
-
-	ChannelId_t channelid = static_cast<ChannelId_t>(params[1]);
-	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
-	if (!channel)
-	{
-		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
-		return 0;
-	}
-
-	channel->SendMessage(amx_GetCppString(amx, params[2]));
-
-	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
-	return 1;
-}
-
 // native DCC_Channel:DCC_FindChannelByName(const channel_name[]);
 AMX_DECLARE_NATIVE(Native::DCC_FindChannelByName)
 {
@@ -87,4 +68,23 @@ AMX_DECLARE_NATIVE(Native::DCC_FindChannelById)
 
 	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
+}
+
+// native DCC_SendChannelMessage(DCC_Channel:channel, const message[]);
+AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_SendMessage", "ds");
+
+	ChannelId_t channelid = static_cast<ChannelId_t>(params[1]);
+	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
+
+	channel->SendMessage(amx_GetCppString(amx, params[2]));
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
 }

@@ -13,7 +13,7 @@ namespace Native
 {
 	//AMX_DECLARE_NATIVE(native_name);
 	AMX_DECLARE_NATIVE(DCC_Connect);
-	AMX_DECLARE_NATIVE(DCC_SendChannelMessage);
 	AMX_DECLARE_NATIVE(DCC_FindChannelByName);
 	AMX_DECLARE_NATIVE(DCC_FindChannelById);
+	AMX_DECLARE_NATIVE(DCC_SendChannelMessage);
 };
