@@ -1,7 +1,9 @@
 #pragma once
 
 #include "CSingleton.hpp"
+#include "CCallback.hpp"
 #include "types.hpp"
+#include "sdk.hpp"
 
 #include <string>
 #include <memory>
@@ -73,6 +75,8 @@ private:
 	std::atomic<unsigned int> m_Initialized{ 0 };
 
 	std::map<unsigned int, Channel_t> m_Channels; //PAWN channel-id to actual channel map
+	Callback_t
+		m_ChannelMessage;
 
 private:
 	void AddChannel(json &data);

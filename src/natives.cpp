@@ -32,30 +32,6 @@ AMX_DECLARE_NATIVE(Native::DCC_Connect)
 {
 	CScopedDebugInfo dbg_info(amx, "DCC_Connect", "s");
 
-	CNetwork::Get()->WsRegisterEvent(CNetwork::WsEvent::MESSAGE_CREATE, 
-		[amx](json &data)
-		{
-			CMessage msg(data);
-			CDispatcher::Get()->Dispatch([amx, msg]()
-			{
-				CError<CCallback> cb_error;
-				Callback_t cb = CCallback::Create(
-					cb_error, amx, "DCC_OnMessageCreate", "sss",
-					msg.GetAuthor().c_str(),
-					msg.GetContent().c_str(),
-					msg.GetChannelId().c_str());
-
-				if (cb_error)
-				{
-					CLog::Get()->Log(LogLevel::ERROR, "{} error: {}",
-						cb_error.module(), cb_error.msg());
-				}
-				else
-				{
-					cb->Execute();
-				}
-			});
-		});
 	CChannelManager::Get()->Initialize(amx);
 	CNetwork::Get()->Initialize(amx_GetCppString(amx, params[1]));
 
@@ -112,4 +88,3 @@ AMX_DECLARE_NATIVE(Native::DCC_FindChannelById)
 	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
-

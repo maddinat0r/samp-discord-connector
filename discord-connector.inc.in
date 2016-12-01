@@ -34,4 +34,4 @@ native DCC_Channel:DCC_FindChannelById(const channel_id[]);
 
 
 // callbacks
-forward DCC_OnMessageCreate(const author[], const message[], const channel_id[]);
+forward DCC_OnChannelMessage(DCC_Channel:channel, const author[], const message[]);

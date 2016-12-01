@@ -1,6 +1,7 @@
 #include "CChannel.hpp"
 #include "CMessage.hpp"
 #include "CNetwork.hpp"
+#include "CDispatcher.hpp"
 #include "CLog.hpp"
 
 #include "fmt/format.h"
@@ -58,6 +59,35 @@ void CChannelManager::Initialize(AMX *amx)
 		}
 		m_Initialized++;
 	});
+
+	// PAWN callbacks
+	CError<CCallback> cb_error;
+
+	// forward DCC_OnChannelMessage(DCC_Channel:channel, const author[], const message[]);
+	m_ChannelMessage = CCallback::Create(cb_error, amx, "DCC_OnChannelMessage");
+	if (cb_error != CCallback::Error::NOT_FOUND)
+	{
+		if (cb_error)
+		{
+			CLog::Get()->Log(LogLevel::ERROR, "{} error: {}",
+				cb_error.module(), cb_error.msg());
+		}
+		else
+		{
+			CNetwork::Get()->WsRegisterEvent(CNetwork::WsEvent::MESSAGE_CREATE, [this](json &data)
+			{
+				CMessage msg(data);
+				Channel_t const &channel = FindChannelById(msg.GetChannelId());
+				if (channel)
+				{
+					CDispatcher::Get()->Dispatch([this, msg, &channel]()
+					{
+						m_ChannelMessage->Execute(channel->GetPawnId(), msg.GetAuthor(), msg.GetContent());
+					});
+				}
+			});
+		}
+	}
 }
 
 void CChannelManager::WaitForInitialization()
