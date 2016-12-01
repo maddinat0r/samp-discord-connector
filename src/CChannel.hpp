@@ -12,6 +12,9 @@
 using json = nlohmann::json;
 
 
+using Channel_t = std::unique_ptr<class CChannel>;
+using ChannelId_t = cell;
+
 class CChannel
 {
 public:

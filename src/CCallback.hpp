@@ -11,8 +11,9 @@ using std::string;
 using std::unordered_set;
 
 #include "CError.hpp"
-#include "types.hpp"
 
+
+using Callback_t = std::shared_ptr<class CCallback>;
 
 class CCallback
 {
