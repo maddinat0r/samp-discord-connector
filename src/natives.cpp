@@ -83,7 +83,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
 	return 1;
 }
 
-// native DCC_FindChannelByName(const channel_name[]);
+// native DCC_Channel:DCC_FindChannelByName(const channel_name[]);
 AMX_DECLARE_NATIVE(Native::DCC_FindChannelByName)
 {
 	CScopedDebugInfo dbg_info(amx, "DCC_FindChannelByName", "s");
@@ -97,7 +97,7 @@ AMX_DECLARE_NATIVE(Native::DCC_FindChannelByName)
 	return ret_val;
 }
 
-// native DCC_FindChannelById(const channel_id[]);
+// native DCC_Channel:DCC_FindChannelById(const channel_id[]);
 AMX_DECLARE_NATIVE(Native::DCC_FindChannelById)
 {
 	CScopedDebugInfo dbg_info(amx, "DCC_FindChannelById", "s");
