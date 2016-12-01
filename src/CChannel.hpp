@@ -4,6 +4,8 @@
 #include "types.hpp"
 
 #include <string>
+#include <memory>
+#include <atomic>
 
 #include <json.hpp>
 
@@ -64,12 +66,18 @@ private:
 	~CChannelManager() = default;
 
 private:
+	const unsigned int m_InitValue = 2;
+	std::atomic<unsigned int> m_Initialized{ 0 };
+
 	std::map<unsigned int, Channel_t> m_Channels; //PAWN channel-id to actual channel map
 
-public:
-	void Initialize();
-
+private:
 	void AddChannel(json &data);
+
+public:
+	void Initialize(AMX *amx);
+	void WaitForInitialization();
+
 	Channel_t const &FindChannel(ChannelId_t id);
 	Channel_t const &FindChannelByName(std::string const &name);
 	Channel_t const &FindChannelById(Snowflake_t const &sfid);

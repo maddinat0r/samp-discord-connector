@@ -57,7 +57,10 @@ AMX_DECLARE_NATIVE(Native::DCC_Connect)
 			});
 		});
 	CChannelManager::Get()->Initialize();
+	CChannelManager::Get()->Initialize(amx);
 	CNetwork::Get()->Initialize(amx_GetCppString(amx, params[1]));
+
+	CChannelManager::Get()->WaitForInitialization();
 
 	cell ret_val = 1;
 	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);

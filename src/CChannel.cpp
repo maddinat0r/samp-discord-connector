@@ -1,5 +1,7 @@
 #include "CChannel.hpp"
+#include "CMessage.hpp"
 #include "CNetwork.hpp"
+#include "CLog.hpp"
 
 #include "fmt/format.h"
 
@@ -28,25 +30,40 @@ void CChannel::SendMessage(std::string &&msg)
 }
 
 
-void CChannelManager::Initialize()
+void CChannelManager::Initialize(AMX *amx)
 {
+	if (m_Initialized == m_InitValue)
+		return; // we've already been initialized
+
 	CNetwork::Get()->WsRegisterEvent(CNetwork::WsEvent::CHANNEL_CREATE, [](json &data)
 	{
 		CChannelManager::Get()->AddChannel(data);
 	});
 
-	CNetwork::Get()->WsRegisterEvent(CNetwork::WsEvent::READY, [](json &data)
+	CNetwork::Get()->WsRegisterEvent(CNetwork::WsEvent::READY, [this](json &data)
 	{
 		for (json &c : data["private_channels"])
-			CChannelManager::Get()->AddChannel(c);
+			AddChannel(c);
+		m_Initialized++;
 	});
 
 	// GUILD_CREATE event seems to be always sent after READY event with all guilds the bot is in
-	CNetwork::Get()->WsRegisterEvent(CNetwork::WsEvent::GUILD_CREATE, [](json &data)
+	CNetwork::Get()->WsRegisterEvent(CNetwork::WsEvent::GUILD_CREATE, [this](json &data)
 	{
 		for (json &c : data["channels"])
-			CChannelManager::Get()->AddChannel(c);
+		{
+			// manually add guild_id to channel data
+			c["guild_id"] = data["id"];
+			AddChannel(c);
+		}
+		m_Initialized++;
 	});
+}
+
+void CChannelManager::WaitForInitialization()
+{
+	while (m_Initialized != m_InitValue)
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
 void CChannelManager::AddChannel(json &data)
