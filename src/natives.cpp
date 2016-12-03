@@ -156,7 +156,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelTopic)
 // native DCC_SendChannelMessage(DCC_Channel:channel, const message[]);
 AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
 {
-	CScopedDebugInfo dbg_info(amx, "DCC_SendMessage", "ds");
+	CScopedDebugInfo dbg_info(amx, "DCC_SendChannelMessage", "ds");
 
 	ChannelId_t channelid = static_cast<ChannelId_t>(params[1]);
 	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
