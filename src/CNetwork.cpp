@@ -2,8 +2,10 @@
 #include "CLog.hpp"
 
 #include <beast/core/to_string.hpp>
+#include <boost/spirit/include/qi.hpp>
 
 #include <unordered_map>
+#include <functional>
 
 
 void CNetwork::Initialize(std::string &&token)
@@ -217,6 +219,7 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 
 	json result = json::parse(beast::to_string(m_WebSocketBuffer.data()));
 	m_WebSocketBuffer.consume(m_WebSocketBuffer.size());
+	CLog::Get()->Log(LogLevel::DEBUG, "OnWsRead: {}", result.dump(4));
 
 	int payload_opcode = result["op"].get<int>();
 	switch (payload_opcode)
@@ -319,9 +322,8 @@ void CNetwork::DoHeartbeat(boost::system::error_code ec)
 	m_HeartbeatTimer.async_wait(std::bind(&CNetwork::DoHeartbeat, this, std::placeholders::_1));
 }
 
-
-void CNetwork::HttpWriteRequest(std::string const &method,
-	std::string const &url, std::string const &content, std::function<void()> &&callback)
+CNetwork::SharedRequest_t CNetwork::HttpPrepareRequest(std::string const &method,
+	std::string const &url, std::string const &content)
 {
 	auto req = std::make_shared<beast::http::request<beast::http::string_body>>();
 	req->method = method;
@@ -335,60 +337,119 @@ void CNetwork::HttpWriteRequest(std::string const &method,
 
 	beast::http::prepare(*req);
 
-	beast::http::async_write(
-		m_HttpsStream,
-		*req,
-		[req, url, method, callback](boost::system::error_code ec)
-		{
-			if (ec)
-			{
-				CLog::Get()->Log(LogLevel::ERROR, "Error while sending HTTP {} request to '{}': {}",
-					method, url, ec.message());
-				return;
-			}
-
-			if (callback)
-				callback();
-		}
-	);
+	return req;
 }
 
-void CNetwork::HttpReadResponse(HttpReadResponseCallback_t &&callback)
+void CNetwork::HttpWriteRequest(SharedRequest_t request, HttpResponseCallback_t &&callback)
 {
-	auto sb = std::make_shared<beast::streambuf>();
-	auto response = std::make_shared<beast::http::response<beast::http::streambuf_body>>();
-	beast::http::async_read(
-		m_HttpsStream,
-		*sb,
-		*response,
-		[callback, sb, response](boost::system::error_code ec)
-		{
-			if (ec)
-			{
-				CLog::Get()->Log(LogLevel::ERROR, "Error while retrieving HTTP response: {}",
-					ec.message());
-				return;
-			}
+	boost::system::error_code error_code;
+	beast::http::write(m_HttpsStream, *request, error_code);
+	if (error_code)
+	{
+		CLog::Get()->Log(LogLevel::ERROR, "Error while sending HTTP {} request to '{}': {}",
+			request->method, request->url, error_code.message());
+		return;
+	}
 
-			callback(sb, response);
+	error_code.clear();
+
+	beast::streambuf sb;
+	beast::http::response<beast::http::streambuf_body> response;
+	beast::http::read(m_HttpsStream, sb, response, error_code);
+	if (error_code)
+	{
+		CLog::Get()->Log(LogLevel::ERROR, "Error while retrieving HTTP response: {}",
+			error_code.message());
+		return;
+	}
+
+	auto it = response.headers.find("X-RateLimit-Remaining");
+	if (it != response.headers.end())
+	{
+		if (it->second == "0")
+		{
+			it = response.headers.find("X-RateLimit-Reset");
+			if (it != response.headers.end())
+			{
+				std::string limited_url = request->url;
+				m_PathRateLimit.insert({ limited_url, std::queue<std::tuple<SharedRequest_t, HttpResponseCallback_t>>() }).first->second;
+
+				string const &reset_time_str = it->second;
+				long long reset_time_secs = 0;
+				boost::spirit::qi::parse(reset_time_str.begin(), reset_time_str.end(),
+					boost::spirit::qi::any_int_parser<long long>(),
+					reset_time_secs);
+				std::chrono::system_clock::time_point reset_time{ std::chrono::seconds(reset_time_secs) };
+				auto duration = std::chrono::duration_cast<std::chrono::seconds>(
+					reset_time - std::chrono::system_clock::now()) + std::chrono::seconds(1);
+				auto timer = std::make_shared<asio::steady_timer>(m_IoService, duration);
+				timer->async_wait([timer, this, limited_url](const boost::system::error_code &ec)
+				{
+					if (ec)
+						return;
+
+					auto it = m_PathRateLimit.find(limited_url);
+					if (it == m_PathRateLimit.end())
+						return; // ????
+
+					auto &query = it->second;
+					while (!query.empty())
+					{
+						auto req_data = query.front();
+						query.pop();
+						m_IoService.post([this, req_data]() mutable
+						{
+							HttpSendRequest(std::get<0>(req_data), std::move(std::get<1>(req_data)));
+						});
+					}
+					m_PathRateLimit.erase(it);
+				});
+			}
 		}
-	);
+	}
+
+	if (callback)
+		callback(sb, response);
+			
 }
 
+
+void CNetwork::HttpSendRequest(std::string const &method,
+	std::string const &url, std::string const &content, HttpResponseCallback_t &&callback)
+{
+	SharedRequest_t req = HttpPrepareRequest(method, url, content);
+	m_IoService.dispatch([this, req, callback]() mutable
+	{
+		HttpSendRequest(req, std::move(callback));
+	});
+}
+
+void CNetwork::HttpSendRequest(SharedRequest_t request, HttpResponseCallback_t &&callback)
+{
+	// check if this URL path is currently rate-limited
+	auto it = m_PathRateLimit.find(request->url);
+	if (it != m_PathRateLimit.end())
+	{
+		// yes, it is; queue request
+		it->second.push(std::make_tuple(request, std::move(callback)));
+	}
+	else
+	{
+		// no it isn't, write/execute request
+		HttpWriteRequest(request, std::move(callback));
+	}
+}
 
 void CNetwork::HttpGet(std::string const &url, HttpGetCallback_t &&callback)
 {
-	HttpWriteRequest("GET", url, "", [this, callback]()
+	HttpSendRequest("GET", url, "", [callback](Streambuf_t &sb, Response_t &resp)
 	{
-		HttpReadResponse([callback](SharedStreambuf_t sb, SharedResponse_t resp)
-		{
-			callback({ resp->status, resp->reason, beast::to_string(resp->body.data()),
-				beast::to_string(sb->data()) });
-		});
+		callback({ resp.status, resp.reason, beast::to_string(resp.body.data()),
+			beast::to_string(sb.data()) });
 	});
 }
 
 void CNetwork::HttpPost(std::string const &url, std::string const &content)
 {
-	HttpWriteRequest("POST", url, content, nullptr);
+	HttpSendRequest("POST", url, content, nullptr);
 }

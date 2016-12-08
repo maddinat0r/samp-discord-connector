@@ -5,6 +5,9 @@
 
 #include <string>
 #include <map>
+#include <unordered_map>
+#include <queue>
+#include <tuple>
 #include <functional>
 #include <memory>
 #include <thread>
@@ -72,6 +75,15 @@ public:
 	using WsEventCallback_t = std::function<void(json &)>;
 
 private:
+	using Streambuf_t = beast::streambuf;
+	using SharedStreambuf_t = std::shared_ptr<beast::streambuf>;
+	using Response_t = beast::http::response<beast::http::streambuf_body>;
+	using SharedResponse_t = std::shared_ptr<beast::http::response<beast::http::streambuf_body>>;
+	using Request_t = beast::http::request<beast::http::string_body>;
+	using SharedRequest_t = std::shared_ptr<Request_t>;
+	using HttpResponseCallback_t = std::function<void(Streambuf_t&, Response_t&)>;
+
+private:
 	CNetwork() = default;
 	~CNetwork();
 
@@ -94,6 +106,11 @@ private: // variables
 	std::chrono::steady_clock::duration m_HeartbeatInterval;
 	std::multimap<WsEvent, WsEventCallback_t> m_EventMap;
 
+	std::unordered_map<
+		std::string, 
+		std::queue<std::tuple<SharedRequest_t, HttpResponseCallback_t>>> 
+		m_PathRateLimit;
+
 private: // functions
 	bool WsConnect();
 	void WsDisconnect();
@@ -104,13 +121,15 @@ private: // functions
 	void DoHeartbeat(boost::system::error_code ec);
 
 
-	using SharedStreambuf_t = std::shared_ptr<beast::streambuf>;
-	using SharedResponse_t = std::shared_ptr<beast::http::response<beast::http::streambuf_body>>;
-	using HttpReadResponseCallback_t = std::function<void(SharedStreambuf_t, SharedResponse_t)>;
-
-	void HttpWriteRequest(std::string const &method,
-		std::string const &url, std::string const &content, std::function<void()> &&callback);
-	void HttpReadResponse(HttpReadResponseCallback_t &&callback);
+	SharedRequest_t HttpPrepareRequest(std::string const &method,
+		std::string const &url, std::string const &content);
+	void HttpWriteRequest(SharedRequest_t request,
+		HttpResponseCallback_t &&callback);
+	void HttpSendRequest(std::string const &method,
+		std::string const &url, std::string const &content, 
+		HttpResponseCallback_t &&callback);
+	void HttpSendRequest(SharedRequest_t request,
+		HttpResponseCallback_t &&callback);
 
 public: // functions
 	void Initialize(std::string &&token);
