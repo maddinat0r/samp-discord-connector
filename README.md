@@ -35,7 +35,7 @@ Build instruction
 *Note*: The plugin has to be a 32-bit library; that means all required libraries have to be compiled in 32-bit and the compiler has to support 32-bit.
 #### Windows
 1. install a C++ compiler of your choice
-3. install the [Boost libraries (version 1.59 or higher)](http://www.boost.org/users/download/)
+3. install the [Boost libraries (version 1.62)](http://www.boost.org/users/download/)
 4. install [CMake](http://www.cmake.org/)
 5. clone this repository recursively
 6. create a folder named `build` and execute CMake in there
@@ -43,7 +43,7 @@ Build instruction
 
 #### Linux
 1. install a C++ compiler of your choice
-3. install the [Boost libraries (version 1.59 or higher)](http://www.boost.org/users/download/)
+3. install the [Boost libraries (version 1.62)](http://www.boost.org/users/download/)
 4. install [CMake](http://www.cmake.org/)
 5. clone this repository recursively
 6. create a folder named `build` and execute CMake in there (`mkdir build && cd build && cmake ..`)
