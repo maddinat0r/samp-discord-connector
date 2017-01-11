@@ -334,7 +334,15 @@ void CNetwork::DoHeartbeat(boost::system::error_code ec)
 		{ "op", 1 },
 		{ "d", m_SequenceNumber }
 	};
-	m_WebSocket.write(asio::buffer(heartbeat_payload.dump()));
+
+	boost::system::error_code error_code;
+	m_WebSocket.write(asio::buffer(heartbeat_payload.dump()), error_code);
+	if (error_code)
+	{
+		CLog::Get()->Log(LogLevel::ERROR, "Heartbeat write error: {} ({})",
+			ec.message(), ec.value());
+		return;
+	}
 
 	CLog::Get()->Log(LogLevel::DEBUG, "sending heartbeat");
 
