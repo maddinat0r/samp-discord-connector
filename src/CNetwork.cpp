@@ -227,19 +227,26 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 
 	if (ec)
 	{
-		if (ec == boost::asio::ssl::error::stream_errors::stream_truncated)
+		switch (ec.category)
 		{
-			CLog::Get()->Log(LogLevel::INFO, 
-				"Discord terminated websocket gateway connection, attempting reconnect...");
-			WsReconnect();
-			WsRead();
+			case boost::asio::ssl::error::stream_errors::stream_truncated:
+				CLog::Get()->Log(LogLevel::INFO,
+					"Discord terminated websocket gateway connection, attempting reconnect...");
+				WsReconnect();
+				WsRead();
+				break;
+			case boost::asio::error::operation_aborted:
+				// connection was closed, do nothing
+				break;
+			default:
+				CLog::Get()->Log(LogLevel::ERROR, "Can't read from Discord websocket gateway: {} ({})",
+					ec.message(), ec.value());
+				CLog::Get()->Log(LogLevel::INFO,
+					"websocket gateway connection terminated, attempting reconnect...");
+				WsReconnect();
+				WsRead();
+				break;
 		}
-		else
-		{
-			CLog::Get()->Log(LogLevel::ERROR, "Can't read from Discord websocket gateway: {} ({})",
-				ec.message(), ec.value());
-		}
-
 		return;
 	}
 
@@ -332,8 +339,16 @@ void CNetwork::DoHeartbeat(boost::system::error_code ec)
 
 	if (ec)
 	{
-		CLog::Get()->Log(LogLevel::ERROR, "Heartbeat error: {} ({})",
-			ec.message(), ec.value());
+		switch (ec.category)
+		{
+			case boost::asio::error::operation_aborted:
+				// timer was chancelled, do nothing
+				break;
+			default:
+				CLog::Get()->Log(LogLevel::ERROR, "Heartbeat error: {} ({})",
+					ec.message(), ec.value());
+				break;
+		}
 		return;
 	}
 
