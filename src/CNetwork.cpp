@@ -227,8 +227,18 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 
 	if (ec)
 	{
-		CLog::Get()->Log(LogLevel::ERROR, "Can't read from Discord websocket gateway: {} ({})",
-			ec.message(), ec.value());
+		if (ec == boost::asio::ssl::error::stream_errors::stream_truncated)
+		{
+			CLog::Get()->Log(LogLevel::INFO, 
+				"Discord terminated websocket gateway connection, attempting reconnect...");
+			WsReconnect();
+			WsRead();
+		}
+		else
+		{
+			CLog::Get()->Log(LogLevel::ERROR, "Can't read from Discord websocket gateway: {} ({})",
+				ec.message(), ec.value());
+		}
 
 		return;
 	}
@@ -303,10 +313,7 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 			}
 		} break;
 		case 7: // reconnect
-			WsDisconnect();
-			WsConnect();
-			WsSendResumePayload();
-			DoHeartbeat({ });
+			WsReconnect();
 			break;
 		case 9: // invalid session
 			WsIdentify();

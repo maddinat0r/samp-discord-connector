@@ -119,6 +119,13 @@ private: // functions
 	void WsRead();
 	void OnWsRead(boost::system::error_code ec);
 	void DoHeartbeat(boost::system::error_code ec);
+	void WsReconnect()
+	{
+		WsDisconnect();
+		WsConnect();
+		WsSendResumePayload();
+		DoHeartbeat({ });
+	}
 
 
 	SharedRequest_t HttpPrepareRequest(std::string const &method,
