@@ -10,6 +10,8 @@
 
 void CNetwork::Initialize(std::string &&token)
 {
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::Initialize");
+
 	m_Token = std::move(token);
 	m_HttpsStream.set_verify_mode(asio::ssl::verify_none);
 
@@ -80,6 +82,8 @@ void CNetwork::Initialize(std::string &&token)
 
 CNetwork::~CNetwork()
 {
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::~CNetwork");
+
 	WsDisconnect();
 	if (m_IoThread)
 	{
@@ -91,6 +95,8 @@ CNetwork::~CNetwork()
 
 bool CNetwork::WsConnect()
 {
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::WsConnect");
+
 	asio::ip::tcp::resolver r{ m_IoService };
 	boost::system::error_code error;
 	auto target = r.resolve({ m_GatewayUrl, "https" }, error);
@@ -133,6 +139,8 @@ bool CNetwork::WsConnect()
 
 void CNetwork::WsDisconnect()
 {
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::WsDisconnect");
+
 	boost::system::error_code error;
 	m_WebSocket.close(beast::websocket::close_code::normal, error);
 	if (error)
@@ -162,6 +170,8 @@ void CNetwork::WsDisconnect()
 
 void CNetwork::WsIdentify()
 {
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::WsIdentify");
+
 #ifdef WIN32
 	std::string os_name = "Windows";
 #else
@@ -190,6 +200,8 @@ void CNetwork::WsIdentify()
 
 void CNetwork::WsSendResumePayload()
 {
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::WsSendResumePayload");
+
 	json resume_payload = {
 		{ "op", 6 },
 		{ "d", {
@@ -203,12 +215,16 @@ void CNetwork::WsSendResumePayload()
 
 void CNetwork::WsRead()
 {
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::WsRead");
+
 	m_WebSocket.async_read(m_WebSocketOpcode, m_WebSocketBuffer,
 		std::bind(&CNetwork::OnWsRead, this, std::placeholders::_1));
 }
 
 void CNetwork::OnWsRead(boost::system::error_code ec)
 {
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::OnWsRead");
+
 	if (ec)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Can't read from Discord websocket gateway: {} ({})",
@@ -305,6 +321,8 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 
 void CNetwork::DoHeartbeat(boost::system::error_code ec)
 {
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::DoHeartbeat");
+
 	if (ec)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Heartbeat error: {} ({})",
@@ -318,6 +336,8 @@ void CNetwork::DoHeartbeat(boost::system::error_code ec)
 	};
 	m_WebSocket.write(asio::buffer(heartbeat_payload.dump()));
 
+	CLog::Get()->Log(LogLevel::DEBUG, "sending heartbeat");
+
 	m_HeartbeatTimer.expires_from_now(m_HeartbeatInterval);
 	m_HeartbeatTimer.async_wait(std::bind(&CNetwork::DoHeartbeat, this, std::placeholders::_1));
 }
@@ -325,6 +345,8 @@ void CNetwork::DoHeartbeat(boost::system::error_code ec)
 CNetwork::SharedRequest_t CNetwork::HttpPrepareRequest(std::string const &method,
 	std::string const &url, std::string const &content)
 {
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpPrepareRequest");
+
 	auto req = std::make_shared<beast::http::request<beast::http::string_body>>();
 	req->method = method;
 	req->url = "/api" + url;
@@ -342,6 +364,8 @@ CNetwork::SharedRequest_t CNetwork::HttpPrepareRequest(std::string const &method
 
 void CNetwork::HttpWriteRequest(SharedRequest_t request, HttpResponseCallback_t &&callback)
 {
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpWriteRequest");
+
 	boost::system::error_code error_code;
 	beast::http::write(m_HttpsStream, *request, error_code);
 	if (error_code)
@@ -417,6 +441,8 @@ void CNetwork::HttpWriteRequest(SharedRequest_t request, HttpResponseCallback_t 
 void CNetwork::HttpSendRequest(std::string const &method,
 	std::string const &url, std::string const &content, HttpResponseCallback_t &&callback)
 {
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpSendRequest");
+
 	SharedRequest_t req = HttpPrepareRequest(method, url, content);
 	m_IoService.dispatch([this, req, callback]() mutable
 	{
@@ -426,6 +452,8 @@ void CNetwork::HttpSendRequest(std::string const &method,
 
 void CNetwork::HttpSendRequest(SharedRequest_t request, HttpResponseCallback_t &&callback)
 {
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpSendRequest (actual send)");
+
 	// check if this URL path is currently rate-limited
 	auto it = m_PathRateLimit.find(request->url);
 	if (it != m_PathRateLimit.end())
@@ -442,6 +470,8 @@ void CNetwork::HttpSendRequest(SharedRequest_t request, HttpResponseCallback_t &
 
 void CNetwork::HttpGet(std::string const &url, HttpGetCallback_t &&callback)
 {
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpGet");
+
 	HttpSendRequest("GET", url, "", [callback](Streambuf_t &sb, Response_t &resp)
 	{
 		callback({ resp.status, resp.reason, beast::to_string(resp.body.data()),
@@ -451,5 +481,7 @@ void CNetwork::HttpGet(std::string const &url, HttpGetCallback_t &&callback)
 
 void CNetwork::HttpPost(std::string const &url, std::string const &content)
 {
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpPost");
+
 	HttpSendRequest("POST", url, content, nullptr);
 }
