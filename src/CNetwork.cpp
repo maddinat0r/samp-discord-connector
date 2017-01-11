@@ -227,7 +227,7 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 
 	if (ec)
 	{
-		switch (ec.category)
+		switch (ec.value())
 		{
 			case boost::asio::ssl::error::stream_errors::stream_truncated:
 				CLog::Get()->Log(LogLevel::INFO,
@@ -339,7 +339,7 @@ void CNetwork::DoHeartbeat(boost::system::error_code ec)
 
 	if (ec)
 	{
-		switch (ec.category)
+		switch (ec.value())
 		{
 			case boost::asio::error::operation_aborted:
 				// timer was chancelled, do nothing
