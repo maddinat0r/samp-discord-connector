@@ -366,10 +366,10 @@ CNetwork::SharedRequest_t CNetwork::HttpPrepareRequest(std::string const &method
 	req->method = method;
 	req->url = "/api" + url;
 	req->version = 11;
-	req->headers.replace("Host", "discordapp.com");
+	req->fields.replace("Host", "discordapp.com");
 	if (!content.empty())
-		req->headers.replace("Content-Type", "application/json");
-	req->headers.replace("Authorization", "Bot " + m_Token);
+		req->fields.replace("Content-Type", "application/json");
+	req->fields.replace("Authorization", "Bot " + m_Token);
 	req->body = content;
 
 	beast::http::prepare(*req);
@@ -402,13 +402,13 @@ void CNetwork::HttpWriteRequest(SharedRequest_t request, HttpResponseCallback_t 
 		return;
 	}
 
-	auto it = response.headers.find("X-RateLimit-Remaining");
-	if (it != response.headers.end())
+	auto it = response.fields.find("X-RateLimit-Remaining");
+	if (it != response.fields.end())
 	{
 		if (it->second == "0")
 		{
-			it = response.headers.find("X-RateLimit-Reset");
-			if (it != response.headers.end())
+			it = response.fields.find("X-RateLimit-Reset");
+			if (it != response.fields.end())
 			{
 				std::string limited_url = request->url;
 				m_PathRateLimit.insert({ limited_url, std::queue<std::tuple<SharedRequest_t, HttpResponseCallback_t>>() }).first->second;
