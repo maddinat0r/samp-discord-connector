@@ -25,14 +25,14 @@ before_install:
   - sudo apt-get -yq --no-install-suggests --no-install-recommends --force-yes install libssl-dev:i386
   - sudo apt-get -yq --force-yes remove libssl-dev libssl
   
-  - wget "https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.sh"
-  - sudo sh cmake-3.6.3-Linux-x86_64.sh --exclude-subdir --prefix=/usr
+  - wget "https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.sh"
+  - sudo sh cmake-3.7.2-Linux-x86_64.sh --exclude-subdir --prefix=/usr
   
-  - wget "http://sourceforge.net/projects/boost/files/boost/1.59.0/boost_1_59_0.tar.gz"
-  - tar xzf boost_1_59_0.tar.gz
+  - wget "http://sourceforge.net/projects/boost/files/boost/1.62.0/boost_1_62_0.tar.gz"
+  - tar xzf boost_1_62_0.tar.gz
 
 install:
-  - cd boost_1_59_0/
+  - cd boost_1_62_0/
   - if [ ! -f "b2" ]; then sudo bash bootstrap.sh --prefix=/usr/local --with-libraries=system; fi
   - sudo ./b2 variant=${BUILD_TYPE,,} link=static threading=multi address-model=32 runtime-link=shared -j2 -d0 install
   - cd ..
