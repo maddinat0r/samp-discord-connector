@@ -3,8 +3,8 @@ image: Visual Studio 2015
 
 configuration:
     # OpenSSL static libs are not compiled with msvc14
-    #- Debug 
     # links to dynamic OpenSSL libs
+    - Debug
     - Release
 
 platform: x86
@@ -12,14 +12,14 @@ platform: x86
 clone_depth: 1
 
 environment:
-    BOOST_ROOT: C:\Libraries\boost_1_59_0
-    BOOST_LIBRARYDIR: C:\Libraries\boost_1_59_0\lib32-msvc-14.0
+    BOOST_ROOT: C:\Libraries\boost_1_62_0
+    BOOST_LIBRARYDIR: C:\Libraries\boost_1_62_0\lib32-msvc-14.0
 
 install:
     - git submodule update --init --recursive
 
 before_build:
-    - cmake . -G "Visual Studio 14 2015" -DBOOST_ROOT="%BOOST_ROOT%" -DBOOST_LIBRARYDIR="%BOOST_LIBRARYDIR%"
+    - cmake . -G "Visual Studio 14 2015" -DOPENSSL_USE_STATIC_LIBS=OFF -DBOOST_ROOT="%BOOST_ROOT%" -DBOOST_LIBRARYDIR="%BOOST_LIBRARYDIR%"
 build_script:
     - cmake --build . --config %CONFIGURATION%
     - cmake --build . --config %CONFIGURATION% --target package

@@ -13,7 +13,9 @@ if(UNIX)
 endif()
 
 
-set(OPENSSL_USE_STATIC_LIBS ON)
+if(NOT DEFINED OPENSSL_USE_STATIC_LIBS)
+	set(OPENSSL_USE_STATIC_LIBS ON)
+endif()
 find_package(OpenSSL REQUIRED)
 
 
