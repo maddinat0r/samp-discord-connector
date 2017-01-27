@@ -1,15 +1,17 @@
 /**********************************************************************/
 /* This is a simple FilterScript can handle the Coming Discord Plugin */
+/* Created By Yaa for be used in maddinat0r discord plugin 
 /**********************************************************************/
 
 #include <a_samp>
 #include <discord-connector>
+#define Invitaion ""
 
 new DCC_Channel:general;
 
 public OnFilterScriptInit()
 {
-    DCC_Connect("https://discordapp.com/invite/qFq3gVw");
+    DCC_Connect(Invitaion);
     general = DCC_FindChannelByName("general");
     print(">> Discord FilterScript has been Loaded.");
     return 1;
