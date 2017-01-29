@@ -126,7 +126,7 @@ bool CNetwork::WsConnect()
 	}
 
 	error.clear();
-	m_WebSocket.handshake(m_GatewayUrl, "/", error);
+	m_WebSocket.handshake(m_GatewayUrl, "/?encoding=json&v=5", error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Can't upgrade to WSS protocol: {} ({})",
@@ -182,7 +182,6 @@ void CNetwork::WsIdentify()
 		{ "op", 2 },
 		{ "d",{
 			{ "token", m_Token },
-			{ "v", 5 },
 			{ "compress", false },
 			{ "large_threshold", 100 },
 			{ "properties",{
