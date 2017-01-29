@@ -300,11 +300,7 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 				switch (event)
 				{
 					case WsEvent::READY:
-						m_HeartbeatInterval = std::chrono::milliseconds(data["heartbeat_interval"]);
-						m_SessionId = data["session_id"];
-
-						// start heartbeat
-						DoHeartbeat({ });
+						m_SessionId = data["session_id"].get<std::string>();
 						break;
 				}
 
@@ -323,6 +319,14 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 			break;
 		case 9: // invalid session
 			WsIdentify();
+			break;
+		case 10: // hello
+			// start heartbeat
+			m_HeartbeatInterval = std::chrono::milliseconds(result["d"]["heartbeat_interval"]);
+			DoHeartbeat({ });
+			break;
+		case 11: // heartbeat ACK
+			CLog::Get()->Log(LogLevel::DEBUG, "heartbeat ACK");
 			break;
 		default:
 			CLog::Get()->Log(LogLevel::WARNING, "Unhandled payload opcode '{}'", payload_opcode);
