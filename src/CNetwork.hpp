@@ -6,7 +6,7 @@
 #include <string>
 #include <map>
 #include <unordered_map>
-#include <queue>
+#include <deque>
 #include <tuple>
 #include <functional>
 #include <memory>
@@ -108,7 +108,7 @@ private: // variables
 
 	std::unordered_map<
 		std::string, 
-		std::queue<std::tuple<SharedRequest_t, HttpResponseCallback_t>>> 
+		std::deque<std::tuple<SharedRequest_t, HttpResponseCallback_t>>> 
 		m_PathRateLimit;
 
 private: // functions

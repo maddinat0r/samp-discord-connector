@@ -3,6 +3,7 @@
 
 #include <beast/core/to_string.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <boost/asio/system_timer.hpp>
 
 #include <unordered_map>
 #include <functional>
@@ -425,35 +426,51 @@ void CNetwork::HttpWriteRequest(SharedRequest_t request, HttpResponseCallback_t 
 	{
 		if (it->second == "0")
 		{
+			std::string limited_url = request->url;
+			auto lit = m_PathRateLimit.find(limited_url);
+			if (lit != m_PathRateLimit.end())
+			{
+				// we sent the message to early, we're still rate-limited
+				// hack in that message back into the queue and wait a little bit
+				lit->second.push_front(std::make_tuple(request, std::move(callback)));
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+				return;
+			}
+
 			it = response.fields.find("X-RateLimit-Reset");
 			if (it != response.fields.end())
 			{
-				std::string limited_url = request->url;
-				m_PathRateLimit.insert({ limited_url, std::queue<std::tuple<SharedRequest_t, HttpResponseCallback_t>>() }).first->second;
+				std::chrono::system_clock::time_point current_time = std::chrono::system_clock::now();
+				CLog::Get()->Log(LogLevel::DEBUG, "rate-limiting path {} until {} (current time: {})",
+					request->url, it->second, std::chrono::duration_cast<std::chrono::seconds>(current_time.time_since_epoch()).count());
+				m_PathRateLimit.insert({ limited_url, decltype(m_PathRateLimit)::mapped_type() }).first->second;
 
 				string const &reset_time_str = it->second;
 				long long reset_time_secs = 0;
 				boost::spirit::qi::parse(reset_time_str.begin(), reset_time_str.end(),
 					boost::spirit::qi::any_int_parser<long long>(),
 					reset_time_secs);
-				std::chrono::system_clock::time_point reset_time{ std::chrono::seconds(reset_time_secs) };
-				auto duration = std::chrono::duration_cast<std::chrono::seconds>(
-					reset_time - std::chrono::system_clock::now()) + std::chrono::seconds(1);
-				auto timer = std::make_shared<asio::steady_timer>(m_IoService, duration);
+				std::chrono::system_clock::time_point reset_time{ std::chrono::seconds(reset_time_secs) + std::chrono::seconds(1) };
+				auto timer = std::make_shared<asio::system_timer>(m_IoService, reset_time);
 				timer->async_wait([timer, this, limited_url](const boost::system::error_code &ec)
 				{
 					if (ec)
 						return;
 
+					CLog::Get()->Log(LogLevel::DEBUG, "removing rate-limit on path {}", limited_url);
+
 					auto it = m_PathRateLimit.find(limited_url);
 					if (it == m_PathRateLimit.end())
+					{
+						CLog::Get()->Log(LogLevel::ERROR, "attempted to remove rate-limit on path {}, but it doesn't exist", limited_url);
 						return; // ????
+					}
 
 					auto &query = it->second;
 					while (!query.empty())
 					{
 						auto req_data = query.front();
-						query.pop();
+						query.pop_front();
 						m_IoService.post([this, req_data]() mutable
 						{
 							HttpSendRequest(std::get<0>(req_data), std::move(std::get<1>(req_data)));
@@ -485,14 +502,13 @@ void CNetwork::HttpSendRequest(std::string const &method,
 
 void CNetwork::HttpSendRequest(SharedRequest_t request, HttpResponseCallback_t &&callback)
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpSendRequest (actual send)");
-
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpSendRequest({}) (actual send)", request->url);
 	// check if this URL path is currently rate-limited
 	auto it = m_PathRateLimit.find(request->url);
 	if (it != m_PathRateLimit.end())
 	{
 		// yes, it is; queue request
-		it->second.push(std::make_tuple(request, std::move(callback)));
+		it->second.push_back(std::make_tuple(request, std::move(callback)));
 	}
 	else
 	{
