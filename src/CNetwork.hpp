@@ -114,6 +114,7 @@ private: // variables
 private: // functions
 	bool HttpConnect();
 	void HttpDisconnect();
+	void HttpReconnectRetry(SharedRequest_t request, HttpResponseCallback_t &&callback);
 
 	bool WsConnect();
 	void WsDisconnect();

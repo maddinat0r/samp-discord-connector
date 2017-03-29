@@ -428,6 +428,24 @@ CNetwork::SharedRequest_t CNetwork::HttpPrepareRequest(std::string const &method
 	return req;
 }
 
+void CNetwork::HttpReconnectRetry(SharedRequest_t request, HttpResponseCallback_t &&callback)
+{
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpReconnectRetry");
+
+	CLog::Get()->Log(LogLevel::INFO, "trying reconnect...");
+
+	HttpDisconnect();
+	if (HttpConnect())
+	{
+		CLog::Get()->Log(LogLevel::INFO, "reconnect succeeded, resending request");
+		HttpSendRequest(request, std::move(callback));
+	}
+	else
+	{
+		CLog::Get()->Log(LogLevel::WARNING, "reconnect failed, discarding request");
+	}
+}
+
 void CNetwork::HttpWriteRequest(SharedRequest_t request, HttpResponseCallback_t &&callback)
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpWriteRequest");
@@ -438,6 +456,7 @@ void CNetwork::HttpWriteRequest(SharedRequest_t request, HttpResponseCallback_t 
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Error while sending HTTP {} request to '{}': {}",
 			request->method, request->url, error_code.message());
+		HttpReconnectRetry(request, std::move(callback));
 		return;
 	}
 
@@ -450,6 +469,7 @@ void CNetwork::HttpWriteRequest(SharedRequest_t request, HttpResponseCallback_t 
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Error while retrieving HTTP response: {}",
 			error_code.message());
+		HttpReconnectRetry(request, std::move(callback));
 		return;
 	}
 
