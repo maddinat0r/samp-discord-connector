@@ -1,5 +1,6 @@
 #include "CNetwork.hpp"
 #include "CLog.hpp"
+#include "version.hpp"
 
 #include <beast/core/to_string.hpp>
 #include <boost/spirit/include/qi.hpp>
@@ -383,9 +384,10 @@ CNetwork::SharedRequest_t CNetwork::HttpPrepareRequest(std::string const &method
 
 	auto req = std::make_shared<beast::http::request<beast::http::string_body>>();
 	req->method = method;
-	req->url = "/api" + url;
+	req->url = "/api/v5" + url;
 	req->version = 11;
 	req->fields.replace("Host", "discordapp.com");
+	req->fields.replace("User-Agent", "DiscordBot (github.com/maddinat0r/samp-discord-connector, " PLUGIN_VERSION ")");
 	if (!content.empty())
 		req->fields.replace("Content-Type", "application/json");
 	req->fields.replace("Authorization", "Bot " + m_Token);
