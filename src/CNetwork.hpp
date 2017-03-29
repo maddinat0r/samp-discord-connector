@@ -112,6 +112,9 @@ private: // variables
 		m_PathRateLimit;
 
 private: // functions
+	bool HttpConnect();
+	void HttpDisconnect();
+
 	bool WsConnect();
 	void WsDisconnect();
 	void WsIdentify();

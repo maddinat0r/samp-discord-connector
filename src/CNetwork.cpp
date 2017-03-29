@@ -17,38 +17,8 @@ void CNetwork::Initialize(std::string &&token)
 	m_Token = std::move(token);
 	m_HttpsStream.set_verify_mode(asio::ssl::verify_none);
 
-	// connect to REST API
-	asio::ip::tcp::resolver r{ m_IoService };
-	boost::system::error_code error;
-	auto target = r.resolve({ "discordapp.com", "https" }, error);
-	if (error)
-	{
-		CLog::Get()->Log(LogLevel::ERROR, "Can't resolve Discord API URL: {} ({})",
-			error.message(), error.value());
-		CSingleton::Destroy();
+	if (!HttpConnect())
 		return;
-	}
-
-	error.clear();
-	asio::connect(m_HttpsStream.lowest_layer(), target, error);
-	if (error)
-	{
-		CLog::Get()->Log(LogLevel::ERROR, "Can't connect to Discord API: {} ({})",
-			error.message(), error.value());
-		CSingleton::Destroy();
-		return;
-	}
-
-	// SSL handshake
-	error.clear();
-	m_HttpsStream.handshake(asio::ssl::stream_base::client, error);
-	if (error)
-	{
-		CLog::Get()->Log(LogLevel::ERROR, "Can't establish secured connection to Discord API: {} ({})",
-			error.message(), error.value());
-		CSingleton::Destroy();
-		return;
-	}
 
 	// retrieve WebSocket host URL
 	HttpGet("/gateway", [this](HttpGetResponse res)
@@ -86,12 +56,72 @@ CNetwork::~CNetwork()
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::~CNetwork");
 
+	HttpDisconnect();
 	WsDisconnect();
+
 	if (m_IoThread)
 	{
 		m_IoThread->join();
 		delete m_IoThread;
 		m_IoThread = nullptr;
+	}
+}
+
+bool CNetwork::HttpConnect()
+{
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpConnect");
+
+	// connect to REST API
+	asio::ip::tcp::resolver r{ m_IoService };
+	boost::system::error_code error;
+	auto target = r.resolve({ "discordapp.com", "https" }, error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::ERROR, "Can't resolve Discord API URL: {} ({})",
+			error.message(), error.value());
+		return false;
+	}
+
+	error.clear();
+	asio::connect(m_HttpsStream.lowest_layer(), target, error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::ERROR, "Can't connect to Discord API: {} ({})",
+			error.message(), error.value());
+		return false;
+	}
+
+	// SSL handshake
+	error.clear();
+	m_HttpsStream.handshake(asio::ssl::stream_base::client, error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::ERROR, "Can't establish secured connection to Discord API: {} ({})",
+			error.message(), error.value());
+		return false;
+	}
+
+	return true;
+}
+
+void CNetwork::HttpDisconnect()
+{
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpDisconnect");
+
+	boost::system::error_code error;
+	m_HttpsStream.lowest_layer().shutdown(asio::ip::tcp::socket::shutdown_both, error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::WARNING, "Error while shutting down HTTP connection: {} ({})",
+			error.message(), error.value());
+	}
+
+	error.clear();
+	m_HttpsStream.lowest_layer().close(error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::WARNING, "Error while closing HTTP connection: {} ({})",
+			error.message(), error.value());
 	}
 }
 
