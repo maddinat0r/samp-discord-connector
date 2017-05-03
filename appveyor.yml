@@ -12,8 +12,8 @@ platform: x86
 clone_depth: 1
 
 environment:
-    BOOST_ROOT: C:\Libraries\boost_1_62_0
-    BOOST_LIBRARYDIR: C:\Libraries\boost_1_62_0\lib32-msvc-14.0
+    BOOST_ROOT: C:/Libraries/boost_1_62_0
+    BOOST_LIBRARYDIR: C:/Libraries/boost_1_62_0/lib32-msvc-14.0
 
 install:
     - git submodule update --init --recursive
