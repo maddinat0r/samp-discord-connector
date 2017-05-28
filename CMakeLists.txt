@@ -20,7 +20,7 @@ find_package(OpenSSL REQUIRED)
 
 
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.58 QUIET COMPONENTS system)
+find_package(Boost 1.62.0 QUIET COMPONENTS system)
 
 if(NOT Boost_FOUND)
 	set(BOOST_ROOT "${BOOST_ROOT}" CACHE PATH "Set the Boost root folder.")

@@ -19,12 +19,63 @@ enum E_LOGLEVEL
 	INFO = 2,
 	WARNING = 4,
 	ERROR = 8,
-	
+
 	ALL = ERROR | WARNING | INFO | DEBUG
 };
 #endif
 
+// callbacks
+forward DCC_OnChannelMessage(DCC_Channel:channel, const author[], const message[]);
 
+// Command Controller
+
+#define COMMAND_PREFIX '@'
+
+#define DCCMD:%1(%2) \
+	forward dccmd_%1(%2); \
+	public dccmd_%1(%2)
+
+#define dccmd(%1,%2,%3) \
+	DCCMD:%1(%2, %3)
+
+#if !defined isnull
+	#define isnull(%1) \
+		((!(%1[0])) || (((%1[0]) == '\1') && (!(%1[1]))))
+#endif
+
+public DCC_OnChannelMessage(DCC_Channel:channel, const author[], const message[])
+{
+    if(message[0] == COMMAND_PREFIX)
+	{
+		new function[32], pos = 0;
+		while (message[++pos] > ' ')
+		{
+			function[pos - 1] = tolower(message[pos]);
+			if (pos > (sizeof(function) - 1))
+			{
+				break;
+			}
+		} 
+		format(function, sizeof(function), "dccmd_%s", function);
+        while (message[pos] == ' ')
+		{
+			pos++;
+		}
+        CallLocalFunction(function, "ss", author, message[pos]);
+	}
+    else
+    {
+        printf("Discord_OnChannelMessage: Author: %s Message: %s", author, message);
+    }
+    return 1;
+}
+
+#if defined _ALS_DCC_OnChannelMessage
+	#undef DCC_OnChannelMessage
+#else
+	#define _ALS_DCC_OnChannelMessage
+#endif
+#define DCC_OnChannelMessage _ALS_DCC_OnChannelMessage
 
 // natives
 native DCC_Connect(const bot_token[]);
@@ -38,7 +89,3 @@ native DCC_GetChannelId(DCC_Channel:channel, dest[], max_size = sizeof dest);
 native DCC_GetChannelTopic(DCC_Channel:channel, dest[], max_size = sizeof dest);
 
 native DCC_SendChannelMessage(DCC_Channel:channel, const message[]);
-
-
-// callbacks
-forward DCC_OnChannelMessage(DCC_Channel:channel, const author[], const message[]);
