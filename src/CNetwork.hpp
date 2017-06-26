@@ -13,6 +13,7 @@
 #include <thread>
 #include <chrono>
 #include <json.hpp>
+#include <beast/core.hpp>
 #include <beast/http.hpp>
 #include <beast/websocket.hpp>
 #include <beast/websocket/ssl.hpp>
@@ -33,7 +34,7 @@ class CNetwork : public CSingleton<CNetwork>
 public:
 	struct HttpGetResponse
 	{
-		int status;
+		unsigned int status;
 		std::string reason;
 		std::string body;
 		std::string additional_data;
@@ -77,10 +78,10 @@ public:
 	using WsEventCallback_t = std::function<void(json &)>;
 
 private:
-	using Streambuf_t = beast::streambuf;
-	using SharedStreambuf_t = std::shared_ptr<beast::streambuf>;
-	using Response_t = beast::http::response<beast::http::streambuf_body>;
-	using SharedResponse_t = std::shared_ptr<beast::http::response<beast::http::streambuf_body>>;
+	using Streambuf_t = beast::flat_buffer;
+	using SharedStreambuf_t = std::shared_ptr<Streambuf_t>;
+	using Response_t = beast::http::response<beast::http::dynamic_body>;
+	using SharedResponse_t = std::shared_ptr<Response_t>;
 	using Request_t = beast::http::request<beast::http::string_body>;
 	using SharedRequest_t = std::shared_ptr<Request_t>;
 	using HttpResponseCallback_t = std::function<void(Streambuf_t&, Response_t&)>;
@@ -97,7 +98,7 @@ private: // variables
 	asio::ssl::stream<asio::ip::tcp::socket> m_WssStream{ m_IoService, m_SslContext };
 	beast::websocket::stream<decltype(m_WssStream)&> m_WebSocket{ m_WssStream };
 
-	beast::streambuf m_WebSocketBuffer;
+	beast::multi_buffer m_WebSocketBuffer;
 	beast::websocket::opcode m_WebSocketOpcode;
 
 	std::string m_GatewayUrl;
@@ -134,11 +135,11 @@ private: // functions
 	}
 
 
-	SharedRequest_t HttpPrepareRequest(std::string const &method,
+	SharedRequest_t HttpPrepareRequest(beast::http::verb const method,
 		std::string const &url, std::string const &content);
 	void HttpWriteRequest(SharedRequest_t request,
 		HttpResponseCallback_t &&callback);
-	void HttpSendRequest(std::string const &method,
+	void HttpSendRequest(beast::http::verb const method,
 		std::string const &url, std::string const &content, 
 		HttpResponseCallback_t &&callback);
 	void HttpSendRequest(SharedRequest_t request,

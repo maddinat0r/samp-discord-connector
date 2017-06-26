@@ -2,7 +2,6 @@
 #include "CLog.hpp"
 #include "version.hpp"
 
-#include <beast/core/to_string.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/asio/system_timer.hpp>
 
@@ -15,7 +14,6 @@ void CNetwork::Initialize(std::string &&token)
 	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::Initialize");
 
 	m_Token = std::move(token);
-	m_HttpsStream.set_verify_mode(asio::ssl::verify_none);
 
 	if (!HttpConnect())
 		return;
@@ -36,8 +34,6 @@ void CNetwork::Initialize(std::string &&token)
 		size_t protocol_pos = m_GatewayUrl.find("wss://");
 		if (protocol_pos != std::string::npos)
 			m_GatewayUrl.erase(protocol_pos, 6); // 6 = length of "wss://"
-
-		m_WssStream.set_verify_mode(asio::ssl::verify_none);
 
 		if (!WsConnect())
 			return;
@@ -93,6 +89,7 @@ bool CNetwork::HttpConnect()
 
 	// SSL handshake
 	error.clear();
+	m_HttpsStream.set_verify_mode(asio::ssl::verify_none); // TODO error check
 	m_HttpsStream.handshake(asio::ssl::stream_base::client, error);
 	if (error)
 	{
@@ -109,8 +106,16 @@ void CNetwork::HttpDisconnect()
 	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpDisconnect");
 
 	boost::system::error_code error;
+	m_HttpsStream.shutdown(error);
+	if (error && error != boost::asio::error::eof)
+	{
+		CLog::Get()->Log(LogLevel::WARNING, "Error while shutting down SSL on HTTP connection: {} ({})",
+			error.message(), error.value());
+	}
+
+	error.clear();
 	m_HttpsStream.lowest_layer().shutdown(asio::ip::tcp::socket::shutdown_both, error);
-	if (error)
+	if (error && error != boost::asio::error::eof)
 	{
 		CLog::Get()->Log(LogLevel::WARNING, "Error while shutting down HTTP connection: {} ({})",
 			error.message(), error.value());
@@ -149,6 +154,7 @@ bool CNetwork::WsConnect()
 	}
 
 	error.clear();
+	m_WssStream.set_verify_mode(asio::ssl::verify_none); // TODO error check
 	m_WssStream.handshake(asio::ssl::stream_base::client, error);
 	if (error)
 	{
@@ -178,6 +184,14 @@ void CNetwork::WsDisconnect()
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::WARNING, "Error while sending WS close frame: {} ({})",
+			error.message(), error.value());
+	}
+
+	error.clear();
+	m_WssStream.shutdown(error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::WARNING, "Error while shutting down SSL on WS connection: {} ({})",
 			error.message(), error.value());
 	}
 
@@ -280,8 +294,10 @@ void CNetwork::OnWsRead(boost::system::error_code ec)
 		}
 		return;
 	}
-
-	json result = json::parse(beast::to_string(m_WebSocketBuffer.data()));
+	
+	std::stringstream ss;
+	ss << beast::buffers(m_WebSocketBuffer.data());
+	json result = json::parse(ss.str());
 	m_WebSocketBuffer.consume(m_WebSocketBuffer.size());
 	CLog::Get()->Log(LogLevel::DEBUG, "OnWsRead: {}", result.dump(4));
 
@@ -380,6 +396,7 @@ void CNetwork::DoHeartbeat(boost::system::error_code ec)
 		{
 			case boost::asio::error::operation_aborted:
 				// timer was chancelled, do nothing
+				CLog::Get()->Log(LogLevel::DEBUG, "heartbeat timer chancelled");
 				break;
 			default:
 				CLog::Get()->Log(LogLevel::ERROR, "Heartbeat error: {} ({})",
@@ -409,23 +426,23 @@ void CNetwork::DoHeartbeat(boost::system::error_code ec)
 	m_HeartbeatTimer.async_wait(std::bind(&CNetwork::DoHeartbeat, this, std::placeholders::_1));
 }
 
-CNetwork::SharedRequest_t CNetwork::HttpPrepareRequest(std::string const &method,
+CNetwork::SharedRequest_t CNetwork::HttpPrepareRequest(beast::http::verb const method,
 	std::string const &url, std::string const &content)
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpPrepareRequest");
 
-	auto req = std::make_shared<beast::http::request<beast::http::string_body>>();
-	req->method = method;
-	req->url = "/api/v5" + url;
+	auto req = std::make_shared<Request_t>();
+	req->method(method);
+	req->target("/api/v5" + url);
 	req->version = 11;
-	req->fields.replace("Host", "discordapp.com");
-	req->fields.replace("User-Agent", "DiscordBot (github.com/maddinat0r/samp-discord-connector, " PLUGIN_VERSION ")");
+	req->insert("Host", "discordapp.com");
+	req->insert("User-Agent", "DiscordBot (github.com/maddinat0r/samp-discord-connector, " PLUGIN_VERSION ")");
 	if (!content.empty())
-		req->fields.replace("Content-Type", "application/json");
-	req->fields.replace("Authorization", "Bot " + m_Token);
+		req->insert("Content-Type", "application/json");
+	req->insert("Authorization", "Bot " + m_Token);
 	req->body = content;
 
-	beast::http::prepare(*req);
+	req->prepare();
 
 	return req;
 }
@@ -457,15 +474,15 @@ void CNetwork::HttpWriteRequest(SharedRequest_t request, HttpResponseCallback_t 
 	if (error_code)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Error while sending HTTP {} request to '{}': {}",
-			request->method, request->url, error_code.message());
+			request->method_string().to_string(), request->target().to_string(), error_code.message());
 		HttpReconnectRetry(request, std::move(callback));
 		return;
 	}
 
 	error_code.clear();
 
-	beast::streambuf sb;
-	beast::http::response<beast::http::streambuf_body> response;
+	Streambuf_t sb;
+	Response_t response;
 	beast::http::read(m_HttpsStream, sb, response, error_code);
 	if (error_code)
 	{
@@ -475,12 +492,12 @@ void CNetwork::HttpWriteRequest(SharedRequest_t request, HttpResponseCallback_t 
 		return;
 	}
 
-	auto it = response.fields.find("X-RateLimit-Remaining");
-	if (it != response.fields.end())
+	auto it = response.find("X-RateLimit-Remaining");
+	if (it != response.end())
 	{
-		if (it->second == "0")
+		if (it->value().compare("0"))
 		{
-			std::string limited_url = request->url;
+			std::string limited_url = request->target().to_string();
 			auto lit = m_PathRateLimit.find(limited_url);
 			if (lit != m_PathRateLimit.end())
 			{
@@ -491,15 +508,15 @@ void CNetwork::HttpWriteRequest(SharedRequest_t request, HttpResponseCallback_t 
 				return;
 			}
 
-			it = response.fields.find("X-RateLimit-Reset");
-			if (it != response.fields.end())
+			it = response.find("X-RateLimit-Reset");
+			if (it != response.end())
 			{
 				std::chrono::system_clock::time_point current_time = std::chrono::system_clock::now();
 				CLog::Get()->Log(LogLevel::DEBUG, "rate-limiting path {} until {} (current time: {})",
-					request->url, it->second, std::chrono::duration_cast<std::chrono::seconds>(current_time.time_since_epoch()).count());
+					request->target().to_string(), it->value().to_string(), std::chrono::duration_cast<std::chrono::seconds>(current_time.time_since_epoch()).count());
 				m_PathRateLimit.insert({ limited_url, decltype(m_PathRateLimit)::mapped_type() }).first->second;
 
-				string const &reset_time_str = it->second;
+				string const &reset_time_str = it->value().to_string();
 				long long reset_time_secs = 0;
 				boost::spirit::qi::parse(reset_time_str.begin(), reset_time_str.end(),
 					boost::spirit::qi::any_int_parser<long long>(),
@@ -542,7 +559,7 @@ void CNetwork::HttpWriteRequest(SharedRequest_t request, HttpResponseCallback_t 
 }
 
 
-void CNetwork::HttpSendRequest(std::string const &method,
+void CNetwork::HttpSendRequest(beast::http::verb const method,
 	std::string const &url, std::string const &content, HttpResponseCallback_t &&callback)
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpSendRequest");
@@ -556,9 +573,9 @@ void CNetwork::HttpSendRequest(std::string const &method,
 
 void CNetwork::HttpSendRequest(SharedRequest_t request, HttpResponseCallback_t &&callback)
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpSendRequest({}) (actual send)", request->url);
+	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpSendRequest({}) (actual send)", request->target().to_string());
 	// check if this URL path is currently rate-limited
-	auto it = m_PathRateLimit.find(request->url);
+	auto it = m_PathRateLimit.find(request->target().to_string());
 	if (it != m_PathRateLimit.end())
 	{
 		// yes, it is; queue request
@@ -575,10 +592,12 @@ void CNetwork::HttpGet(std::string const &url, HttpGetCallback_t &&callback)
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpGet");
 
-	HttpSendRequest("GET", url, "", [callback](Streambuf_t &sb, Response_t &resp)
+	HttpSendRequest(beast::http::verb::get, url, "", [callback](Streambuf_t &sb, Response_t &resp)
 	{
-		callback({ resp.status, resp.reason, beast::to_string(resp.body.data()),
-			beast::to_string(sb.data()) });
+		std::stringstream ss_body, ss_data;
+		ss_body << beast::buffers(resp.body.data());
+		ss_data << beast::buffers(sb.data());
+		callback({ resp.result_int(), resp.reason().to_string(), ss_body.str(), ss_data.str() });
 	});
 }
 
@@ -586,5 +605,5 @@ void CNetwork::HttpPost(std::string const &url, std::string const &content)
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "CNetwork::HttpPost");
 
-	HttpSendRequest("POST", url, content, nullptr);
+	HttpSendRequest(beast::http::verb::post, url, content, nullptr);
 }

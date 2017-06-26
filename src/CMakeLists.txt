@@ -91,6 +91,7 @@ if(MSVC)
 		-D_ENABLE_ATOMIC_ALIGNMENT_FIX 
 		-D_WIN32_WINNT=0x0600
 		-D_SCL_SECURE_NO_WARNINGS)
+	target_link_libraries(discord-connector Crypt32.lib)
 endif()
 
 target_link_libraries(discord-connector log-core fmt OpenSSL::SSL Boost::system)
