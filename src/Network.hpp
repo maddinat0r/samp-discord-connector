@@ -26,12 +26,12 @@ private: // variables
 	asio::io_service m_IoService;
 	std::thread *m_IoThread = nullptr;
 
-	std::unique_ptr<Http> m_Http;
-	std::unique_ptr<WebSocket> m_WebSocket;
+	std::unique_ptr<::Http> m_Http;
+	std::unique_ptr<::WebSocket> m_WebSocket;
 
 public: // functions
 	void Initialize(std::string const &token);
 
-	Http &Http();
-	WebSocket &WebSocket();
+	::Http &Http();
+	::WebSocket &WebSocket();
 };

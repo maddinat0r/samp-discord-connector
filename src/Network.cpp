@@ -6,7 +6,7 @@ void Network::Initialize(std::string const &token)
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "Network::Initialize");
 
-	m_Http = std::make_unique<class Http>(m_IoService, token);
+	m_Http = std::unique_ptr<::Http>(new ::Http(m_IoService, token));
 
 	// retrieve WebSocket host URL
 	m_Http->Get("/gateway", [this, token](Http::GetResponse res)
@@ -25,7 +25,7 @@ void Network::Initialize(std::string const &token)
 		if (protocol_pos != std::string::npos)
 			gateway_url.erase(protocol_pos, 6); // 6 = length of "wss://"
 
-		m_WebSocket = std::make_unique<class WebSocket>(m_IoService, token, gateway_url);
+		m_WebSocket = std::unique_ptr<::WebSocket>(new ::WebSocket(m_IoService, token, gateway_url));
 	});
 
 	m_IoThread = new std::thread([this]()
@@ -49,12 +49,12 @@ Network::~Network()
 	}
 }
 
-Http &Network::Http()
+::Http &Network::Http()
 {
 	return *m_Http;
 }
 
-WebSocket &Network::WebSocket()
+::WebSocket &Network::WebSocket()
 {
 	return *m_WebSocket;
 }
