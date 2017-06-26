@@ -79,14 +79,12 @@ private:
 	std::atomic<unsigned int> m_Initialized{ 0 };
 
 	std::map<unsigned int, Channel_t> m_Channels; //PAWN channel-id to actual channel map
-	Callback_t
-		m_ChannelMessage;
 
 private:
 	void AddChannel(json &data);
 
 public:
-	void Initialize(AMX *amx);
+	void Initialize();
 	void WaitForInitialization();
 
 	Channel_t const &FindChannel(ChannelId_t id);

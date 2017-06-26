@@ -31,10 +31,9 @@ void CChannel::SendMessage(std::string &&msg)
 }
 
 
-void CChannelManager::Initialize(AMX *amx)
+void CChannelManager::Initialize()
 {
-	if (m_Initialized == m_InitValue)
-		return; // we've already been initialized
+	assert(m_Initialized != m_InitValue);
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::CHANNEL_CREATE, [](json &data)
 	{
@@ -61,33 +60,20 @@ void CChannelManager::Initialize(AMX *amx)
 	});
 
 	// PAWN callbacks
-	CError<CCallback> cb_error;
-
-	// forward DCC_OnChannelMessage(DCC_Channel:channel, const author[], const message[]);
-	m_ChannelMessage = CCallback::Create(cb_error, amx, "DCC_OnChannelMessage");
-	if (cb_error != CCallback::Error::NOT_FOUND)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_CREATE, [this](json &data)
 	{
-		if (cb_error)
+		CMessage msg(data);
+		Channel_t const &channel = FindChannelById(msg.GetChannelId());
+		if (channel)
 		{
-			CLog::Get()->Log(LogLevel::ERROR, "{} error: {}",
-				cb_error.module(), cb_error.msg());
-		}
-		else
-		{
-			Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_CREATE, [this](json &data)
+			CDispatcher::Get()->Dispatch([this, msg, &channel]()
 			{
-				CMessage msg(data);
-				Channel_t const &channel = FindChannelById(msg.GetChannelId());
-				if (channel)
-				{
-					CDispatcher::Get()->Dispatch([this, msg, &channel]()
-					{
-						m_ChannelMessage->Execute(channel->GetPawnId(), msg.GetAuthor(), msg.GetContent());
-					});
-				}
+				// forward DCC_OnChannelMessage(DCC_Channel:channel, const author[], const message[]);
+				PawnCallbackManager::Get()->Call("DCC_OnChannelMessage",
+					channel->GetPawnId(), msg.GetAuthor(), msg.GetContent());
 			});
 		}
-	}
+	});
 }
 
 void CChannelManager::WaitForInitialization()

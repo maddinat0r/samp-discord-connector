@@ -27,21 +27,6 @@ AMX_DECLARE_NATIVE(Native::native_name)
 }
 */
 
-// native DCC_Connect(const bot_token[]);
-AMX_DECLARE_NATIVE(Native::DCC_Connect)
-{
-	CScopedDebugInfo dbg_info(amx, "DCC_Connect", "*");
-
-	CChannelManager::Get()->Initialize(amx);
-	Network::Get()->Initialize(amx_GetCppString(amx, params[1]));
-
-	CChannelManager::Get()->WaitForInitialization();
-
-	cell ret_val = 1;
-	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
-	return ret_val;
-}
-
 // native DCC_Channel:DCC_FindChannelByName(const channel_name[]);
 AMX_DECLARE_NATIVE(Native::DCC_FindChannelByName)
 {
