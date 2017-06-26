@@ -2,7 +2,7 @@
 #include "natives.hpp"
 #include "CDispatcher.hpp"
 #include "CCallback.hpp"
-#include "CNetwork.hpp"
+#include "Network.hpp"
 #include "CLog.hpp"
 #include "version.hpp"
 
@@ -34,7 +34,7 @@ PLUGIN_EXPORT void PLUGIN_CALL Unload()
 {
 	logprintf("plugin.dc-connector: Unloading plugin...");
 	
-	CNetwork::CSingleton::Destroy();
+	Network::CSingleton::Destroy();
 	CCallbackManager::CSingleton::Destroy();
 	CLog::CSingleton::Destroy();
 	

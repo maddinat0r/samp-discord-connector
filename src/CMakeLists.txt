@@ -35,9 +35,13 @@ add_samp_plugin(discord-connector
 	CLog.hpp
 	CMessage.cpp
 	CMessage.hpp
-	CNetwork.cpp
-	CNetwork.hpp
+	Network.cpp
+	Network.hpp
 	CSingleton.hpp
+	Http.cpp
+	Http.hpp
+	WebSocket.cpp
+	WebSocket.hpp
 	main.cpp
 	misc.hpp
 	natives.cpp

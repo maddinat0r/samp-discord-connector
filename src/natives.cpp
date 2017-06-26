@@ -1,6 +1,6 @@
 #include "natives.hpp"
 #include "CCallback.hpp"
-#include "CNetwork.hpp"
+#include "Network.hpp"
 #include "CDispatcher.hpp"
 #include "CMessage.hpp"
 #include "CChannel.hpp"
@@ -33,7 +33,7 @@ AMX_DECLARE_NATIVE(Native::DCC_Connect)
 	CScopedDebugInfo dbg_info(amx, "DCC_Connect", "*");
 
 	CChannelManager::Get()->Initialize(amx);
-	CNetwork::Get()->Initialize(amx_GetCppString(amx, params[1]));
+	Network::Get()->Initialize(amx_GetCppString(amx, params[1]));
 
 	CChannelManager::Get()->WaitForInitialization();
 

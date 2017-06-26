@@ -1,6 +1,6 @@
 #include "CChannel.hpp"
 #include "CMessage.hpp"
-#include "CNetwork.hpp"
+#include "Network.hpp"
 #include "CDispatcher.hpp"
 #include "CLog.hpp"
 
@@ -27,7 +27,7 @@ void CChannel::SendMessage(std::string &&msg)
 	json data = {
 		{ "content", std::move(msg) }
 	};
-	CNetwork::Get()->HttpPost(fmt::format("/channels/{}/messages", GetId()), data.dump());
+	Network::Get()->Http().Post(fmt::format("/channels/{}/messages", GetId()), data.dump());
 }
 
 
@@ -36,12 +36,12 @@ void CChannelManager::Initialize(AMX *amx)
 	if (m_Initialized == m_InitValue)
 		return; // we've already been initialized
 
-	CNetwork::Get()->WsRegisterEvent(CNetwork::WsEvent::CHANNEL_CREATE, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::CHANNEL_CREATE, [](json &data)
 	{
 		CChannelManager::Get()->AddChannel(data);
 	});
 
-	CNetwork::Get()->WsRegisterEvent(CNetwork::WsEvent::READY, [this](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json &data)
 	{
 		for (json &c : data["private_channels"])
 			AddChannel(c);
@@ -49,7 +49,7 @@ void CChannelManager::Initialize(AMX *amx)
 	});
 
 	// GUILD_CREATE event seems to be always sent after READY event with all guilds the bot is in
-	CNetwork::Get()->WsRegisterEvent(CNetwork::WsEvent::GUILD_CREATE, [this](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_CREATE, [this](json &data)
 	{
 		for (json &c : data["channels"])
 		{
@@ -74,7 +74,7 @@ void CChannelManager::Initialize(AMX *amx)
 		}
 		else
 		{
-			CNetwork::Get()->WsRegisterEvent(CNetwork::WsEvent::MESSAGE_CREATE, [this](json &data)
+			Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_CREATE, [this](json &data)
 			{
 				CMessage msg(data);
 				Channel_t const &channel = FindChannelById(msg.GetChannelId());
