@@ -82,7 +82,6 @@ set_property(TARGET discord-connector PROPERTY INCLUDE_DIRECTORIES
 	${SAMPSDK_INCLUDE_DIR}
 	${DCC_PLUGIN_CONFIG_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/libs/samp-log-core/include
-	${PROJECT_SOURCE_DIR}/libs/samp-log-core/libs/cppformat
 	${PROJECT_SOURCE_DIR}/libs/beast/include
 	${PROJECT_SOURCE_DIR}/libs/json
 )

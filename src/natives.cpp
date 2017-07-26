@@ -17,7 +17,7 @@
 // native native_name(...);
 AMX_DECLARE_NATIVE(Native::native_name)
 {
-	CScopedDebugInfo dbg_info(amx, "native_name", "sd");
+	CScopedDebugInfo dbg_info(amx, "native_name", params, "sd");
 	
 	
 	
@@ -30,7 +30,7 @@ AMX_DECLARE_NATIVE(Native::native_name)
 // native DCC_Channel:DCC_FindChannelByName(const channel_name[]);
 AMX_DECLARE_NATIVE(Native::DCC_FindChannelByName)
 {
-	CScopedDebugInfo dbg_info(amx, "DCC_FindChannelByName", "s");
+	CScopedDebugInfo dbg_info(amx, "DCC_FindChannelByName", params, "s");
 
 	std::string const channel_name = amx_GetCppString(amx, params[1]);
 	Channel_t const &channel = CChannelManager::Get()->FindChannelByName(channel_name);
@@ -44,7 +44,7 @@ AMX_DECLARE_NATIVE(Native::DCC_FindChannelByName)
 // native DCC_Channel:DCC_FindChannelById(const channel_id[]);
 AMX_DECLARE_NATIVE(Native::DCC_FindChannelById)
 {
-	CScopedDebugInfo dbg_info(amx, "DCC_FindChannelById", "s");
+	CScopedDebugInfo dbg_info(amx, "DCC_FindChannelById", params, "s");
 
 	Snowflake_t const channel_id = amx_GetCppString(amx, params[1]);
 	Channel_t const &channel = CChannelManager::Get()->FindChannelById(channel_id);
@@ -58,7 +58,7 @@ AMX_DECLARE_NATIVE(Native::DCC_FindChannelById)
 // native DCC_IsChannelPrivate(DCC_Channel:channel, &bool:is_private);
 AMX_DECLARE_NATIVE(Native::DCC_IsChannelPrivate)
 {
-	CScopedDebugInfo dbg_info(amx, "DCC_IsChannelPrivate", "dr");
+	CScopedDebugInfo dbg_info(amx, "DCC_IsChannelPrivate", params, "dr");
 
 	ChannelId_t channelid = params[1];
 	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
@@ -84,7 +84,7 @@ AMX_DECLARE_NATIVE(Native::DCC_IsChannelPrivate)
 // native DCC_GetChannelName(DCC_Channel:channel, dest[], max_size = sizeof dest);
 AMX_DECLARE_NATIVE(Native::DCC_GetChannelName)
 {
-	CScopedDebugInfo dbg_info(amx, "DCC_GetChannelName", "drd");
+	CScopedDebugInfo dbg_info(amx, "DCC_GetChannelName", params, "drd");
 
 	ChannelId_t channelid = params[1];
 	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
@@ -103,7 +103,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelName)
 // native DCC_GetChannelId(DCC_Channel:channel, dest[], max_size = sizeof dest);
 AMX_DECLARE_NATIVE(Native::DCC_GetChannelId)
 {
-	CScopedDebugInfo dbg_info(amx, "DCC_GetChannelId", "drd");
+	CScopedDebugInfo dbg_info(amx, "DCC_GetChannelId", params, "drd");
 
 	ChannelId_t channelid = params[1];
 	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
@@ -122,7 +122,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelId)
 // native DCC_GetChannelTopic(DCC_Channel:channel, dest[], max_size = sizeof dest);
 AMX_DECLARE_NATIVE(Native::DCC_GetChannelTopic)
 {
-	CScopedDebugInfo dbg_info(amx, "DCC_GetChannelTopic", "drd");
+	CScopedDebugInfo dbg_info(amx, "DCC_GetChannelTopic", params, "drd");
 
 	ChannelId_t channelid = params[1];
 	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
@@ -141,7 +141,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelTopic)
 // native DCC_SendChannelMessage(DCC_Channel:channel, const message[]);
 AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
 {
-	CScopedDebugInfo dbg_info(amx, "DCC_SendChannelMessage", "ds");
+	CScopedDebugInfo dbg_info(amx, "DCC_SendChannelMessage", params, "ds");
 
 	ChannelId_t channelid = static_cast<ChannelId_t>(params[1]);
 	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
