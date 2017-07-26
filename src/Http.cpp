@@ -105,7 +105,7 @@ Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 	req->insert("Authorization", "Bot " + m_Token);
 	req->body = content;
 
-	req->prepare();
+	req->prepare_payload();
 
 	return req;
 }

@@ -9,11 +9,12 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 
-#include <beast/core.hpp>
-#include <beast/http.hpp>
+#include <boost/beast/core.hpp>
+#include <boost/beast/http.hpp>
 
 
 namespace asio = boost::asio;
+namespace beast = boost::beast;
 
 
 class Http

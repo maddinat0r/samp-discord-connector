@@ -9,12 +9,13 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/steady_timer.hpp>
-#include <beast/core.hpp>
-#include <beast/websocket.hpp>
-#include <beast/websocket/ssl.hpp>
+#include <boost/beast/core.hpp>
+#include <boost/beast/websocket.hpp>
+#include <boost/beast/websocket/ssl.hpp>
 
 using json = nlohmann::json;
 namespace asio = boost::asio;
+namespace beast = boost::beast;
 
 class WebSocket
 {
@@ -67,7 +68,6 @@ private: // variables
 	asio::ip::tcp::resolver m_Resolver;
 
 	beast::multi_buffer m_WebSocketBuffer;
-	beast::websocket::opcode m_WebSocketOpcode;
 
 	std::string m_Token;
 	std::string m_GatewayUrl;

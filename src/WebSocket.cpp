@@ -157,7 +157,7 @@ void WebSocket::Read()
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::WsRead");
 
-	m_WebSocket.async_read(m_WebSocketOpcode, m_WebSocketBuffer,
+	m_WebSocket.async_read(m_WebSocketBuffer,
 		std::bind(&WebSocket::OnRead, this, std::placeholders::_1));
 }
 
