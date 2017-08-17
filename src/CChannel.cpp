@@ -7,6 +7,9 @@
 #include "fmt/format.h"
 
 
+#undef SendMessage // Windows at its finest
+
+
 CChannel::CChannel(ChannelId_t pawn_id, json &data) :
 	m_PawnId(pawn_id)
 {

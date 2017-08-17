@@ -34,7 +34,7 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 	{
 		CChannelManager::Get()->Initialize();
 		Network::Get()->Initialize(bot_token);
-
+		
 		CChannelManager::Get()->WaitForInitialization();
 
 		logprintf(" >> plugin.dc-connector: " PLUGIN_VERSION " successfully loaded.");

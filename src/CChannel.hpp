@@ -11,6 +11,9 @@
 
 #include <json.hpp>
 
+#undef SendMessage // Windows at its finest
+
+
 using json = nlohmann::json;
 
 

@@ -4,6 +4,7 @@
 #include <functional>
 #include <chrono>
 #include <map>
+#include <thread>
 
 #include <json.hpp>
 #include <boost/asio.hpp>
@@ -19,6 +20,7 @@ namespace beast = boost::beast;
 
 class WebSocket
 {
+	friend class Network;
 public:
 	enum class Event
 	{
@@ -56,12 +58,15 @@ public:
 	};
 	using EventCallback_t = std::function<void(json &)>;
 
+private:
+	WebSocket();
+
 public:
-	WebSocket(asio::io_service &io_service,
-		std::string token, std::string gateway_url);
 	~WebSocket();
 
 private: // variables
+	asio::io_service m_IoService;
+	std::thread *m_IoThread = nullptr;
 	asio::ssl::context m_SslContext;
 	asio::ssl::stream<asio::ip::tcp::socket> m_WssStream;
 	beast::websocket::stream<decltype(m_WssStream)&> m_WebSocket;
@@ -78,7 +83,7 @@ private: // variables
 	std::multimap<Event, EventCallback_t> m_EventMap;
 
 private: // functions
-
+	void Initialize(std::string token, std::string gateway_url);
 	bool Connect();
 	void Disconnect();
 	void Identify();

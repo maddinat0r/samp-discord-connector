@@ -2,17 +2,16 @@
 #include "CLog.hpp"
 #include "version.hpp"
 
-#include <thread>
-
 #include <boost/asio/system_timer.hpp>
 #include <boost/spirit/include/qi.hpp>
 
 
-Http::Http(asio::io_service &io_service, std::string token) :
-	m_IoService(io_service),
+Http::Http(std::string token) :
 	m_SslContext(asio::ssl::context::sslv23),
-	m_HttpsStream(io_service, m_SslContext),
-	m_Token(token)
+	m_SslStream(m_IoService, m_SslContext),
+	m_Token(token),
+	m_NetworkThreadRunning(true),
+	m_NetworkThread(std::bind(&Http::NetworkThreadFunc, this))
 {
 	if (!Connect())
 		return;
@@ -20,6 +19,147 @@ Http::Http(asio::io_service &io_service, std::string token) :
 
 Http::~Http()
 {
+	m_NetworkThreadRunning = false;
+	m_NetworkThread.join();
+}
+
+void Http::NetworkThreadFunc()
+{
+	std::unordered_map<std::string, TimePoint_t> path_ratelimit;
+	unsigned int retry_counter = 0;
+	unsigned int const MaxRetries = 3;
+	bool skip_entry = false;
+
+	while (m_NetworkThreadRunning)
+	{
+		TimePoint_t current_time = std::chrono::system_clock::now();
+		
+		m_QueueMutex.lock(); 
+		auto it = m_Queue.begin();
+		while (it != m_Queue.end())
+		{
+			auto const &entry = *it;
+
+			// check if we're rate-limited
+			auto pr_it = path_ratelimit.find(entry->Request->target().to_string());
+			if (pr_it != path_ratelimit.end())
+			{
+				// rate-limit for this path exists
+				// are we still within the rate-limit timepoint?
+				if (current_time < pr_it->second)
+				{
+					// yes, ignore this request for now
+					it++;
+					continue;
+				}
+
+				// no, delete rate-limit and go on
+				path_ratelimit.erase(pr_it);
+			}
+
+			boost::system::error_code error_code;
+			retry_counter = 0;
+			skip_entry = false;
+			do
+			{
+				beast::http::write(m_SslStream, *entry->Request, error_code);
+				if (error_code)
+				{
+					CLog::Get()->Log(LogLevel::ERROR, "Error while sending HTTP {} request to '{}': {}",
+						entry->Request->method_string().to_string(),
+						entry->Request->target().to_string(),
+						error_code.message());
+
+					// try reconnecting
+					if (retry_counter++ >= MaxRetries || !ReconnectRetry())
+					{
+						// we failed to reconnect, discard this request
+						it = m_Queue.erase(it);
+						skip_entry = true;
+						break; // break out of do-while loop
+					}
+				}
+			} while (error_code);
+			if (skip_entry)
+				continue; // continue queue loop
+
+			Streambuf_t sb;
+			Response_t response;
+			retry_counter = 0;
+			skip_entry = false;
+			do
+			{
+				beast::http::read(m_SslStream, sb, response, error_code);
+				if (error_code)
+				{
+					CLog::Get()->Log(LogLevel::ERROR, "Error while retrieving HTTP {} response from '{}': {}",
+						entry->Request->method_string().to_string(),
+						entry->Request->target().to_string(),
+						error_code.message());
+
+					// try reconnecting
+					if (retry_counter++ >= MaxRetries || !ReconnectRetry())
+					{
+						// we failed to reconnect, discard this request
+						it = m_Queue.erase(it);
+						skip_entry = true;
+						break; // break out of do-while loop
+					}
+				}
+			} while (error_code);
+			if (skip_entry)
+				continue; // continue queue loop
+
+			auto it_r = response.find("X-RateLimit-Remaining");
+			if (it_r != response.end())
+			{
+				if (it_r->value().compare("0") == 0)
+				{
+					// we're now officially rate-limited
+					// the next call to this path will fail
+					std::string limited_url = entry->Request->target().to_string();
+					auto lit = path_ratelimit.find(limited_url);
+					if (lit != path_ratelimit.end())
+					{
+						CLog::Get()->Log(LogLevel::ERROR, 
+							"Error while processing rate-limit: already rate-limited path '{}'",
+							limited_url);
+						return; // TODO: return is evil
+					}
+
+					it_r = response.find("X-RateLimit-Reset");
+					if (it_r != response.end())
+					{
+						TimePoint_t current_time = std::chrono::system_clock::now();
+						CLog::Get()->Log(LogLevel::DEBUG, "rate-limiting path {} until {} (current time: {})",
+							limited_url,
+							it_r->value().to_string(),
+							std::chrono::duration_cast<std::chrono::seconds>(
+								current_time.time_since_epoch()).count());
+
+						string const &reset_time_str = it_r->value().to_string();
+						long long reset_time_secs = 0;
+						boost::spirit::qi::parse(reset_time_str.begin(), reset_time_str.end(),
+							boost::spirit::qi::any_int_parser<long long>(),
+							reset_time_secs);
+						TimePoint_t reset_time{ std::chrono::seconds(reset_time_secs) };
+
+						path_ratelimit.insert({ limited_url, reset_time });
+					}
+				}
+			}
+
+			m_QueueMutex.unlock(); // allow requests to be queued from within callback
+			if (entry->Callback)
+				entry->Callback(sb, response);
+			m_QueueMutex.lock();
+
+			it = m_Queue.erase(it);
+		}
+		m_QueueMutex.unlock();
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
 
 }
 
@@ -39,7 +179,7 @@ bool Http::Connect()
 	}
 
 	error.clear();
-	asio::connect(m_HttpsStream.lowest_layer(), target, error);
+	asio::connect(m_SslStream.lowest_layer(), target, error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Can't connect to Discord API: {} ({})",
@@ -49,8 +189,8 @@ bool Http::Connect()
 
 	// SSL handshake
 	error.clear();
-	m_HttpsStream.set_verify_mode(asio::ssl::verify_none); // TODO error check
-	m_HttpsStream.handshake(asio::ssl::stream_base::client, error);
+	m_SslStream.set_verify_mode(asio::ssl::verify_none); // TODO error check
+	m_SslStream.handshake(asio::ssl::stream_base::client, error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Can't establish secured connection to Discord API: {} ({})",
@@ -66,7 +206,7 @@ void Http::Disconnect()
 	CLog::Get()->Log(LogLevel::DEBUG, "Http::Disconnect");
 
 	boost::system::error_code error;
-	m_HttpsStream.shutdown(error);
+	m_SslStream.shutdown(error);
 	if (error && error != boost::asio::error::eof)
 	{
 		CLog::Get()->Log(LogLevel::WARNING, "Error while shutting down SSL on HTTP connection: {} ({})",
@@ -74,7 +214,7 @@ void Http::Disconnect()
 	}
 
 	error.clear();
-	m_HttpsStream.lowest_layer().shutdown(asio::ip::tcp::socket::shutdown_both, error);
+	m_SslStream.lowest_layer().shutdown(asio::ip::tcp::socket::shutdown_both, error);
 	if (error && error != boost::asio::error::eof)
 	{
 		CLog::Get()->Log(LogLevel::WARNING, "Error while shutting down HTTP connection: {} ({})",
@@ -82,13 +222,41 @@ void Http::Disconnect()
 	}
 
 	error.clear();
-	m_HttpsStream.lowest_layer().close(error);
+	m_SslStream.lowest_layer().close(error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::WARNING, "Error while closing HTTP connection: {} ({})",
 			error.message(), error.value());
 	}
 }
+
+bool Http::ReconnectRetry()
+{
+	CLog::Get()->Log(LogLevel::DEBUG, "Http::ReconnectRetry");
+
+	unsigned int reconnect_counter = 0;
+	do
+	{
+		CLog::Get()->Log(LogLevel::INFO, "trying reconnect #{}...", reconnect_counter + 1);
+
+		Disconnect();
+		if (Connect())
+		{
+			CLog::Get()->Log(LogLevel::INFO, "reconnect succeeded, resending request");
+			return true;
+		}
+		else
+		{
+			unsigned int seconds_to_wait = static_cast<unsigned int>(std::pow(2U, reconnect_counter));
+			CLog::Get()->Log(LogLevel::WARNING, "reconnect failed, waiting {} seconds...", seconds_to_wait);
+			std::this_thread::sleep_for(std::chrono::seconds(seconds_to_wait));
+		}
+	} while (++reconnect_counter < 3);
+	
+	CLog::Get()->Log(LogLevel::ERROR, "Could not reconnect to Discord");
+	return false;
+}
+
 Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 	std::string const &url, std::string const &content)
 {
@@ -110,145 +278,15 @@ Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 	return req;
 }
 
-void Http::ReconnectRetry(SharedRequest_t request, ResponseCallback_t &&callback)
-{
-	CLog::Get()->Log(LogLevel::DEBUG, "Http::ReconnectRetry");
-
-	CLog::Get()->Log(LogLevel::INFO, "trying reconnect...");
-
-	Disconnect();
-	if (Connect())
-	{
-		CLog::Get()->Log(LogLevel::INFO, "reconnect succeeded, resending request");
-		SendRequest(request, std::move(callback));
-	}
-	else
-	{
-		CLog::Get()->Log(LogLevel::WARNING, "reconnect failed, discarding request");
-	}
-}
-
-void Http::WriteRequest(SharedRequest_t request, ResponseCallback_t &&callback)
-{
-	CLog::Get()->Log(LogLevel::DEBUG, "Http::WriteRequest");
-
-	boost::system::error_code error_code;
-	beast::http::write(m_HttpsStream, *request, error_code);
-	if (error_code)
-	{
-		CLog::Get()->Log(LogLevel::ERROR, "Error while sending HTTP {} request to '{}': {}",
-			request->method_string().to_string(), request->target().to_string(), error_code.message());
-		ReconnectRetry(request, std::move(callback));
-		return;
-	}
-
-	error_code.clear();
-
-	Streambuf_t sb;
-	Response_t response;
-	beast::http::read(m_HttpsStream, sb, response, error_code);
-	if (error_code)
-	{
-		CLog::Get()->Log(LogLevel::ERROR, "Error while retrieving HTTP response: {}",
-			error_code.message());
-		ReconnectRetry(request, std::move(callback));
-		return;
-	}
-
-	auto it = response.find("X-RateLimit-Remaining");
-	if (it != response.end())
-	{
-		if (it->value().compare("0"))
-		{
-			std::string limited_url = request->target().to_string();
-			auto lit = m_PathRateLimit.find(limited_url);
-			if (lit != m_PathRateLimit.end())
-			{
-				// we sent the message to early, we're still rate-limited
-				// hack in that message back into the queue and wait a little bit
-				lit->second.push_front(std::make_tuple(request, std::move(callback)));
-				std::this_thread::sleep_for(std::chrono::milliseconds(500));
-				return;
-			}
-
-			it = response.find("X-RateLimit-Reset");
-			if (it != response.end())
-			{
-				std::chrono::system_clock::time_point current_time = std::chrono::system_clock::now();
-				CLog::Get()->Log(LogLevel::DEBUG, "rate-limiting path {} until {} (current time: {})",
-					request->target().to_string(), it->value().to_string(), std::chrono::duration_cast<std::chrono::seconds>(current_time.time_since_epoch()).count());
-				m_PathRateLimit.insert({ limited_url, decltype(m_PathRateLimit)::mapped_type() }).first->second;
-
-				string const &reset_time_str = it->value().to_string();
-				long long reset_time_secs = 0;
-				boost::spirit::qi::parse(reset_time_str.begin(), reset_time_str.end(),
-					boost::spirit::qi::any_int_parser<long long>(),
-					reset_time_secs);
-				std::chrono::system_clock::time_point reset_time{ std::chrono::seconds(reset_time_secs) + std::chrono::seconds(1) };
-				auto timer = std::make_shared<asio::system_timer>(m_IoService, reset_time);
-				timer->async_wait([timer, this, limited_url](const boost::system::error_code &ec)
-				{
-					if (ec)
-						return;
-
-					CLog::Get()->Log(LogLevel::DEBUG, "removing rate-limit on path {}", limited_url);
-
-					auto it = m_PathRateLimit.find(limited_url);
-					if (it == m_PathRateLimit.end())
-					{
-						CLog::Get()->Log(LogLevel::ERROR, "attempted to remove rate-limit on path {}, but it doesn't exist", limited_url);
-						return; // ????
-					}
-
-					auto &query = it->second;
-					while (!query.empty())
-					{
-						auto req_data = query.front();
-						query.pop_front();
-						m_IoService.post([this, req_data]() mutable
-						{
-							SendRequest(std::get<0>(req_data), std::move(std::get<1>(req_data)));
-						});
-					}
-					m_PathRateLimit.erase(it);
-				});
-			}
-		}
-	}
-
-	if (callback)
-		callback(sb, response);
-
-}
-
-
-void Http::SendRequest(beast::http::verb const method,
-	std::string const &url, std::string const &content, ResponseCallback_t &&callback)
+void Http::SendRequest(beast::http::verb const method, std::string const &url, 
+	std::string const &content, ResponseCallback_t &&callback)
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "Http::SendRequest");
 
 	SharedRequest_t req = PrepareRequest(method, url, content);
-	m_IoService.dispatch([this, req, callback]() mutable
-	{
-		SendRequest(req, std::move(callback));
-	});
-}
 
-void Http::SendRequest(SharedRequest_t request, ResponseCallback_t &&callback)
-{
-	CLog::Get()->Log(LogLevel::DEBUG, "Http::SendRequest({}) (actual send)", request->target().to_string());
-	// check if this URL path is currently rate-limited
-	auto it = m_PathRateLimit.find(request->target().to_string());
-	if (it != m_PathRateLimit.end())
-	{
-		// yes, it is; queue request
-		it->second.push_back(std::make_tuple(request, std::move(callback)));
-	}
-	else
-	{
-		// no it isn't, write/execute request
-		WriteRequest(request, std::move(callback));
-	}
+	std::lock_guard<std::mutex> lock_guard(m_QueueMutex);
+	m_Queue.push_back(std::make_shared<QueueEntry>(req, std::move(callback)));
 }
 
 void Http::Get(std::string const &url, GetCallback_t &&callback)

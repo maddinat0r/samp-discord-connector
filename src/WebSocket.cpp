@@ -4,26 +4,42 @@
 #include <unordered_map>
 
 
-WebSocket::WebSocket(asio::io_service &io_service,
-	std::string token, std::string gateway_url) :
+WebSocket::WebSocket() :
 	m_SslContext(asio::ssl::context::sslv23),
-	m_WssStream(io_service, m_SslContext),
+	m_WssStream(m_IoService, m_SslContext),
 	m_WebSocket(m_WssStream),
-	m_Resolver(io_service),
-	m_Token(std::move(token)),
-	m_GatewayUrl(std::move(gateway_url)),
-	m_HeartbeatTimer(io_service)
+	m_Resolver(m_IoService),
+	m_HeartbeatTimer(m_IoService)
 {
-	if (!Connect())
-		return;
-
-	Read();
-	Identify();
 }
 
 WebSocket::~WebSocket()
 {
 	Disconnect();
+
+	if (m_IoThread)
+	{
+		m_IoThread->join();
+		delete m_IoThread;
+		m_IoThread = nullptr;
+	}
+}
+
+void WebSocket::Initialize(std::string token, std::string gateway_url)
+{
+	m_GatewayUrl = gateway_url;
+	m_Token = token;
+
+	if (!Connect())
+		return;
+
+	Read();
+	Identify();
+
+	m_IoThread = new std::thread([this]()
+	{
+		m_IoService.run();
+	});
 }
 
 bool WebSocket::Connect()
@@ -194,7 +210,6 @@ void WebSocket::OnRead(boost::system::error_code ec)
 	ss << beast::buffers(m_WebSocketBuffer.data());
 	json result = json::parse(ss.str());
 	m_WebSocketBuffer.consume(m_WebSocketBuffer.size());
-	CLog::Get()->Log(LogLevel::DEBUG, "OnWsRead: {}", result.dump(4));
 
 	int payload_opcode = result["op"].get<int>();
 	switch (payload_opcode)
