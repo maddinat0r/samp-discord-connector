@@ -3,7 +3,7 @@
 #include "Network.hpp"
 #include "CDispatcher.hpp"
 #include "CMessage.hpp"
-#include "CChannel.hpp"
+#include "Channel.hpp"
 #include "misc.hpp"
 #include "types.hpp"
 #include "CLog.hpp"
@@ -33,7 +33,7 @@ AMX_DECLARE_NATIVE(Native::DCC_FindChannelByName)
 	CScopedDebugInfo dbg_info(amx, "DCC_FindChannelByName", params, "s");
 
 	std::string const channel_name = amx_GetCppString(amx, params[1]);
-	Channel_t const &channel = CChannelManager::Get()->FindChannelByName(channel_name);
+	Channel_t const &channel = ChannelManager::Get()->FindChannelByName(channel_name);
 
 	cell ret_val = channel ? channel->GetPawnId() : 0;
 
@@ -47,7 +47,7 @@ AMX_DECLARE_NATIVE(Native::DCC_FindChannelById)
 	CScopedDebugInfo dbg_info(amx, "DCC_FindChannelById", params, "s");
 
 	Snowflake_t const channel_id = amx_GetCppString(amx, params[1]);
-	Channel_t const &channel = CChannelManager::Get()->FindChannelById(channel_id);
+	Channel_t const &channel = ChannelManager::Get()->FindChannelById(channel_id);
 
 	cell ret_val = channel ? channel->GetPawnId() : 0;
 
@@ -61,7 +61,7 @@ AMX_DECLARE_NATIVE(Native::DCC_IsChannelPrivate)
 	CScopedDebugInfo dbg_info(amx, "DCC_IsChannelPrivate", params, "dr");
 
 	ChannelId_t channelid = params[1];
-	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
+	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
 		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
@@ -87,7 +87,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelName)
 	CScopedDebugInfo dbg_info(amx, "DCC_GetChannelName", params, "drd");
 
 	ChannelId_t channelid = params[1];
-	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
+	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
 		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
@@ -106,7 +106,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelId)
 	CScopedDebugInfo dbg_info(amx, "DCC_GetChannelId", params, "drd");
 
 	ChannelId_t channelid = params[1];
-	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
+	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
 		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
@@ -125,7 +125,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelTopic)
 	CScopedDebugInfo dbg_info(amx, "DCC_GetChannelTopic", params, "drd");
 
 	ChannelId_t channelid = params[1];
-	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
+	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
 		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
@@ -144,7 +144,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
 	CScopedDebugInfo dbg_info(amx, "DCC_SendChannelMessage", params, "ds");
 
 	ChannelId_t channelid = static_cast<ChannelId_t>(params[1]);
-	Channel_t const &channel = CChannelManager::Get()->FindChannel(channelid);
+	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
 		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);

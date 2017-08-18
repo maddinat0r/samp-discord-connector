@@ -26,8 +26,8 @@ add_samp_plugin(discord-connector
 	${SAMPSDK_DIR}/amx/getch.c
 	CCallback.cpp
 	CCallback.hpp
-	CChannel.cpp
-	CChannel.hpp
+	Channel.cpp
+	Channel.hpp
 	CDispatcher.cpp
 	CDispatcher.hpp
 	CError.hpp

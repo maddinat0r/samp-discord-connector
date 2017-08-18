@@ -17,14 +17,24 @@
 using json = nlohmann::json;
 
 
-using Channel_t = std::unique_ptr<class CChannel>;
+using Channel_t = std::unique_ptr<class Channel>;
 using ChannelId_t = cell;
 
-class CChannel
+class Channel
 {
 public:
-	CChannel(ChannelId_t pawn_id, json &data);
-	~CChannel() = default;
+	enum class Type
+	{
+		GUILD_TEXT = 0,
+		DM = 1,
+		GUILD_VOICE = 2,
+		GROUP_DM = 3,
+		GUILD_CATEGORY = 4
+	};
+
+public:
+	Channel(ChannelId_t pawn_id, json &data);
+	~Channel() = default;
 
 private:
 	const ChannelId_t m_PawnId;
@@ -33,7 +43,7 @@ private:
 		m_Id,
 		m_GuildId;
 
-	bool m_IsPrivate = false;
+	Type m_Type;
 
 	std::string
 		m_Name,
@@ -48,9 +58,9 @@ public:
 	{
 		return m_Id;
 	}
-	inline bool IsPrivate() const
+	inline Type GetType() const
 	{
-		return m_IsPrivate;
+		return m_Type;
 	}
 	inline Snowflake_t const &GetGuildId() const
 	{
@@ -70,12 +80,12 @@ public:
 };
 
 
-class CChannelManager : public CSingleton<CChannelManager>
+class ChannelManager : public CSingleton<ChannelManager>
 {
-	friend class CSingleton<CChannelManager>;
+	friend class CSingleton<ChannelManager>;
 private:
-	CChannelManager() = default;
-	~CChannelManager() = default;
+	ChannelManager() = default;
+	~ChannelManager() = default;
 
 private:
 	const unsigned int m_InitValue = 2;

@@ -1,4 +1,4 @@
-#include "CChannel.hpp"
+#include "Channel.hpp"
 #include "CMessage.hpp"
 #include "Network.hpp"
 #include "CDispatcher.hpp"
@@ -10,7 +10,7 @@
 #undef SendMessage // Windows at its finest
 
 
-CChannel::CChannel(ChannelId_t pawn_id, json &data) :
+Channel::Channel(ChannelId_t pawn_id, json &data) :
 	m_PawnId(pawn_id)
 {
 	m_Id = data["id"].get<std::string>();
@@ -25,7 +25,7 @@ CChannel::CChannel(ChannelId_t pawn_id, json &data) :
 	}
 }
 
-void CChannel::SendMessage(std::string &&msg)
+void Channel::SendMessage(std::string &&msg)
 {
 	json data = {
 		{ "content", std::move(msg) }
@@ -34,13 +34,13 @@ void CChannel::SendMessage(std::string &&msg)
 }
 
 
-void CChannelManager::Initialize()
+void ChannelManager::Initialize()
 {
 	assert(m_Initialized != m_InitValue);
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::CHANNEL_CREATE, [](json &data)
 	{
-		CChannelManager::Get()->AddChannel(data);
+		ChannelManager::Get()->AddChannel(data);
 	});
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json &data)
@@ -79,13 +79,13 @@ void CChannelManager::Initialize()
 	});
 }
 
-void CChannelManager::WaitForInitialization()
+void ChannelManager::WaitForInitialization()
 {
 	while (m_Initialized != m_InitValue)
 		std::this_thread::sleep_for(std::chrono::milliseconds(20));
 }
 
-void CChannelManager::AddChannel(json &data)
+void ChannelManager::AddChannel(json &data)
 {
 	json &type = data["type"];
 	if (!type.is_null() && type.get<std::string>() != "text")
@@ -95,10 +95,10 @@ void CChannelManager::AddChannel(json &data)
 	while (m_Channels.find(id) != m_Channels.end())
 		++id;
 
-	m_Channels.emplace(id, Channel_t(new CChannel(id, data)));
+	m_Channels.emplace(id, Channel_t(new Channel(id, data)));
 }
 
-Channel_t const &CChannelManager::FindChannel(ChannelId_t id)
+Channel_t const &ChannelManager::FindChannel(ChannelId_t id)
 {
 	static Channel_t invalid_channel;
 	auto it = m_Channels.find(id);
@@ -107,7 +107,7 @@ Channel_t const &CChannelManager::FindChannel(ChannelId_t id)
 	return it->second;
 }
 
-Channel_t const &CChannelManager::FindChannelByName(std::string const &name)
+Channel_t const &ChannelManager::FindChannelByName(std::string const &name)
 {
 	static Channel_t invalid_channel;
 	for (auto const &c : m_Channels)
@@ -119,7 +119,7 @@ Channel_t const &CChannelManager::FindChannelByName(std::string const &name)
 	return invalid_channel;
 }
 
-Channel_t const &CChannelManager::FindChannelById(Snowflake_t const &sfid)
+Channel_t const &ChannelManager::FindChannelById(Snowflake_t const &sfid)
 {
 	static Channel_t invalid_channel;
 	for (auto const &c : m_Channels)

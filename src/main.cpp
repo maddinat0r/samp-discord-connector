@@ -3,7 +3,7 @@
 #include "CDispatcher.hpp"
 #include "CCallback.hpp"
 #include "Network.hpp"
-#include "CChannel.hpp"
+#include "Channel.hpp"
 #include "SampConfigReader.hpp"
 #include "CLog.hpp"
 #include "version.hpp"
@@ -32,10 +32,10 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 	std::string bot_token;
 	if (SampConfigReader::Get()->GetVar("discord_bot_token", bot_token))
 	{
-		CChannelManager::Get()->Initialize();
+		ChannelManager::Get()->Initialize();
 		Network::Get()->Initialize(bot_token);
 		
-		CChannelManager::Get()->WaitForInitialization();
+		ChannelManager::Get()->WaitForInitialization();
 
 		logprintf(" >> plugin.dc-connector: " PLUGIN_VERSION " successfully loaded.");
 	}
@@ -51,7 +51,7 @@ PLUGIN_EXPORT void PLUGIN_CALL Unload()
 {
 	logprintf("plugin.dc-connector: Unloading plugin...");
 	
-	CChannelManager::CSingleton::Destroy();
+	ChannelManager::CSingleton::Destroy();
 	Network::CSingleton::Destroy();
 	PawnCallbackManager::CSingleton::Destroy();
 	CLog::CSingleton::Destroy();
