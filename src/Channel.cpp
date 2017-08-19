@@ -1,5 +1,5 @@
 #include "Channel.hpp"
-#include "CMessage.hpp"
+#include "Message.hpp"
 #include "Network.hpp"
 #include "CDispatcher.hpp"
 #include "CLog.hpp"
@@ -65,7 +65,7 @@ void ChannelManager::Initialize()
 	// PAWN callbacks
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_CREATE, [this](json &data)
 	{
-		CMessage msg(data);
+		Message msg(data);
 		Channel_t const &channel = FindChannelById(msg.GetChannelId());
 		if (channel)
 		{

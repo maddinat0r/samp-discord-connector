@@ -9,11 +9,11 @@
 using json = nlohmann::json;
 
 
-class CMessage
+class Message
 {
 public:
-	CMessage(json &data);
-	~CMessage() = default;
+	Message(json &data);
+	~Message() = default;
 
 private:
 	std::string

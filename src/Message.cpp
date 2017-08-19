@@ -1,7 +1,7 @@
-#include "CMessage.hpp"
+#include "Message.hpp"
 
 
-CMessage::CMessage(json &data)
+Message::Message(json &data)
 { 
 	m_Author = data["author"]["username"].get<std::string>();
 	m_Content = data["content"].get<std::string>();
