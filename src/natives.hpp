@@ -14,7 +14,7 @@ namespace Native
 	//AMX_DECLARE_NATIVE(native_name);
 	AMX_DECLARE_NATIVE(DCC_FindChannelByName);
 	AMX_DECLARE_NATIVE(DCC_FindChannelById);
-	AMX_DECLARE_NATIVE(DCC_IsChannelPrivate);
+	AMX_DECLARE_NATIVE(DCC_GetChannelType);
 	AMX_DECLARE_NATIVE(DCC_GetChannelName);
 	AMX_DECLARE_NATIVE(DCC_GetChannelId);
 	AMX_DECLARE_NATIVE(DCC_GetChannelTopic);

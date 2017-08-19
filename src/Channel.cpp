@@ -14,8 +14,8 @@ Channel::Channel(ChannelId_t pawn_id, json &data) :
 	m_PawnId(pawn_id)
 {
 	m_Id = data["id"].get<std::string>();
-	m_IsPrivate = data["is_private"].get<bool>();
-	if (!m_IsPrivate) // is a guild channel
+	m_Type = static_cast<Type>(data["type"].get<int>());
+	if (m_Type == Type::GUILD_TEXT) // is a guild channel
 	{
 		m_GuildId = data["guild_id"].get<std::string>();
 		m_Name = data["name"].get<std::string>();

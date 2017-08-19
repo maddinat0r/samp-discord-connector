@@ -55,10 +55,10 @@ AMX_DECLARE_NATIVE(Native::DCC_FindChannelById)
 	return ret_val;
 }
 
-// native DCC_IsChannelPrivate(DCC_Channel:channel, &bool:is_private);
-AMX_DECLARE_NATIVE(Native::DCC_IsChannelPrivate)
+// native DCC_GetChannelType(DCC_Channel:channel, &DCC_ChannelType:type);
+AMX_DECLARE_NATIVE(Native::DCC_GetChannelType)
 {
-	CScopedDebugInfo dbg_info(amx, "DCC_IsChannelPrivate", params, "dr");
+	CScopedDebugInfo dbg_info(amx, "DCC_GetChannelType", params, "dr");
 
 	ChannelId_t channelid = params[1];
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
@@ -75,7 +75,7 @@ AMX_DECLARE_NATIVE(Native::DCC_IsChannelPrivate)
 		return 0;
 	}
 
-	*dest = channel->IsPrivate() ? 1 : 0;
+	*dest = static_cast<cell>(channel->GetType());
 
 	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;

@@ -72,7 +72,7 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	//AMX_DEFINE_NATIVE(native_name)
 	AMX_DEFINE_NATIVE(DCC_FindChannelByName)
 	AMX_DEFINE_NATIVE(DCC_FindChannelById)
-	AMX_DEFINE_NATIVE(DCC_IsChannelPrivate)
+	AMX_DEFINE_NATIVE(DCC_GetChannelType)
 	AMX_DEFINE_NATIVE(DCC_GetChannelName)
 	AMX_DEFINE_NATIVE(DCC_GetChannelId)
 	AMX_DEFINE_NATIVE(DCC_GetChannelTopic)

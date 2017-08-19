@@ -264,7 +264,7 @@ Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 
 	auto req = std::make_shared<Request_t>();
 	req->method(method);
-	req->target("/api/v5" + url);
+	req->target("/api/v6" + url);
 	req->version = 11;
 	req->insert("Host", "discordapp.com");
 	req->insert("User-Agent", "DiscordBot (github.com/maddinat0r/samp-discord-connector, " PLUGIN_VERSION ")");

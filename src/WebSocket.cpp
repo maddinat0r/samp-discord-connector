@@ -75,7 +75,7 @@ bool WebSocket::Connect()
 	}
 
 	error.clear();
-	m_WebSocket.handshake(m_GatewayUrl, "/?encoding=json&v=5", error);
+	m_WebSocket.handshake(m_GatewayUrl, "/?encoding=json&v=6", error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Can't upgrade to WSS protocol: {} ({})",

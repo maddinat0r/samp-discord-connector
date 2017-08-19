@@ -24,13 +24,22 @@ enum E_LOGLEVEL
 };
 #endif
 
+enum DCC_ChannelType
+{
+	GUILD_TEXT = 0,
+	DM = 1,
+	GUILD_VOICE = 2,
+	GROUP_DM = 3,
+	GUILD_CATEGORY = 4
+};
+
 
 
 // natives
 native DCC_Channel:DCC_FindChannelByName(const channel_name[]);
 native DCC_Channel:DCC_FindChannelById(const channel_id[]);
 
-native DCC_IsChannelPrivate(DCC_Channel:channel, &bool:is_private);
+native DCC_GetChannelType(DCC_Channel:channel, &DCC_ChannelType:type);
 native DCC_GetChannelName(DCC_Channel:channel, dest[], max_size = sizeof dest);
 native DCC_GetChannelId(DCC_Channel:channel, dest[], max_size = sizeof dest);
 native DCC_GetChannelTopic(DCC_Channel:channel, dest[], max_size = sizeof dest);
