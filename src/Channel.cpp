@@ -88,8 +88,16 @@ void ChannelManager::WaitForInitialization()
 void ChannelManager::AddChannel(json &data)
 {
 	json &type = data["type"];
-	if (!type.is_null() && type.get<std::string>() != "text")
-		return; // we're only interested in text channels
+	if (!type.is_null())
+	{
+		Channel::Type ch_type = static_cast<Channel::Type>(type.get<int>());
+		if (ch_type != Channel::Type::GUILD_TEXT
+			&& ch_type != Channel::Type::DM
+			&& ch_type != Channel::Type::GROUP_DM)
+		{
+			return; // we're only interested in text channels
+		}
+	}
 
 	ChannelId_t id = 1;
 	while (m_Channels.find(id) != m_Channels.end())
