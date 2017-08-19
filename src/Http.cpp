@@ -74,6 +74,7 @@ void Http::NetworkThreadFunc()
 					if (retry_counter++ >= MaxRetries || !ReconnectRetry())
 					{
 						// we failed to reconnect, discard this request
+						CLog::Get()->Log(LogLevel::WARNING, "Failed to send request, discarding");
 						it = m_Queue.erase(it);
 						skip_entry = true;
 						break; // break out of do-while loop
@@ -101,6 +102,7 @@ void Http::NetworkThreadFunc()
 					if (retry_counter++ >= MaxRetries || !ReconnectRetry())
 					{
 						// we failed to reconnect, discard this request
+						CLog::Get()->Log(LogLevel::WARNING, "Failed to read response, discarding");
 						it = m_Queue.erase(it);
 						skip_entry = true;
 						break; // break out of do-while loop
