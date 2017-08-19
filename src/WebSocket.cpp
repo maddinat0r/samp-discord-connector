@@ -55,7 +55,6 @@ bool WebSocket::Connect()
 		return false;
 	}
 
-	error.clear();
 	asio::connect(m_WssStream.lowest_layer(), target, error);
 	if (error)
 	{
@@ -64,8 +63,15 @@ bool WebSocket::Connect()
 		return false;
 	}
 
-	error.clear();
-	m_WssStream.set_verify_mode(asio::ssl::verify_none); // TODO error check
+	m_WssStream.set_verify_mode(asio::ssl::verify_none, error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::ERROR,
+			"Can't configure SSL stream peer verification mode for Discord gateway: {} ({})",
+			error.message(), error.value());
+		return false;
+	}
+
 	m_WssStream.handshake(asio::ssl::stream_base::client, error);
 	if (error)
 	{
@@ -74,7 +80,6 @@ bool WebSocket::Connect()
 		return false;
 	}
 
-	error.clear();
 	m_WebSocket.handshake(m_GatewayUrl, "/?encoding=json&v=6", error);
 	if (error)
 	{
@@ -98,7 +103,6 @@ void WebSocket::Disconnect()
 			error.message(), error.value());
 	}
 
-	error.clear();
 	m_WssStream.shutdown(error);
 	if (error)
 	{
@@ -106,7 +110,6 @@ void WebSocket::Disconnect()
 			error.message(), error.value());
 	}
 
-	error.clear();
 	m_WssStream.lowest_layer().shutdown(asio::ip::tcp::socket::shutdown_both, error);
 	if (error)
 	{
@@ -114,7 +117,6 @@ void WebSocket::Disconnect()
 			error.message(), error.value());
 	}
 
-	error.clear();
 	m_WssStream.lowest_layer().close(error);
 	if (error)
 	{

@@ -21,6 +21,7 @@ Http::~Http()
 {
 	m_NetworkThreadRunning = false;
 	m_NetworkThread.join();
+	Disconnect();
 }
 
 void Http::NetworkThreadFunc()
@@ -126,7 +127,10 @@ void Http::NetworkThreadFunc()
 						CLog::Get()->Log(LogLevel::ERROR, 
 							"Error while processing rate-limit: already rate-limited path '{}'",
 							limited_url);
-						return; // TODO: return is evil
+
+						// skip this request, but leave it in our list to retry later
+						it++;
+						continue;
 					}
 
 					it_r = response.find("X-RateLimit-Reset");
@@ -180,7 +184,6 @@ bool Http::Connect()
 		return false;
 	}
 
-	error.clear();
 	asio::connect(m_SslStream.lowest_layer(), target, error);
 	if (error)
 	{
@@ -190,8 +193,15 @@ bool Http::Connect()
 	}
 
 	// SSL handshake
-	error.clear();
-	m_SslStream.set_verify_mode(asio::ssl::verify_none); // TODO error check
+	m_SslStream.set_verify_mode(asio::ssl::verify_none, error);
+	if (error)
+	{
+		CLog::Get()->Log(LogLevel::ERROR, 
+			"Can't configure SSL stream peer verification mode for Discord API: {} ({})",
+			error.message(), error.value());
+		return false;
+	}
+
 	m_SslStream.handshake(asio::ssl::stream_base::client, error);
 	if (error)
 	{
@@ -215,7 +225,6 @@ void Http::Disconnect()
 			error.message(), error.value());
 	}
 
-	error.clear();
 	m_SslStream.lowest_layer().shutdown(asio::ip::tcp::socket::shutdown_both, error);
 	if (error && error != boost::asio::error::eof)
 	{
@@ -223,7 +232,6 @@ void Http::Disconnect()
 			error.message(), error.value());
 	}
 
-	error.clear();
 	m_SslStream.lowest_layer().close(error);
 	if (error)
 	{
