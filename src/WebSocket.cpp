@@ -15,7 +15,7 @@ WebSocket::WebSocket() :
 
 WebSocket::~WebSocket()
 {
-	Disconnect();
+	m_IoService.stop();
 
 	if (m_IoThread)
 	{
@@ -23,6 +23,8 @@ WebSocket::~WebSocket()
 		delete m_IoThread;
 		m_IoThread = nullptr;
 	}
+	
+	Disconnect();
 }
 
 void WebSocket::Initialize(std::string token, std::string gateway_url)

@@ -33,9 +33,6 @@ void Network::Initialize(std::string const &token)
 Network::~Network()
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "Network::~Network");
-
-	m_Http.release();
-	m_WebSocket.release();
 }
 
 ::Http &Network::Http()
