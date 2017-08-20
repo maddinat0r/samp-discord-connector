@@ -74,18 +74,6 @@ void ChannelManager::Initialize()
 		m_Initialized++;
 	});
 
-	// GUILD_CREATE event seems to be always sent after READY event with all guilds the bot is in
-	//Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_CREATE, [this](json &data)
-	//{
-	//	for (json &c : data["channels"])
-	//	{
-	//		// manually add guild_id to channel data
-	//		c["guild_id"] = data["id"];
-	//		AddChannel(c);
-	//	}
-	//	m_Initialized++;
-	//});
-
 	// PAWN callbacks
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_CREATE, [this](json &data)
 	{

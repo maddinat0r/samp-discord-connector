@@ -85,22 +85,6 @@ void GuildManager::Initialize()
 	});
 
 	// TODO: events
-
-	// PAWN callbacks
-	//Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_CREATE, [this](json &data)
-	//{
-	//	Message msg(data);
-	//	Guild_t const &channel = FindGuildById(msg.GetGuildId());
-	//	if (channel)
-	//	{
-	//		CDispatcher::Get()->Dispatch([this, msg, &channel]()
-	//		{
-	//			// forward DCC_OnGuildMessage(DCC_Guild:channel, const author[], const message[]);
-	//			PawnCallbackManager::Get()->Call("DCC_OnGuildMessage",
-	//				channel->GetPawnId(), msg.GetAuthor(), msg.GetContent());
-	//		});
-	//	}
-	//});
 }
 
 void GuildManager::WaitForInitialization()

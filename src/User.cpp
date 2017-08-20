@@ -37,31 +37,6 @@ void UserManager::Initialize()
 		AddUser(data["user"]); // that's our bot
 		m_Initialized++;
 	});
-
-	/*Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_CREATE, [this](json &data)
-	{
-		for (json &c : data["members"])
-		{
-			AddUser(c["user"]);
-		}
-		m_Initialized++;
-	});*/
-
-	// PAWN callbacks
-	//Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_CREATE, [this](json &data)
-	//{
-	//	Message msg(data);
-	//	User_t const &channel = FindUserById(msg.GetUserId());
-	//	if (channel)
-	//	{
-	//		CDispatcher::Get()->Dispatch([this, msg, &channel]()
-	//		{
-	//			// forward DCC_OnUserMessage(DCC_User:channel, const author[], const message[]);
-	//			PawnCallbackManager::Get()->Call("DCC_OnUserMessage",
-	//				channel->GetPawnId(), msg.GetAuthor(), msg.GetContent());
-	//		});
-	//	}
-	//});
 }
 
 void UserManager::WaitForInitialization()
