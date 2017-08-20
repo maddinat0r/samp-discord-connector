@@ -27,15 +27,15 @@ public:
 	};
 
 public:
-	Channel(ChannelId_t pawn_id, json &data);
+	Channel(ChannelId_t pawn_id, json &data, GuildId_t guild_id);
 	~Channel() = default;
 
 private:
 	const ChannelId_t m_PawnId;
 
-	Snowflake_t
-		m_Id,
-		m_GuildId;
+	Snowflake_t m_Id;
+
+	GuildId_t m_GuildId = 0;
 
 	Type m_Type;
 
@@ -56,7 +56,7 @@ public:
 	{
 		return m_Type;
 	}
-	inline Snowflake_t const &GetGuildId() const
+	inline GuildId_t GetGuildId() const
 	{
 		return m_GuildId;
 	}
@@ -91,7 +91,7 @@ public:
 	void Initialize();
 	void WaitForInitialization();
 
-	Channel_t const &AddChannel(json &data);
+	Channel_t const &AddChannel(json &data, GuildId_t guild_id = 0);
 
 	Channel_t const &FindChannel(ChannelId_t id);
 	Channel_t const &FindChannelByName(std::string const &name);

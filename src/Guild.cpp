@@ -13,7 +13,7 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 	m_OwnerId = data["owner_id"].get<std::string>();
 
 	for (auto &c : data["channels"])
-		m_Channels.push_back(ChannelManager::Get()->AddChannel(c)->GetPawnId());
+		m_Channels.push_back(ChannelManager::Get()->AddChannel(c, pawn_id)->GetPawnId());
 
 	for (auto &r : data["roles"])
 		m_Roles.push_back(RoleManager::Get()->AddRole(r)->GetPawnId());
