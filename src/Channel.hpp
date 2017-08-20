@@ -16,6 +16,7 @@ using json = nlohmann::json;
 
 class Channel
 {
+	friend class ChannelManager;
 public:
 	enum class Type
 	{
@@ -92,6 +93,7 @@ public:
 	void WaitForInitialization();
 
 	Channel_t const &AddChannel(json &data, GuildId_t guild_id = 0);
+	void UpdateChannel(json &data);
 
 	Channel_t const &FindChannel(ChannelId_t id);
 	Channel_t const &FindChannelByName(std::string const &name);

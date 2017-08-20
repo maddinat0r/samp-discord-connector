@@ -62,6 +62,11 @@ void ChannelManager::Initialize()
 		ChannelManager::Get()->AddChannel(data);
 	});
 
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::CHANNEL_UPDATE, [](json &data)
+	{
+		ChannelManager::Get()->UpdateChannel(data);
+	});
+
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json &data)
 	{
 		for (json &c : data["private_channels"])
@@ -129,6 +134,27 @@ Channel_t const &ChannelManager::AddChannel(json &data, GuildId_t guild_id/* = 0
 		++id;
 
 	return m_Channels.emplace(id, Channel_t(new Channel(id, data, guild_id))).first->second;
+}
+
+void ChannelManager::UpdateChannel(json &data)
+{
+	Snowflake_t id = data["id"].get<std::string>();
+	Channel_t const &channel = FindChannelById(id);
+	if (!channel)
+	{
+		// TODO: error msg
+		return;
+	}
+
+	std::string
+		name = data["name"].get<std::string>(),
+		topic = data["topic"].get<std::string>();
+
+	PawnDispatcher::Get()->Dispatch([name, topic, &channel]()
+	{
+		channel->m_Name = name;
+		channel->m_Topic = topic;
+	});
 }
 
 Channel_t const &ChannelManager::FindChannel(ChannelId_t id)
