@@ -80,6 +80,10 @@ public:
 		return m_Channels;
 	}
 
+	inline void AddChannel(ChannelId_t id)
+	{
+		m_Channels.push_back(id);
+	}
 };
 
 
