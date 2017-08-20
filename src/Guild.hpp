@@ -13,7 +13,6 @@
 using json = nlohmann::json;
 
 
-
 class Guild
 {
 public:
@@ -70,7 +69,6 @@ public:
 	{
 		return m_Channels;
 	}
-	
 
 };
 
