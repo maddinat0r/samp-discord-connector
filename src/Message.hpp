@@ -16,14 +16,25 @@ public:
 	~Message() = default;
 
 private:
-	std::string
-		m_Author,
-		m_Content;
+	Snowflake_t
+		m_Id,
+		m_ChannelId;
 
-	Snowflake_t m_ChannelId;
+	UserId_t m_Author;
+	std::string m_Content;
+
+	bool m_MentionsEveryone;
 
 public:
-	std::string const &GetAuthor() const
+	Snowflake_t const &GetId() const
+	{
+		return m_Id;
+	}
+	Snowflake_t const &GetChannelId() const
+	{
+		return m_ChannelId;
+	}
+	UserId_t const &GetAuthor() const
 	{
 		return m_Author;
 	}
@@ -31,9 +42,9 @@ public:
 	{
 		return m_Content;
 	}
-	Snowflake_t const &GetChannelId() const
+	bool MentionsEveryone() const
 	{
-		return m_ChannelId;
+		return m_MentionsEveryone;
 	}
 
 };
