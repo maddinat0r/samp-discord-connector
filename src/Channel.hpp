@@ -2,10 +2,8 @@
 
 #include "CSingleton.hpp"
 #include "types.hpp"
-#include "sdk.hpp"
 
 #include <string>
-#include <memory>
 #include <atomic>
 
 #include <json.hpp>
@@ -16,8 +14,6 @@
 using json = nlohmann::json;
 
 
-using Channel_t = std::unique_ptr<class Channel>;
-using ChannelId_t = cell;
 
 class Channel
 {

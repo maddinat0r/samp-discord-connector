@@ -2,22 +2,16 @@
 
 #include "CSingleton.hpp"
 #include "types.hpp"
-#include "sdk.hpp"
 
 #include <string>
-#include <memory>
 #include <atomic>
 
 #include <json.hpp>
-
-#undef SendMessage // Windows at its finest
 
 
 using json = nlohmann::json;
 
 
-using User_t = std::unique_ptr<class User>;
-using UserId_t = cell;
 
 class User
 {
