@@ -33,18 +33,69 @@ enum DCC_ChannelType
 	GUILD_CATEGORY = 4
 };
 
+#define DCC_INVALID_CHANNEL DCC_Channel:0
+#define DCC_INVALID_USER DCC_User:0
+#define DCC_INVALID_ROLE DCC_Role:0
+#define DCC_INVALID_GUILD DCC_Guild:0
+
 
 
 // natives
+// channels
 native DCC_Channel:DCC_FindChannelByName(const channel_name[]);
 native DCC_Channel:DCC_FindChannelById(const channel_id[]);
 
-native DCC_GetChannelType(DCC_Channel:channel, &DCC_ChannelType:type);
-native DCC_GetChannelName(DCC_Channel:channel, dest[], max_size = sizeof dest);
 native DCC_GetChannelId(DCC_Channel:channel, dest[], max_size = sizeof dest);
+native DCC_GetChannelType(DCC_Channel:channel, &DCC_ChannelType:type);
+native DCC_GetChannelGuild(DCC_Channel:channel, &DCC_Guild:guild);
+native DCC_GetChannelName(DCC_Channel:channel, dest[], max_size = sizeof dest);
 native DCC_GetChannelTopic(DCC_Channel:channel, dest[], max_size = sizeof dest);
 
 native DCC_SendChannelMessage(DCC_Channel:channel, const message[]);
+
+
+// users
+native DCC_User:DCC_FindUserByName(const user_name[], const user_discriminator[]);
+native DCC_User:DCC_FindUserById(const user_id[]);
+
+native DCC_GetUserId(DCC_User:user, dest[], max_size = sizeof dest);
+native DCC_GetUserName(DCC_User:user, dest[], max_size = sizeof dest);
+native DCC_GetUserDiscriminator(DCC_User:user, dest[], max_size = sizeof dest);
+native DCC_GetUserEmail(DCC_User:user, dest[], max_size = sizeof dest);
+native DCC_IsUserBot(DCC_User:user, &bool:is_bot);
+native DCC_IsUserVerified(DCC_User:user, &bool:is_verified);
+
+
+// roles
+native DCC_Role:DCC_FindRoleById(const role_id[]);
+
+native DCC_GetRoleId(DCC_Role:role, dest[], max_size = sizeof dest);
+native DCC_GetRoleName(DCC_Role:role, dest[], max_size = sizeof dest);
+native DCC_GetRoleColor(DCC_Role:role, &color);
+stock DCC_GetRoleColour(DCC_Role:role, &colour)
+	return DCC_GetRoleColor(role, colour);
+native DCC_GetRolePermissions(DCC_Role:role, &perm_high, &perm_low); // 64 bit integer
+native DCC_IsRoleHoist(DCC_Role:role, &bool:is_hoist);
+native DCC_IsRoleMentionable(DCC_Role:role, &bool:is_mentionable);
+
+
+// guilds
+native DCC_Guild:DCC_FindGuildByName(const guild_name[]);
+native DCC_Guild:DCC_FindGuildById(const guild_id[]);
+
+native DCC_GetGuildId(DCC_Guild:guild, dest[], max_size = sizeof dest);
+native DCC_GetGuildName(DCC_Guild:guild, dest[], max_size = sizeof dest);
+native DCC_GetGuildOwnerId(DCC_Guild:guild, dest[], max_size = sizeof dest);
+native DCC_GetGuildRole(DCC_Guild:guild, offset, &DCC_Role:role);
+native DCC_GetGuildRoleCount(DCC_Guild:guild, &count);
+native DCC_GetGuildMember(DCC_Guild:guild, offset, &DCC_User:user);
+native DCC_GetGuildMemberCount(DCC_Guild:guild, &count);
+native DCC_GetGuildMemberRole(DCC_Guild:guild, DCC_User:user, offset, &DCC_Role:role);
+native DCC_GetGuildMemberRoleCount(DCC_Guild:guild, DCC_User:user, &count);
+native DCC_HasGuildMemberRole(DCC_Guild:guild, DCC_User:user, DCC_Role:role, &bool:has_role);
+native DCC_GetGuildChannel(DCC_Guild:guild, offset, &DCC_Channel:channel);
+native DCC_GetGuildChannelCount(DCC_Guild:guild, &count);
+
 
 
 // callbacks
