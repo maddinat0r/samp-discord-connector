@@ -7,7 +7,7 @@ Role::Role(RoleId_t pawn_id, json &data) :
 	m_Name = data["name"].get<std::string>();
 	m_Color = data["color"].get<int>();
 	m_Hoist = data["hoist"].get<bool>();
-	m_Permissions = data["permissions"].get<int>();
+	m_Permissions = data["permissions"].get<decltype(m_Permissions)>();
 	m_Mentionable = data["mentionable"].get<bool>();
 }
 

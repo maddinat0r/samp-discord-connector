@@ -26,7 +26,7 @@ private:
 	std::string m_Name;
 	int m_Color;
 	bool m_Hoist;
-	int m_Permissions;
+	unsigned long long int m_Permissions;
 	bool m_Mentionable;
 
 public:
@@ -50,7 +50,7 @@ public:
 	{
 		return m_Hoist;
 	}
-	inline int GetPermissions() const
+	inline decltype(m_Permissions) GetPermissions() const
 	{
 		return m_Permissions;
 	}
