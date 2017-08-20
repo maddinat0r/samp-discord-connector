@@ -2,7 +2,7 @@
 #include "CCallback.hpp"
 #include "Network.hpp"
 #include "CDispatcher.hpp"
-#include "CMessage.hpp"
+#include "Message.hpp"
 #include "Channel.hpp"
 #include "misc.hpp"
 #include "types.hpp"
