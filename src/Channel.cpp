@@ -89,7 +89,7 @@ void ChannelManager::Initialize()
 		{
 			CDispatcher::Get()->Dispatch([this, msg, &channel]()
 			{
-				// forward DCC_OnChannelMessage(DCC_Channel:channel, const author[], const message[]);
+				// forward DCC_OnChannelMessage(DCC_Channel:channel, DCC_User:author, const message[]);
 				PawnCallbackManager::Get()->Call("DCC_OnChannelMessage",
 					channel->GetPawnId(), msg.GetAuthor(), msg.GetContent());
 			});

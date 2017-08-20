@@ -72,7 +72,7 @@ native DCC_Role:DCC_FindRoleById(const role_id[]);
 native DCC_GetRoleId(DCC_Role:role, dest[], max_size = sizeof dest);
 native DCC_GetRoleName(DCC_Role:role, dest[], max_size = sizeof dest);
 native DCC_GetRoleColor(DCC_Role:role, &color);
-stock DCC_GetRoleColour(DCC_Role:role, &colour)
+stock DCC_GetRoleColour(DCC_Role:role, &colour) // for our British mates
 	return DCC_GetRoleColor(role, colour);
 native DCC_GetRolePermissions(DCC_Role:role, &perm_high, &perm_low); // 64 bit integer
 native DCC_IsRoleHoist(DCC_Role:role, &bool:is_hoist);
@@ -99,4 +99,4 @@ native DCC_GetGuildChannelCount(DCC_Guild:guild, &count);
 
 
 // callbacks
-forward DCC_OnChannelMessage(DCC_Channel:channel, const author[], const message[]);
+forward DCC_OnChannelMessage(DCC_Channel:channel, DCC_User:author, const message[]);
