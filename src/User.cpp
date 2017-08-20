@@ -27,10 +27,10 @@ void UserManager::Initialize()
 {
 	assert(m_Initialized != m_InitValue);
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_ADD, [](json &data)
+	/*Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_ADD, [](json &data)
 	{
 		UserManager::Get()->AddUser(data["user"]);
-	});
+	});*/
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json &data)
 	{
@@ -38,14 +38,14 @@ void UserManager::Initialize()
 		m_Initialized++;
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_CREATE, [this](json &data)
+	/*Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_CREATE, [this](json &data)
 	{
 		for (json &c : data["members"])
 		{
 			AddUser(c["user"]);
 		}
 		m_Initialized++;
-	});
+	});*/
 
 	// PAWN callbacks
 	//Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_CREATE, [this](json &data)
@@ -70,17 +70,18 @@ void UserManager::WaitForInitialization()
 		std::this_thread::sleep_for(std::chrono::milliseconds(20));
 }
 
-void UserManager::AddUser(json &data)
+User_t const &UserManager::AddUser(json &data)
 {
 	Snowflake_t sfid = data["id"].get<std::string>();
-	if (FindUserById(sfid))
-		return; // user already exists
+	User_t const &user = FindUserById(sfid);
+	if (user)
+		return user; // user already exists
 
 	UserId_t id = 1;
 	while (m_Users.find(id) != m_Users.end())
 		++id;
 
-	m_Users.emplace(id, User_t(new User(id, data)));
+	return m_Users.emplace(id, User_t(new User(id, data))).first->second;
 }
 
 User_t const &UserManager::FindUser(UserId_t id)

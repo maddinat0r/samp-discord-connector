@@ -80,17 +80,17 @@ private:
 	~UserManager() = default;
 
 private:
-	const unsigned int m_InitValue = 2;
+	const unsigned int m_InitValue = 1;
 	std::atomic<unsigned int> m_Initialized{ 0 };
 
-	std::map<unsigned int, User_t> m_Users; //PAWN channel-id to actual channel map
+	std::map<UserId_t, User_t> m_Users; //PAWN channel-id to actual channel map
 
-private:
-	void AddUser(json &data);
 
 public:
 	void Initialize();
 	void WaitForInitialization();
+
+	User_t const &AddUser(json &data);
 
 	User_t const &FindUser(UserId_t id);
 	User_t const &FindUserByName(std::string const &name, std::string const &discriminator);
