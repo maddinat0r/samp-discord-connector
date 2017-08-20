@@ -31,6 +31,8 @@ add_samp_plugin(discord-connector
 	CDispatcher.cpp
 	CDispatcher.hpp
 	CError.hpp
+	Guild.cpp
+	Guild.hpp
 	CLog.cpp
 	CLog.hpp
 	Message.cpp
