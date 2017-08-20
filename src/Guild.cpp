@@ -4,6 +4,8 @@
 #include "User.hpp"
 #include "Role.hpp"
 
+#include <unordered_map>
+
 
 Guild::Guild(GuildId_t pawn_id, json &data) :
 	m_PawnId(pawn_id)
@@ -34,6 +36,29 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 			}
 		}
 		m_Members.push_back(std::move(member));
+	}
+
+	for (auto &p : data["presences"])
+	{
+		Snowflake_t userid = p["user"]["id"].get<std::string>();
+		for (auto &m : m_Members)
+		{
+			User_t const &user = UserManager::Get()->FindUser(m.UserId);
+			assert(user);
+			if (user->GetId() == userid)
+			{
+				// idle", "dnd", "online", or "offline
+				static const std::unordered_map<std::string, Member::PresenceStatus> status_map{
+					{ "idle", Member::PresenceStatus::IDLE },
+					{ "dnd", Member::PresenceStatus::DO_NOT_DISTURB },
+					{ "online", Member::PresenceStatus::ONLINE },
+					{ "offline", Member::PresenceStatus::OFFLINE }
+				};
+
+				m.Status = status_map.at(p["status"]);
+				break;
+			}
+		}
 	}
 }
 

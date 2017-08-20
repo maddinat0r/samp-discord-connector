@@ -864,6 +864,49 @@ AMX_DECLARE_NATIVE(Native::DCC_HasGuildMemberRole)
 	return 1;
 }
 
+// native DCC_GetGuildMemberStatus(DCC_Guild:guild, DCC_User:user, &DCC_UserPresenceStatus:status);
+AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberStatus)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetGuildMemberStatus", params, "ddr");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	UserId_t userid = params[2];
+	auto status = Guild::Member::PresenceStatus::INVALID;
+	for (auto &m : guild->GetMembers())
+	{
+		if (m.UserId != userid)
+			continue;
+
+		status = m.Status;
+		break;
+	}
+
+	if (status == Guild::Member::PresenceStatus::INVALID)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid user specified");
+		return 0;
+	}
+
+	cell *dest = nullptr;
+	if (amx_GetAddr(amx, params[3], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = static_cast<cell>(status);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
 // native DCC_GetGuildChannel(DCC_Guild:guild, offset, &DCC_Channel:channel);
 AMX_DECLARE_NATIVE(Native::DCC_GetGuildChannel)
 {

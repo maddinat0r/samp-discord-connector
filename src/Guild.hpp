@@ -18,8 +18,18 @@ class Guild
 public:
 	struct Member
 	{
+		enum class PresenceStatus
+		{
+			INVALID = 0,
+			ONLINE = 1,
+			IDLE = 2,
+			DO_NOT_DISTURB = 3,
+			OFFLINE = 4
+		};
+
 		UserId_t UserId;
 		std::vector<RoleId_t> Roles;
+		PresenceStatus Status;
 	};
 
 public:

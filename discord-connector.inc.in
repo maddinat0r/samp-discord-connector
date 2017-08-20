@@ -33,6 +33,16 @@ enum DCC_ChannelType
 	GUILD_CATEGORY = 4
 };
 
+enum DCC_UserPresenceStatus
+{
+	INVALID = 0,
+	ONLINE = 1,
+	IDLE = 2,
+	DO_NOT_DISTURB = 3,
+	OFFLINE = 4
+};
+
+
 #define DCC_INVALID_CHANNEL DCC_Channel:0
 #define DCC_INVALID_USER DCC_User:0
 #define DCC_INVALID_ROLE DCC_Role:0
@@ -93,6 +103,7 @@ native DCC_GetGuildMemberCount(DCC_Guild:guild, &count);
 native DCC_GetGuildMemberRole(DCC_Guild:guild, DCC_User:user, offset, &DCC_Role:role);
 native DCC_GetGuildMemberRoleCount(DCC_Guild:guild, DCC_User:user, &count);
 native DCC_HasGuildMemberRole(DCC_Guild:guild, DCC_User:user, DCC_Role:role, &bool:has_role);
+native DCC_GetGuildMemberStatus(DCC_Guild:guild, DCC_User:user, &DCC_UserPresenceStatus:status);
 native DCC_GetGuildChannel(DCC_Guild:guild, offset, &DCC_Channel:channel);
 native DCC_GetGuildChannelCount(DCC_Guild:guild, &count);
 

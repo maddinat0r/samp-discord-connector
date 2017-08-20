@@ -50,6 +50,7 @@ namespace Native
 	AMX_DECLARE_NATIVE(DCC_GetGuildMemberRole);
 	AMX_DECLARE_NATIVE(DCC_GetGuildMemberRoleCount);
 	AMX_DECLARE_NATIVE(DCC_HasGuildMemberRole);
+	AMX_DECLARE_NATIVE(DCC_GetGuildMemberStatus);
 	AMX_DECLARE_NATIVE(DCC_GetGuildChannel);
 	AMX_DECLARE_NATIVE(DCC_GetGuildChannelCount);
 };
