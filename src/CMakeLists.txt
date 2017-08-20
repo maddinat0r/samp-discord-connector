@@ -42,6 +42,8 @@ add_samp_plugin(discord-connector
 	Http.hpp
 	SampConfigReader.cpp
 	SampConfigReader.hpp
+	User.cpp
+	User.hpp
 	WebSocket.cpp
 	WebSocket.hpp
 	main.cpp
