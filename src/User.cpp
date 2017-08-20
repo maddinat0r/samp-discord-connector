@@ -18,7 +18,7 @@ User::User(UserId_t pawn_id, json &data) :
 		m_IsVerified = it->get<bool>();
 
 	it = data.find("email");
-	if (it != data.end())
+	if (it != data.end() && !it->is_null())
 		m_Email = it->get<std::string>();
 }
 
