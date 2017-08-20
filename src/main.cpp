@@ -1,6 +1,6 @@
 #include "sdk.hpp"
 #include "natives.hpp"
-#include "CDispatcher.hpp"
+#include "PawnDispatcher.hpp"
 #include "CCallback.hpp"
 #include "Network.hpp"
 #include "Guild.hpp"
@@ -72,7 +72,7 @@ PLUGIN_EXPORT void PLUGIN_CALL Unload()
 
 PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 {
-	CDispatcher::Get()->Process();
+	PawnDispatcher::Get()->Process();
 }
 
 

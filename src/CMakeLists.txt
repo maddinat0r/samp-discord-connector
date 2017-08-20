@@ -28,8 +28,6 @@ add_samp_plugin(discord-connector
 	CCallback.hpp
 	Channel.cpp
 	Channel.hpp
-	CDispatcher.cpp
-	CDispatcher.hpp
 	CError.hpp
 	Guild.cpp
 	Guild.hpp
@@ -42,6 +40,8 @@ add_samp_plugin(discord-connector
 	CSingleton.hpp
 	Http.cpp
 	Http.hpp
+	PawnDispatcher.cpp
+	PawnDispatcher.hpp
 	Role.cpp
 	Role.hpp
 	SampConfigReader.cpp

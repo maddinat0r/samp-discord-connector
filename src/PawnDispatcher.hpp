@@ -8,15 +8,15 @@
 #include "types.hpp"
 
 
-class CDispatcher : public CSingleton < CDispatcher >
+class PawnDispatcher : public CSingleton <PawnDispatcher>
 {
-	friend class CSingleton < CDispatcher >;
+	friend class CSingleton <PawnDispatcher>;
 public: //type definitions
 	using Function_t = std::function <void()>;
 
 private: //constructor / destructor
-	CDispatcher() = default;
-	~CDispatcher() = default;
+	PawnDispatcher() = default;
+	~PawnDispatcher() = default;
 
 private: //variables
 	std::queue<Function_t> m_Queue;
