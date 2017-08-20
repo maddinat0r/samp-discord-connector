@@ -59,12 +59,23 @@ void ChannelManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::CHANNEL_CREATE, [](json &data)
 	{
-		ChannelManager::Get()->AddChannel(data);
+		PawnDispatcher::Get()->Dispatch([data]() mutable
+		{
+			Channel_t const &channel = ChannelManager::Get()->AddChannel(data);
+
+			// forward DCC_OnChannelCreate(DCC_Channel:channel);
+			PawnCallbackManager::Get()->Call("DCC_OnChannelCreate", channel->GetPawnId());
+		});
 	});
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::CHANNEL_UPDATE, [](json &data)
 	{
 		ChannelManager::Get()->UpdateChannel(data);
+	});
+
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::CHANNEL_DELETE, [](json &data)
+	{
+		ChannelManager::Get()->DeleteChannel(data);
 	});
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json &data)
@@ -142,7 +153,34 @@ void ChannelManager::UpdateChannel(json &data)
 	{
 		channel->m_Name = name;
 		channel->m_Topic = topic;
+
+		// forward DCC_OnChannelUpdate(DCC_Channel:channel);
+		PawnCallbackManager::Get()->Call("DCC_OnChannelUpdate", channel->GetPawnId());
 	});
+}
+
+void ChannelManager::DeleteChannel(json & data)
+{
+	Snowflake_t id = data["id"].get<std::string>();
+	Channel_t const &channel = FindChannelById(id);
+	if (!channel)
+	{
+		// TODO: error msg
+		return;
+	}
+
+	PawnDispatcher::Get()->Dispatch([this, &channel]()
+	{
+		// forward DCC_OnChannelDelete(DCC_Channel:channel);
+		PawnCallbackManager::Get()->Call("DCC_OnChannelDelete", channel->GetPawnId());
+
+		Guild_t const &guild = GuildManager::Get()->FindGuild(channel->GetGuildId());
+		if (guild)
+			guild->RemoveChannel(channel->GetPawnId());
+
+		m_Channels.erase(channel->GetPawnId());
+	});
+
 }
 
 Channel_t const &ChannelManager::FindChannel(ChannelId_t id)

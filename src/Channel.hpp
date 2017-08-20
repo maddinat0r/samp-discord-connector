@@ -94,6 +94,7 @@ public:
 
 	Channel_t const &AddChannel(json &data, GuildId_t guild_id = 0);
 	void UpdateChannel(json &data);
+	void DeleteChannel(json &data);
 
 	Channel_t const &FindChannel(ChannelId_t id);
 	Channel_t const &FindChannelByName(std::string const &name);

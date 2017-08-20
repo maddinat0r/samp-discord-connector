@@ -84,6 +84,17 @@ public:
 	{
 		m_Channels.push_back(id);
 	}
+	inline void RemoveChannel(ChannelId_t id)
+	{
+		for (auto it = m_Channels.begin(); it != m_Channels.end(); it++)
+		{
+			if (*it == id)
+			{
+				m_Channels.erase(it);
+				break;
+			}
+		}
+	}
 };
 
 
