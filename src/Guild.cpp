@@ -2,6 +2,7 @@
 #include "Network.hpp"
 #include "Channel.hpp"
 #include "User.hpp"
+#include "Role.hpp"
 
 
 Guild::Guild(GuildId_t pawn_id, json &data) :

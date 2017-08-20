@@ -42,6 +42,8 @@ add_samp_plugin(discord-connector
 	CSingleton.hpp
 	Http.cpp
 	Http.hpp
+	Role.cpp
+	Role.hpp
 	SampConfigReader.cpp
 	SampConfigReader.hpp
 	User.cpp
