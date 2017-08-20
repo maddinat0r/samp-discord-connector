@@ -75,7 +75,6 @@ private:
 
 	std::map<RoleId_t, Role_t> m_Roles; //PAWN role-id to actual channel map
 
-
 public:
 	Role_t const &AddRole(json &data);
 
