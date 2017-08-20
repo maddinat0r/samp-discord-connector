@@ -3,6 +3,7 @@
 #include "Network.hpp"
 #include "CDispatcher.hpp"
 #include "CLog.hpp"
+#include "CCallback.hpp"
 
 #include "fmt/format.h"
 
@@ -51,16 +52,16 @@ void ChannelManager::Initialize()
 	});
 
 	// GUILD_CREATE event seems to be always sent after READY event with all guilds the bot is in
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_CREATE, [this](json &data)
-	{
-		for (json &c : data["channels"])
-		{
-			// manually add guild_id to channel data
-			c["guild_id"] = data["id"];
-			AddChannel(c);
-		}
-		m_Initialized++;
-	});
+	//Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_CREATE, [this](json &data)
+	//{
+	//	for (json &c : data["channels"])
+	//	{
+	//		// manually add guild_id to channel data
+	//		c["guild_id"] = data["id"];
+	//		AddChannel(c);
+	//	}
+	//	m_Initialized++;
+	//});
 
 	// PAWN callbacks
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_CREATE, [this](json &data)
@@ -85,8 +86,9 @@ void ChannelManager::WaitForInitialization()
 		std::this_thread::sleep_for(std::chrono::milliseconds(20));
 }
 
-void ChannelManager::AddChannel(json &data)
+Channel_t const &ChannelManager::AddChannel(json &data)
 {
+	static Channel_t invalid_channel;
 	json &type = data["type"];
 	if (!type.is_null())
 	{
@@ -95,15 +97,20 @@ void ChannelManager::AddChannel(json &data)
 			&& ch_type != Channel::Type::DM
 			&& ch_type != Channel::Type::GROUP_DM)
 		{
-			return; // we're only interested in text channels
+			return invalid_channel; // we're only interested in text channels
 		}
 	}
+
+	Snowflake_t sfid = data["id"].get<std::string>();
+	Channel_t const &channel = FindChannelById(sfid);
+	if (channel)
+		return channel; // channel already exists
 
 	ChannelId_t id = 1;
 	while (m_Channels.find(id) != m_Channels.end())
 		++id;
 
-	m_Channels.emplace(id, Channel_t(new Channel(id, data)));
+	return m_Channels.emplace(id, Channel_t(new Channel(id, data))).first->second;
 }
 
 Channel_t const &ChannelManager::FindChannel(ChannelId_t id)

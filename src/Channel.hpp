@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CSingleton.hpp"
-#include "CCallback.hpp"
 #include "types.hpp"
 #include "sdk.hpp"
 
@@ -88,17 +87,16 @@ private:
 	~ChannelManager() = default;
 
 private:
-	const unsigned int m_InitValue = 2;
+	const unsigned int m_InitValue = 1;
 	std::atomic<unsigned int> m_Initialized{ 0 };
 
-	std::map<unsigned int, Channel_t> m_Channels; //PAWN channel-id to actual channel map
-
-private:
-	void AddChannel(json &data);
+	std::map<ChannelId_t, Channel_t> m_Channels; //PAWN channel-id to actual channel map
 
 public:
 	void Initialize();
 	void WaitForInitialization();
+
+	Channel_t const &AddChannel(json &data);
 
 	Channel_t const &FindChannel(ChannelId_t id);
 	Channel_t const &FindChannelByName(std::string const &name);
