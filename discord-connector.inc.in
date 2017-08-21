@@ -115,3 +115,6 @@ forward DCC_OnChannelMessage(DCC_Channel:channel, DCC_User:author, const message
 forward DCC_OnChannelCreate(DCC_Channel:channel);
 forward DCC_OnChannelUpdate(DCC_Channel:channel);
 forward DCC_OnChannelDelete(DCC_Channel:channel);
+
+// guilds
+forward DCC_OnGuildDelete(DCC_Guild:guild);

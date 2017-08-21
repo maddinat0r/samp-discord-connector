@@ -114,6 +114,7 @@ private:
 
 private:
 	void AddGuild(json &data);
+	void DeleteGuild(json &data);
 
 public:
 	void Initialize();

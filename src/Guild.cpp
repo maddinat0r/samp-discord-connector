@@ -86,6 +86,14 @@ void GuildManager::Initialize()
 		m_Initialized++;
 	});
 
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_DELETE, [](json &data)
+	{
+		PawnDispatcher::Get()->Dispatch([data]() mutable
+		{
+			GuildManager::Get()->DeleteGuild(data);
+		});
+	});
+
 	// TODO: events
 }
 
@@ -106,6 +114,19 @@ void GuildManager::AddGuild(json &data)
 		++id;
 
 	m_Guilds.emplace(id, Guild_t(new Guild(id, data)));
+}
+
+void GuildManager::DeleteGuild(json &data)
+{
+	Snowflake_t sfid = data["id"].get<std::string>();
+	Guild_t const &guild = FindGuildById(sfid);
+	if (!guild)
+		return; // TODO: warning msg: guild isn't cached, it probably should have
+
+	// forward DCC_OnGuildDelete(DCC_Guild:guild);
+	PawnCallbackManager::Get()->Call("DCC_OnGuildDelete", guild->GetPawnId());
+
+	m_Guilds.erase(guild->GetPawnId());
 }
 
 Guild_t const &GuildManager::FindGuild(GuildId_t id)
