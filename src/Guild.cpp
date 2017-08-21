@@ -3,6 +3,8 @@
 #include "Channel.hpp"
 #include "User.hpp"
 #include "Role.hpp"
+#include "PawnDispatcher.hpp"
+#include "PawnCallback.hpp"
 
 #include <unordered_map>
 

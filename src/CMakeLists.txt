@@ -24,8 +24,6 @@ add_samp_plugin(discord-connector
 	${SAMPSDK_DIR}/amxplugin.cpp
 	${SAMPSDK_DIR}/amxplugin2.cpp
 	${SAMPSDK_DIR}/amx/getch.c
-	CCallback.cpp
-	CCallback.hpp
 	Channel.cpp
 	Channel.hpp
 	CError.hpp
@@ -40,6 +38,8 @@ add_samp_plugin(discord-connector
 	CSingleton.hpp
 	Http.cpp
 	Http.hpp
+	PawnCallback.cpp
+	PawnCallback.hpp
 	PawnDispatcher.cpp
 	PawnDispatcher.hpp
 	Role.cpp

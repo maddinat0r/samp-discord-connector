@@ -1,7 +1,7 @@
 #include "sdk.hpp"
 #include "natives.hpp"
 #include "PawnDispatcher.hpp"
-#include "CCallback.hpp"
+#include "PawnCallback.hpp"
 #include "Network.hpp"
 #include "Guild.hpp"
 #include "User.hpp"

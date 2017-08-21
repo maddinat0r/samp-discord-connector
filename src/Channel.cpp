@@ -3,7 +3,7 @@
 #include "Network.hpp"
 #include "PawnDispatcher.hpp"
 #include "CLog.hpp"
-#include "CCallback.hpp"
+#include "PawnCallback.hpp"
 #include "Guild.hpp"
 
 #include "fmt/format.h"
