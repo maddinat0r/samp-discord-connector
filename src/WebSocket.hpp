@@ -94,9 +94,11 @@ private: // functions
 	void Reconnect()
 	{
 		Disconnect();
-		Connect();
-		SendResumePayload();
-		DoHeartbeat({});
+		if (Connect())
+		{
+			SendResumePayload();
+			DoHeartbeat({});
+		}
 	}
 
 public: // functions
