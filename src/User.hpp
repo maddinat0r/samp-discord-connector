@@ -81,7 +81,7 @@ private:
 
 public:
 	void Initialize();
-	void WaitForInitialization();
+	bool WaitForInitialization();
 
 	User_t const &AddUser(json &data);
 

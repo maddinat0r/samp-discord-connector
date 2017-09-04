@@ -118,7 +118,7 @@ private:
 
 public:
 	void Initialize();
-	void WaitForInitialization();
+	bool WaitForInitialization();
 
 	Guild_t const &FindGuild(GuildId_t id);
 	Guild_t const &FindGuildByName(std::string const &name);

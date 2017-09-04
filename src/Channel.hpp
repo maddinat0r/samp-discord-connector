@@ -90,7 +90,7 @@ private:
 
 public:
 	void Initialize();
-	void WaitForInitialization();
+	bool WaitForInitialization();
 
 	Channel_t const &AddChannel(json &data, GuildId_t guild_id = 0);
 	void UpdateChannel(json &data);

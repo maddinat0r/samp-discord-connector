@@ -40,11 +40,17 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 
 		Network::Get()->Initialize(bot_token);
 
-		GuildManager::Get()->WaitForInitialization();
-		UserManager::Get()->WaitForInitialization();
-		ChannelManager::Get()->WaitForInitialization();
-
-		logprintf(" >> plugin.dc-connector: " PLUGIN_VERSION " successfully loaded.");
+		if (GuildManager::Get()->WaitForInitialization()
+			&& UserManager::Get()->WaitForInitialization()
+			&& ChannelManager::Get()->WaitForInitialization())
+		{
+			logprintf(" >> plugin.dc-connector: " PLUGIN_VERSION " successfully loaded.");
+		}
+		else
+		{
+			logprintf(" >> plugin.dc-connector: timeout while initializing data.");
+			ret_val = false;
+		}
 	}
 	else
 	{
