@@ -187,13 +187,13 @@ void WebSocket::OnRead(boost::system::error_code ec)
 
 	if (ec)
 	{
+		bool reconnect = false;
 		switch (ec.value())
 		{
 		case boost::asio::ssl::error::stream_errors::stream_truncated:
-			CLog::Get()->Log(LogLevel::INFO,
-				"Discord terminated websocket gateway connection, attempting reconnect...");
-			Reconnect();
-			Read();
+			CLog::Get()->Log(LogLevel::ERROR, "Discord terminated websocket connection; reason: {} ({})", 
+				m_WebSocket.reason().reason.c_str(), m_WebSocket.reason().code);
+			reconnect = true;
 			break;
 		case boost::asio::error::operation_aborted:
 			// connection was closed, do nothing
@@ -201,11 +201,16 @@ void WebSocket::OnRead(boost::system::error_code ec)
 		default:
 			CLog::Get()->Log(LogLevel::ERROR, "Can't read from Discord websocket gateway: {} ({})",
 				ec.message(), ec.value());
+			reconnect = true;
+			break;
+		}
+
+		if (reconnect)
+		{
 			CLog::Get()->Log(LogLevel::INFO,
 				"websocket gateway connection terminated, attempting reconnect...");
 			Reconnect();
 			Read();
-			break;
 		}
 		return;
 	}
