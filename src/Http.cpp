@@ -275,13 +275,13 @@ Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 	auto req = std::make_shared<Request_t>();
 	req->method(method);
 	req->target("/api/v6" + url);
-	req->version = 11;
+	req->version(11);
 	req->insert("Host", "discordapp.com");
 	req->insert("User-Agent", "DiscordBot (github.com/maddinat0r/samp-discord-connector, " PLUGIN_VERSION ")");
 	if (!content.empty())
 		req->insert("Content-Type", "application/json");
 	req->insert("Authorization", "Bot " + m_Token);
-	req->body = content;
+	req->body() = content;
 
 	req->prepare_payload();
 
@@ -306,7 +306,7 @@ void Http::Get(std::string const &url, GetCallback_t &&callback)
 	SendRequest(beast::http::verb::get, url, "", [callback](Streambuf_t &sb, Response_t &resp)
 	{
 		std::stringstream ss_body, ss_data;
-		ss_body << beast::buffers(resp.body.data());
+		ss_body << beast::buffers(resp.body().data());
 		ss_data << beast::buffers(sb.data());
 		callback({ resp.result_int(), resp.reason().to_string(), ss_body.str(), ss_data.str() });
 	});
