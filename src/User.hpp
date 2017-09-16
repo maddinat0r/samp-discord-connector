@@ -76,7 +76,7 @@ private:
 	const unsigned int m_InitValue = 1;
 	std::atomic<unsigned int> m_Initialized{ 0 };
 
-	std::map<UserId_t, User_t> m_Users; //PAWN channel-id to actual channel map
+	std::map<UserId_t, User_t> m_Users; //PAWN user-id to actual channel map
 
 
 public:

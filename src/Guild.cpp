@@ -49,7 +49,7 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 			assert(user);
 			if (user->GetId() == userid)
 			{
-				// idle", "dnd", "online", or "offline
+				// "idle", "dnd", "online", or "offline"
 				static const std::unordered_map<std::string, Member::PresenceStatus> status_map{
 					{ "idle", Member::PresenceStatus::IDLE },
 					{ "dnd", Member::PresenceStatus::DO_NOT_DISTURB },
@@ -83,11 +83,6 @@ void Guild::Update(json &data)
 void GuildManager::Initialize()
 {
 	assert(m_Initialized != m_InitValue);
-
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_ADD, [](json &data)
-	{
-		GuildManager::Get()->AddGuild(data["user"]);
-	});
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json &data)
 	{
