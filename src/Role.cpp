@@ -4,6 +4,11 @@ Role::Role(RoleId_t pawn_id, json &data) :
 	m_PawnId(pawn_id)
 {
 	m_Id = data["id"].get<std::string>();
+	Update(data);
+}
+
+void Role::Update(json &data)
+{
 	m_Name = data["name"].get<std::string>();
 	m_Color = data["color"].get<int>();
 	m_Hoist = data["hoist"].get<bool>();

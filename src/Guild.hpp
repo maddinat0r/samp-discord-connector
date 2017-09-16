@@ -95,6 +95,7 @@ public:
 			}
 		}
 	}
+	void Update(json &data);
 };
 
 
@@ -114,7 +115,7 @@ private:
 
 private:
 	void AddGuild(json &data);
-	void DeleteGuild(json &data);
+	void DeleteGuild(Guild_t const &guild);
 
 public:
 	void Initialize();

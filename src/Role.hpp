@@ -59,6 +59,7 @@ public:
 		return m_Mentionable;
 	}
 
+	void Update(json &data);
 };
 
 
