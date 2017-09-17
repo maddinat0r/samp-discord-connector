@@ -119,3 +119,5 @@ forward DCC_OnChannelDelete(DCC_Channel:channel);
 // guilds
 forward DCC_OnGuildUpdate(DCC_Guild:guild);
 forward DCC_OnGuildDelete(DCC_Guild:guild);
+forward DCC_OnGuildMemberAdd(DCC_Guild:guild, DCC_User:user);
+forward DCC_OnGuildMemberRemove(DCC_Guild:guild, DCC_User:user);

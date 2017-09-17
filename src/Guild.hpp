@@ -95,6 +95,21 @@ public:
 			}
 		}
 	}
+	inline void AddMember(Member &&member)
+	{
+		m_Members.push_back(std::move(member));
+	}
+	inline void RemoveMember(UserId_t userid)
+	{
+		for (auto it = m_Members.begin(); it != m_Members.end(); it++)
+		{
+			if ((*it).UserId == userid)
+			{
+				m_Members.erase(it);
+				break;
+			}
+		}
+	}
 	void Update(json &data);
 };
 

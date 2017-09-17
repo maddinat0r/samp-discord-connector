@@ -128,6 +128,55 @@ void GuildManager::Initialize()
 		});
 	});
 
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_ADD, [](json &data)
+	{
+		PawnDispatcher::Get()->Dispatch([data]() mutable
+		{
+			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
+			if (!guild)
+				return; // TODO: error msg: guild isn't cached, it probably should have
+
+			Guild::Member member;
+			// returns correct user if he alreadt exists
+			auto const &user = UserManager::Get()->AddUser(data["user"]);
+			member.UserId = user->GetPawnId();
+			for (auto &mr : data["roles"])
+			{
+				Role_t const &role = RoleManager::Get()->FindRoleById(mr.get<std::string>());
+				if (role)
+					member.Roles.push_back(role->GetPawnId());
+				else
+				{
+					// TODO: error message
+				}
+			}
+
+			guild->AddMember(std::move(member));
+
+			// forward DCC_OnGuildMemberAdd(DCC_Guild:guild, DCC_User:user);
+			PawnCallbackManager::Get()->Call("DCC_OnGuildMemberAdd", guild->GetPawnId(), user->GetPawnId());
+		});
+	});
+
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_REMOVE, [](json &data)
+	{
+		PawnDispatcher::Get()->Dispatch([data]() mutable
+		{
+			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
+			if (!guild)
+				return; // TODO: error msg: guild isn't cached, it probably should have
+
+			auto const &user = UserManager::Get()->FindUserById(data["user"]["id"].get<std::string>());
+			if (!user)
+				return; // TODO: error msg: user not cached (cache mismatch)
+
+			// forward DCC_OnGuildMemberRemove(DCC_Guild:guild, DCC_User:user);
+			PawnCallbackManager::Get()->Call("DCC_OnGuildMemberRemove", guild->GetPawnId(), user->GetPawnId());
+
+			guild->RemoveMember(user->GetPawnId());
+		});
+	});
+
 
 	// TODO: events
 }
