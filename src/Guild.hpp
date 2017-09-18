@@ -144,11 +144,12 @@ private:
 	std::atomic<unsigned int> 
 		m_InitValue{ 1 },
 		m_Initialized{ 0 };
+	std::atomic<bool> m_IsInitialized{ false };
 
 	std::map<GuildId_t, Guild_t> m_Guilds; //PAWN guild-id to actual channel map
 
 private:
-	void AddGuild(json &data);
+	Guild_t const &AddGuild(json &data);
 	void DeleteGuild(Guild_t const &guild);
 
 public:

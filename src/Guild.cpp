@@ -118,8 +118,21 @@ void GuildManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_CREATE, [this](json &data)
 	{
-		AddGuild(data);
-		m_Initialized++;
+		if (!m_IsInitialized)
+		{
+			AddGuild(data);
+			m_Initialized++;
+		}
+		else
+		{
+			PawnDispatcher::Get()->Dispatch([data]() mutable
+			{
+				auto const &guild = GuildManager::Get()->AddGuild(data);
+
+				// forward DCC_OnGuildCreate(DCC_Guild:guild);
+				PawnCallbackManager::Get()->Call("DCC_OnGuildCreate", guild->GetPawnId());
+			});
+		}
 	});
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_DELETE, [](json &data)
@@ -293,20 +306,22 @@ bool GuildManager::WaitForInitialization()
 		if (waited_time > TIMEOUT_TIME_MS)
 			return false;
 	}
+	m_IsInitialized = true;
 	return true;
 }
 
-void GuildManager::AddGuild(json &data)
+Guild_t const &GuildManager::AddGuild(json &data)
 {
 	Snowflake_t sfid = data["id"].get<std::string>();
-	if (FindGuildById(sfid))
-		return; // guild already exists
+	auto const &guild = FindGuildById(sfid);
+	if (guild)
+		return guild; // guild already exists
 
 	GuildId_t id = 1;
 	while (m_Guilds.find(id) != m_Guilds.end())
 		++id;
 
-	m_Guilds.emplace(id, Guild_t(new Guild(id, data)));
+	return m_Guilds.emplace(id, Guild_t(new Guild(id, data))).first->second;
 }
 
 void GuildManager::DeleteGuild(Guild_t const &guild)

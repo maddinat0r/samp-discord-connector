@@ -117,13 +117,14 @@ forward DCC_OnChannelUpdate(DCC_Channel:channel);
 forward DCC_OnChannelDelete(DCC_Channel:channel);
 
 //  guilds
+forward DCC_OnGuildCreate(DCC_Guild:guild);
 forward DCC_OnGuildUpdate(DCC_Guild:guild);
 forward DCC_OnGuildDelete(DCC_Guild:guild);
-//   members
+
 forward DCC_OnGuildMemberAdd(DCC_Guild:guild, DCC_User:user);
 forward DCC_OnGuildMemberUpdate(DCC_Guild:guild, DCC_User:user);
 forward DCC_OnGuildMemberRemove(DCC_Guild:guild, DCC_User:user);
-//   roles
+
 forward DCC_OnGuildRoleCreate(DCC_Guild:guild, DCC_Role:role);
 forward DCC_OnGuildRoleUpdate(DCC_Guild:guild, DCC_Role:role);
 forward DCC_OnGuildRoleDelete(DCC_Guild:guild, DCC_Role:role);
