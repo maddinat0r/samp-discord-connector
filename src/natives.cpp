@@ -715,6 +715,44 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberCount)
 	return 1;
 }
 
+// native DCC_GetGuildMemberNickname(DCC_Guild:guild, DCC_User:user, dest[], max_size = sizeof dest);
+AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberNickname)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetGuildMemberNickname", params, "ddrd");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	UserId_t userid = params[2];
+	std::string nick;
+	bool member_found = false;
+	for (auto &m : guild->GetMembers())
+	{
+		if (m.UserId != userid)
+			continue;
+
+		nick = m.Nickname;
+		member_found = true;
+		break;
+	}
+
+	if (!member_found)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid user specified");
+		return 0;
+	}
+
+	cell ret_val = amx_SetCppString(amx, params[3], nick, params[4]) == AMX_ERR_NONE;
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	return ret_val;
+}
+
 // native DCC_GetGuildMemberRole(DCC_Guild:guild, DCC_User:user, offset, &DCC_Role:role);
 AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberRole)
 {

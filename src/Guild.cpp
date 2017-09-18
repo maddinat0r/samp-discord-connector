@@ -71,6 +71,11 @@ void Guild::UpdateMember(Member &member, json &data)
 			// TODO: error message
 		}
 	}
+
+	if (!data["nick"].is_null())
+		member.Nickname = data["nick"].get<std::string>();
+	else
+		member.Nickname.clear();
 }
 
 void Guild::UpdateMember(UserId_t userid, json &data)

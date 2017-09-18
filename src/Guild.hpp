@@ -28,6 +28,7 @@ public:
 		};
 
 		UserId_t UserId;
+		std::string Nickname;
 		std::vector<RoleId_t> Roles;
 		PresenceStatus Status;
 	};

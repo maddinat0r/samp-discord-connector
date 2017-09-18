@@ -100,6 +100,7 @@ native DCC_GetGuildRole(DCC_Guild:guild, offset, &DCC_Role:role);
 native DCC_GetGuildRoleCount(DCC_Guild:guild, &count);
 native DCC_GetGuildMember(DCC_Guild:guild, offset, &DCC_User:user);
 native DCC_GetGuildMemberCount(DCC_Guild:guild, &count);
+native DCC_GetGuildMemberNickname(DCC_Guild:guild, DCC_User:user, dest[], max_size = sizeof dest);
 native DCC_GetGuildMemberRole(DCC_Guild:guild, DCC_User:user, offset, &DCC_Role:role);
 native DCC_GetGuildMemberRoleCount(DCC_Guild:guild, DCC_User:user, &count);
 native DCC_HasGuildMemberRole(DCC_Guild:guild, DCC_User:user, DCC_Role:role, &bool:has_role);

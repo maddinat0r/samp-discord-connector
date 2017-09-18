@@ -120,6 +120,7 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_GetGuildRoleCount)
 	AMX_DEFINE_NATIVE(DCC_GetGuildMember)
 	AMX_DEFINE_NATIVE(DCC_GetGuildMemberCount)
+	AMX_DEFINE_NATIVE(DCC_GetGuildMemberNickname)
 	AMX_DEFINE_NATIVE(DCC_GetGuildMemberRole)
 	AMX_DEFINE_NATIVE(DCC_GetGuildMemberRoleCount)
 	AMX_DEFINE_NATIVE(DCC_HasGuildMemberRole)
