@@ -64,6 +64,32 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 	}
 }
 
+void Guild::UpdateMember(UserId_t userid, json &data)
+{
+	for (auto &m : m_Members)
+	{
+		if (m.UserId != userid)
+			continue;
+
+		// we don't care about the user object, there's an extra event for users
+		m.Roles.clear();
+		for (auto &mr : data["roles"])
+		{
+			Role_t const &role = RoleManager::Get()->FindRoleById(mr.get<std::string>());
+			if (role)
+			{
+				m.Roles.push_back(role->GetPawnId());
+			}
+			else
+			{
+				// TODO: error message
+			}
+		}
+
+		break;
+	}
+}
+
 void Guild::Update(json &data)
 {
 	m_Name = data["name"].get<std::string>();
@@ -177,6 +203,24 @@ void GuildManager::Initialize()
 		});
 	});
 
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_UPDATE, [](json &data)
+	{
+		PawnDispatcher::Get()->Dispatch([data]() mutable
+		{
+			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
+			if (!guild)
+				return; // TODO: error msg: guild isn't cached, it probably should have
+
+			auto const &user = UserManager::Get()->FindUserById(data["user"]["id"].get<std::string>());
+			if (!user)
+				return; // TODO: error msg: user not cached (cache mismatch)
+
+			guild->UpdateMember(user->GetPawnId(), data);
+
+			// forward DCC_OnGuildMemberUpdate(DCC_Guild:guild, DCC_User:user);
+			PawnCallbackManager::Get()->Call("DCC_OnGuildMemberUpdate", guild->GetPawnId(), user->GetPawnId());
+		});
+	});
 
 	// TODO: events
 }

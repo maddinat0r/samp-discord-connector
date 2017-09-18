@@ -110,6 +110,8 @@ public:
 			}
 		}
 	}
+	void UpdateMember(UserId_t userid, json &data);
+
 	void Update(json &data);
 };
 
