@@ -307,6 +307,57 @@ void GuildManager::Initialize()
 		});
 	});
 
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::PRESENCE_UPDATE, [](json &data)
+	{
+		PawnDispatcher::Get()->Dispatch([data]() mutable
+		{
+			auto json_guildid_it = data.find("guild_id");
+			if (json_guildid_it == data.end())
+				return;
+
+			json &json_guildid = *json_guildid_it;
+			if (json_guildid.is_null())
+				return;
+
+			auto json_user_it = data.find("user");
+			if (json_user_it == data.end())
+				return;
+
+			json &json_user = *json_user_it;
+			if (json_user.is_null())
+				return;
+
+			auto json_user_id_it = json_user.find("id");
+			if (json_user_id_it == json_user.end())
+				return;
+
+			json &json_user_id = *json_user_id_it;
+			if (json_user_id.is_null())
+				return;
+
+			auto json_status_it = data.find("status");
+			if (json_status_it == data.end())
+				return;
+
+			json &json_status = *json_status_it;
+			if (json_status.is_null())
+				return;
+
+			auto const &guild = GuildManager::Get()->FindGuildById(json_guildid.get<std::string>());
+			if (!guild)
+				return; // TODO: error msg: guild isn't cached, it probably should have
+
+			auto const &user = UserManager::Get()->FindUserById(json_user_id.get<std::string>());
+			if (!user)
+				return; // TODO: error msg: user not cached (cache mismatch)
+
+			guild->UpdateMemberPresence(user->GetPawnId(), json_status.get<std::string>());
+
+			// forward DCC_OnGuildMemberUpdate(DCC_Guild:guild, DCC_User:user);
+			PawnCallbackManager::Get()->Call("DCC_OnGuildMemberUpdate", guild->GetPawnId(), user->GetPawnId());
+		});
+	});
+
 	// TODO: events
 }
 
