@@ -6,6 +6,11 @@ User::User(UserId_t pawn_id, json &data) :
 	m_PawnId(pawn_id)
 {
 	m_Id = data["id"].get<std::string>();
+	Update(data);
+}
+
+void User::Update(json &data)
+{
 	m_Username = data["username"].get<std::string>();
 	m_Discriminator = data["discriminator"].get<std::string>();
 

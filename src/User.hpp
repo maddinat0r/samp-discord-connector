@@ -62,6 +62,7 @@ public:
 		return m_IsVerified;
 	}
 
+	void Update(json &data);
 };
 
 
