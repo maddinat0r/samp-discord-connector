@@ -1,5 +1,7 @@
 #include "User.hpp"
 #include "Network.hpp"
+#include "PawnDispatcher.hpp"
+#include "PawnCallback.hpp"
 
 
 User::User(UserId_t pawn_id, json &data) :
@@ -32,15 +34,25 @@ void UserManager::Initialize()
 {
 	assert(m_Initialized != m_InitValue);
 
-	/*Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_ADD, [](json &data)
-	{
-		UserManager::Get()->AddUser(data["user"]);
-	});*/
-
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json &data)
 	{
 		AddUser(data["user"]); // that's our bot
 		m_Initialized++;
+	});
+
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::USER_UPDATE, [](json &data)
+	{
+		PawnDispatcher::Get()->Dispatch([data]() mutable
+		{
+			auto const &user = UserManager::Get()->FindUserById(data["id"].get<std::string>());
+			if (!user)
+				return; // TODO: error msg: user not cached (cache mismatch)
+
+			user->Update(data);
+
+			// forward DCC_OnUserUpdate(DCC_User:user);
+			PawnCallbackManager::Get()->Call("DCC_OnUserUpdate", user->GetPawnId());
+		});
 	});
 }
 

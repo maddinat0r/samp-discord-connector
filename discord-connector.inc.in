@@ -117,6 +117,9 @@ forward DCC_OnChannelCreate(DCC_Channel:channel);
 forward DCC_OnChannelUpdate(DCC_Channel:channel);
 forward DCC_OnChannelDelete(DCC_Channel:channel);
 
+//  users
+forward DCC_OnUserUpdate(DCC_User:user);
+
 //  guilds
 forward DCC_OnGuildCreate(DCC_Guild:guild);
 forward DCC_OnGuildUpdate(DCC_Guild:guild);
