@@ -27,16 +27,7 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 	{
 		Member member;
 		member.UserId = UserManager::Get()->AddUser(m["user"])->GetPawnId();
-		for (auto &mr : m["roles"])
-		{
-			Role_t const &role = RoleManager::Get()->FindRoleById(mr.get<std::string>());
-			if (role)
-				member.Roles.push_back(role->GetPawnId());
-			else
-			{
-				// TODO: error message
-			}
-		}
+		UpdateMember(member, m);
 		m_Members.push_back(std::move(member));
 	}
 
@@ -64,6 +55,24 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 	}
 }
 
+void Guild::UpdateMember(Member &member, json &data)
+{
+	// we don't care about the user object, there's an extra event for users
+	member.Roles.clear();
+	for (auto &mr : data["roles"])
+	{
+		Role_t const &role = RoleManager::Get()->FindRoleById(mr.get<std::string>());
+		if (role)
+		{
+			member.Roles.push_back(role->GetPawnId());
+		}
+		else
+		{
+			// TODO: error message
+		}
+	}
+}
+
 void Guild::UpdateMember(UserId_t userid, json &data)
 {
 	for (auto &m : m_Members)
@@ -71,21 +80,7 @@ void Guild::UpdateMember(UserId_t userid, json &data)
 		if (m.UserId != userid)
 			continue;
 
-		// we don't care about the user object, there's an extra event for users
-		m.Roles.clear();
-		for (auto &mr : data["roles"])
-		{
-			Role_t const &role = RoleManager::Get()->FindRoleById(mr.get<std::string>());
-			if (role)
-			{
-				m.Roles.push_back(role->GetPawnId());
-			}
-			else
-			{
-				// TODO: error message
-			}
-		}
-
+		UpdateMember(m, data);
 		break;
 	}
 }

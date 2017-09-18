@@ -50,6 +50,9 @@ private:
 	std::vector<ChannelId_t> m_Channels;
 	std::vector<Member> m_Members;
 
+private:
+	void UpdateMember(Member &member, json &data);
+
 public:
 	inline GuildId_t GetPawnId() const
 	{
