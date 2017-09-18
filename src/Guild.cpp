@@ -40,15 +40,7 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 			assert(user);
 			if (user->GetId() == userid)
 			{
-				// "idle", "dnd", "online", or "offline"
-				static const std::unordered_map<std::string, Member::PresenceStatus> status_map{
-					{ "idle", Member::PresenceStatus::IDLE },
-					{ "dnd", Member::PresenceStatus::DO_NOT_DISTURB },
-					{ "online", Member::PresenceStatus::ONLINE },
-					{ "offline", Member::PresenceStatus::OFFLINE }
-				};
-
-				m.Status = status_map.at(p["status"]);
+				UpdateMemberPresence(m, p["status"].get<std::string>());
 				break;
 			}
 		}
@@ -78,6 +70,19 @@ void Guild::UpdateMember(Member &member, json &data)
 		member.Nickname.clear();
 }
 
+void Guild::UpdateMemberPresence(Member &member, std::string const &status)
+{
+	// "idle", "dnd", "online", or "offline"
+	static const std::unordered_map<std::string, Member::PresenceStatus> status_map{
+		{ "idle", Member::PresenceStatus::IDLE },
+		{ "dnd", Member::PresenceStatus::DO_NOT_DISTURB },
+		{ "online", Member::PresenceStatus::ONLINE },
+		{ "offline", Member::PresenceStatus::OFFLINE }
+	};
+
+	member.Status = status_map.at(status);
+}
+
 void Guild::UpdateMember(UserId_t userid, json &data)
 {
 	for (auto &m : m_Members)
@@ -86,6 +91,18 @@ void Guild::UpdateMember(UserId_t userid, json &data)
 			continue;
 
 		UpdateMember(m, data);
+		break;
+	}
+}
+
+void Guild::UpdateMemberPresence(UserId_t userid, std::string const &status)
+{
+	for (auto &m : m_Members)
+	{
+		if (m.UserId != userid)
+			continue;
+
+		UpdateMemberPresence(m, status);
 		break;
 	}
 }

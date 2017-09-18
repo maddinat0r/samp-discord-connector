@@ -53,6 +53,7 @@ private:
 
 private:
 	void UpdateMember(Member &member, json &data);
+	void UpdateMemberPresence(Member &member, std::string const &status);
 
 public:
 	inline GuildId_t GetPawnId() const
@@ -116,6 +117,7 @@ public:
 		}
 	}
 	void UpdateMember(UserId_t userid, json &data);
+	void UpdateMemberPresence(UserId_t userid, std::string const &status);
 
 	inline void AddRole(RoleId_t id)
 	{
