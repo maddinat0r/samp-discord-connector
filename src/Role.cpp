@@ -31,6 +31,11 @@ Role_t const &RoleManager::AddRole(json &data)
 	return m_Roles.emplace(id, Role_t(new Role(id, data))).first->second;
 }
 
+void RoleManager::RemoveRole(Role_t const &role)
+{
+	m_Roles.erase(role->GetPawnId());
+}
+
 Role_t const &RoleManager::FindRole(RoleId_t id)
 {
 	static Role_t invalid_role;

@@ -51,7 +51,7 @@ enum DCC_UserPresenceStatus
 
 
 // natives
-// channels
+//  channels
 native DCC_Channel:DCC_FindChannelByName(const channel_name[]);
 native DCC_Channel:DCC_FindChannelById(const channel_id[]);
 
@@ -64,7 +64,7 @@ native DCC_GetChannelTopic(DCC_Channel:channel, dest[], max_size = sizeof dest);
 native DCC_SendChannelMessage(DCC_Channel:channel, const message[]);
 
 
-// users
+//  users
 native DCC_User:DCC_FindUserByName(const user_name[], const user_discriminator[]);
 native DCC_User:DCC_FindUserById(const user_id[]);
 
@@ -76,7 +76,7 @@ native DCC_IsUserBot(DCC_User:user, &bool:is_bot);
 native DCC_IsUserVerified(DCC_User:user, &bool:is_verified);
 
 
-// roles
+//  roles
 native DCC_Role:DCC_FindRoleById(const role_id[]);
 
 native DCC_GetRoleId(DCC_Role:role, dest[], max_size = sizeof dest);
@@ -89,7 +89,7 @@ native DCC_IsRoleHoist(DCC_Role:role, &bool:is_hoist);
 native DCC_IsRoleMentionable(DCC_Role:role, &bool:is_mentionable);
 
 
-// guilds
+//  guilds
 native DCC_Guild:DCC_FindGuildByName(const guild_name[]);
 native DCC_Guild:DCC_FindGuildById(const guild_id[]);
 
@@ -110,15 +110,20 @@ native DCC_GetGuildChannelCount(DCC_Guild:guild, &count);
 
 
 // callbacks
-// channels
+//  channels
 forward DCC_OnChannelMessage(DCC_Channel:channel, DCC_User:author, const message[]);
 forward DCC_OnChannelCreate(DCC_Channel:channel);
 forward DCC_OnChannelUpdate(DCC_Channel:channel);
 forward DCC_OnChannelDelete(DCC_Channel:channel);
 
-// guilds
+//  guilds
 forward DCC_OnGuildUpdate(DCC_Guild:guild);
 forward DCC_OnGuildDelete(DCC_Guild:guild);
+//   members
 forward DCC_OnGuildMemberAdd(DCC_Guild:guild, DCC_User:user);
 forward DCC_OnGuildMemberUpdate(DCC_Guild:guild, DCC_User:user);
 forward DCC_OnGuildMemberRemove(DCC_Guild:guild, DCC_User:user);
+//   roles
+forward DCC_OnGuildRoleCreate(DCC_Guild:guild, DCC_Role:role);
+forward DCC_OnGuildRoleUpdate(DCC_Guild:guild, DCC_Role:role);
+forward DCC_OnGuildRoleDelete(DCC_Guild:guild, DCC_Role:role);

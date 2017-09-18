@@ -78,6 +78,7 @@ private:
 
 public:
 	Role_t const &AddRole(json &data);
+	void RemoveRole(Role_t const &role);
 
 	Role_t const &FindRole(RoleId_t id);
 	Role_t const &FindRoleById(Snowflake_t const &sfid);

@@ -95,6 +95,7 @@ public:
 			}
 		}
 	}
+
 	inline void AddMember(Member &&member)
 	{
 		m_Members.push_back(std::move(member));
@@ -111,6 +112,22 @@ public:
 		}
 	}
 	void UpdateMember(UserId_t userid, json &data);
+
+	inline void AddRole(RoleId_t id)
+	{
+		m_Roles.push_back(id);
+	}
+	inline void RemoveRole(RoleId_t id)
+	{
+		for (auto it = m_Roles.begin(); it != m_Roles.end(); it++)
+		{
+			if (*it == id)
+			{
+				m_Roles.erase(it);
+				break;
+			}
+		}
+	}
 
 	void Update(json &data);
 };

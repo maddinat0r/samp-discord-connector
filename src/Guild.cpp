@@ -222,6 +222,61 @@ void GuildManager::Initialize()
 		});
 	});
 
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_ROLE_CREATE, [](json &data)
+	{
+		PawnDispatcher::Get()->Dispatch([data]() mutable
+		{
+			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
+			if (!guild)
+				return; // TODO: error msg: guild isn't cached, it probably should have
+
+			auto const &role = RoleManager::Get()->AddRole(data["role"]);
+			guild->AddRole(role->GetPawnId());
+
+			// forward DCC_OnGuildRoleCreate(DCC_Guild:guild, DCC_Role:role);
+			PawnCallbackManager::Get()->Call("DCC_OnGuildRoleCreate", guild->GetPawnId(), role->GetPawnId());
+		});
+	});
+
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_ROLE_DELETE, [](json &data)
+	{
+		PawnDispatcher::Get()->Dispatch([data]() mutable
+		{
+			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
+			if (!guild)
+				return; // TODO: error msg: guild isn't cached, it probably should have
+
+			auto const &role = RoleManager::Get()->FindRoleById(data["role_id"].get<std::string>());
+			if (!role)
+				return; // TODO: error msg: role isn't cached (cache mismatch)
+
+			// forward DCC_OnGuildRoleDelete(DCC_Guild:guild, DCC_Role:role);
+			PawnCallbackManager::Get()->Call("DCC_OnGuildRoleDelete", guild->GetPawnId(), role->GetPawnId());
+
+			guild->RemoveRole(role->GetPawnId());
+			RoleManager::Get()->RemoveRole(role);
+		});
+	});
+
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_ROLE_UPDATE, [](json &data)
+	{
+		PawnDispatcher::Get()->Dispatch([data]() mutable
+		{
+			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
+			if (!guild)
+				return; // TODO: error msg: guild isn't cached, it probably should have
+
+			auto const &role = RoleManager::Get()->FindRoleById(data["role"]["id"].get<std::string>());
+			if (!role)
+				return; // TODO: error msg: role isn't cached (cache mismatch)
+
+			role->Update(data["role"]);
+
+			// forward DCC_OnGuildRoleUpdate(DCC_Guild:guild, DCC_Role:role);
+			PawnCallbackManager::Get()->Call("DCC_OnGuildRoleUpdate", guild->GetPawnId(), role->GetPawnId());
+		});
+	});
+
 	// TODO: events
 }
 
