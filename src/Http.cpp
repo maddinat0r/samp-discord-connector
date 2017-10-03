@@ -59,10 +59,13 @@ void Http::NetworkThreadFunc()
 			}
 
 			boost::system::error_code error_code;
+			Response_t response;
+			Streambuf_t sb;
 			retry_counter = 0;
 			skip_entry = false;
 			do
 			{
+				bool do_reconnect = false;
 				beast::http::write(m_SslStream, *entry->Request, error_code);
 				if (error_code)
 				{
@@ -71,7 +74,24 @@ void Http::NetworkThreadFunc()
 						entry->Request->target().to_string(),
 						error_code.message());
 
-					// try reconnecting
+					do_reconnect = true;
+				}
+				else
+				{
+					beast::http::read(m_SslStream, sb, response, error_code);
+					if (error_code)
+					{
+						CLog::Get()->Log(LogLevel::ERROR, "Error while retrieving HTTP {} response from '{}': {}",
+							entry->Request->method_string().to_string(),
+							entry->Request->target().to_string(),
+							error_code.message());
+
+						do_reconnect = true;
+					}
+				}
+
+				if (do_reconnect)
+				{
 					if (retry_counter++ >= MaxRetries || !ReconnectRetry())
 					{
 						// we failed to reconnect, discard this request
@@ -85,33 +105,7 @@ void Http::NetworkThreadFunc()
 			if (skip_entry)
 				continue; // continue queue loop
 
-			Streambuf_t sb;
-			Response_t response;
-			retry_counter = 0;
-			skip_entry = false;
-			do
-			{
-				beast::http::read(m_SslStream, sb, response, error_code);
-				if (error_code)
-				{
-					CLog::Get()->Log(LogLevel::ERROR, "Error while retrieving HTTP {} response from '{}': {}",
-						entry->Request->method_string().to_string(),
-						entry->Request->target().to_string(),
-						error_code.message());
 
-					// try reconnecting
-					if (retry_counter++ >= MaxRetries || !ReconnectRetry())
-					{
-						// we failed to reconnect, discard this request
-						CLog::Get()->Log(LogLevel::WARNING, "Failed to read response, discarding");
-						it = m_Queue.erase(it);
-						skip_entry = true;
-						break; // break out of do-while loop
-					}
-				}
-			} while (error_code);
-			if (skip_entry)
-				continue; // continue queue loop
 
 			auto it_r = response.find("X-RateLimit-Remaining");
 			if (it_r != response.end())
