@@ -59,7 +59,8 @@ private:
 private:
 	asio::io_service m_IoService;
 	asio::ssl::context m_SslContext;
-	asio::ssl::stream<asio::ip::tcp::socket> m_SslStream;
+	using SslStream_t = asio::ssl::stream<asio::ip::tcp::socket>;
+	std::unique_ptr<SslStream_t> m_SslStream;
 
 	std::string m_Token;
 

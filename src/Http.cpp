@@ -8,7 +8,6 @@
 
 Http::Http(std::string token) :
 	m_SslContext(asio::ssl::context::sslv23),
-	m_SslStream(m_IoService, m_SslContext),
 	m_Token(token),
 	m_NetworkThreadRunning(true),
 	m_NetworkThread(std::bind(&Http::NetworkThreadFunc, this))
@@ -66,7 +65,7 @@ void Http::NetworkThreadFunc()
 			do
 			{
 				bool do_reconnect = false;
-				beast::http::write(m_SslStream, *entry->Request, error_code);
+				beast::http::write(*m_SslStream, *entry->Request, error_code);
 				if (error_code)
 				{
 					CLog::Get()->Log(LogLevel::ERROR, "Error while sending HTTP {} request to '{}': {}",
@@ -78,7 +77,7 @@ void Http::NetworkThreadFunc()
 				}
 				else
 				{
-					beast::http::read(m_SslStream, sb, response, error_code);
+					beast::http::read(*m_SslStream, sb, response, error_code);
 					if (error_code)
 					{
 						CLog::Get()->Log(LogLevel::ERROR, "Error while retrieving HTTP {} response from '{}': {}",
@@ -179,7 +178,8 @@ bool Http::Connect()
 		return false;
 	}
 
-	asio::connect(m_SslStream.lowest_layer(), target, error);
+	m_SslStream.reset(new SslStream_t(m_IoService, m_SslContext));
+	asio::connect(m_SslStream->lowest_layer(), target, error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Can't connect to Discord API: {} ({})",
@@ -188,7 +188,7 @@ bool Http::Connect()
 	}
 
 	// SSL handshake
-	m_SslStream.set_verify_mode(asio::ssl::verify_none, error);
+	m_SslStream->set_verify_mode(asio::ssl::verify_none, error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, 
@@ -197,7 +197,7 @@ bool Http::Connect()
 		return false;
 	}
 
-	m_SslStream.handshake(asio::ssl::stream_base::client, error);
+	m_SslStream->handshake(asio::ssl::stream_base::client, error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Can't establish secured connection to Discord API: {} ({})",
@@ -213,21 +213,21 @@ void Http::Disconnect()
 	CLog::Get()->Log(LogLevel::DEBUG, "Http::Disconnect");
 
 	boost::system::error_code error;
-	m_SslStream.shutdown(error);
+	m_SslStream->shutdown(error);
 	if (error && error != boost::asio::error::eof)
 	{
 		CLog::Get()->Log(LogLevel::WARNING, "Error while shutting down SSL on HTTP connection: {} ({})",
 			error.message(), error.value());
 	}
-
-	m_SslStream.lowest_layer().shutdown(asio::ip::tcp::socket::shutdown_both, error);
+	
+	m_SslStream->lowest_layer().shutdown(asio::ip::tcp::socket::shutdown_both, error);
 	if (error && error != boost::asio::error::eof)
 	{
 		CLog::Get()->Log(LogLevel::WARNING, "Error while shutting down HTTP connection: {} ({})",
 			error.message(), error.value());
 	}
 
-	m_SslStream.lowest_layer().close(error);
+	m_SslStream->lowest_layer().close(error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::WARNING, "Error while closing HTTP connection: {} ({})",
