@@ -13,15 +13,12 @@ Http::Http(std::string token) :
 	m_NetworkThreadRunning(true),
 	m_NetworkThread(std::bind(&Http::NetworkThreadFunc, this))
 {
-	if (!Connect())
-		return;
 }
 
 Http::~Http()
 {
 	m_NetworkThreadRunning = false;
 	m_NetworkThread.join();
-	Disconnect();
 }
 
 void Http::NetworkThreadFunc()
@@ -30,6 +27,9 @@ void Http::NetworkThreadFunc()
 	unsigned int retry_counter = 0;
 	unsigned int const MaxRetries = 3;
 	bool skip_entry = false;
+
+	if (!Connect())
+		return;
 
 	while (m_NetworkThreadRunning)
 	{
@@ -161,6 +161,7 @@ void Http::NetworkThreadFunc()
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 
+	Disconnect();
 }
 
 bool Http::Connect()
