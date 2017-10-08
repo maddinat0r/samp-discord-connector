@@ -47,7 +47,7 @@ private:
 
 	struct QueueEntry
 	{
-		QueueEntry(SharedRequest_t req, ResponseCallback_t &&cb/*, size_t &&seq*/) :
+		QueueEntry(SharedRequest_t req, ResponseCallback_t &&cb) :
 			Request(req),
 			Callback(cb)
 		{ }
