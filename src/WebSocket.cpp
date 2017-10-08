@@ -6,9 +6,6 @@
 
 WebSocket::WebSocket() :
 	m_SslContext(asio::ssl::context::sslv23),
-	m_WssStream(m_IoService, m_SslContext),
-	m_WebSocket(m_WssStream),
-	m_Resolver(m_IoService),
 	m_HeartbeatTimer(m_IoService)
 {
 }
@@ -49,7 +46,8 @@ bool WebSocket::Connect()
 	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::Connect");
 
 	boost::system::error_code error;
-	auto target = m_Resolver.resolve({ m_GatewayUrl, "https" }, error);
+	asio::ip::tcp::resolver r{ m_IoService };
+	auto target = r.resolve({ m_GatewayUrl, "https" }, error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Can't resolve Discord gateway URL '{}': {} ({})",
@@ -57,7 +55,8 @@ bool WebSocket::Connect()
 		return false;
 	}
 
-	asio::connect(m_WssStream.lowest_layer(), target, error);
+	m_WebSocket.reset(new WebSocketStream_t(m_IoService, m_SslContext));
+	asio::connect(m_WebSocket->lowest_layer(), target, error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Can't connect to Discord gateway: {} ({})",
@@ -65,7 +64,7 @@ bool WebSocket::Connect()
 		return false;
 	}
 
-	m_WssStream.set_verify_mode(asio::ssl::verify_none, error);
+	m_WebSocket->next_layer().set_verify_mode(asio::ssl::verify_none, error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::ERROR,
@@ -74,7 +73,7 @@ bool WebSocket::Connect()
 		return false;
 	}
 
-	m_WssStream.handshake(asio::ssl::stream_base::client, error);
+	m_WebSocket->next_layer().handshake(asio::ssl::stream_base::client, error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Can't establish secured connection to Discord gateway: {} ({})",
@@ -82,7 +81,7 @@ bool WebSocket::Connect()
 		return false;
 	}
 
-	m_WebSocket.handshake(m_GatewayUrl, "/?encoding=json&v=6", error);
+	m_WebSocket->handshake(m_GatewayUrl, "/?encoding=json&v=6", error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Can't upgrade to WSS protocol: {} ({})",
@@ -98,28 +97,28 @@ void WebSocket::Disconnect()
 	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::Disconnect");
 
 	boost::system::error_code error;
-	m_WebSocket.close(beast::websocket::close_code::normal, error);
+	m_WebSocket->close(beast::websocket::close_code::normal, error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::WARNING, "Error while sending WS close frame: {} ({})",
 			error.message(), error.value());
 	}
 
-	m_WssStream.shutdown(error);
+	m_WebSocket->next_layer().shutdown(error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::WARNING, "Error while shutting down SSL on WS connection: {} ({})",
 			error.message(), error.value());
 	}
 
-	m_WssStream.lowest_layer().shutdown(asio::ip::tcp::socket::shutdown_both, error);
+	m_WebSocket->lowest_layer().shutdown(asio::ip::tcp::socket::shutdown_both, error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::WARNING, "Error while shutting down WS connection: {} ({})",
 			error.message(), error.value());
 	}
 
-	m_WssStream.lowest_layer().close(error);
+	m_WebSocket->lowest_layer().close(error);
 	if (error)
 	{
 		CLog::Get()->Log(LogLevel::WARNING, "Error while closing WS connection: {} ({})",
@@ -155,7 +154,7 @@ void WebSocket::Identify()
 		} }
 	};
 
-	m_WebSocket.write(asio::buffer(identify_payload.dump()));
+	m_WebSocket->write(asio::buffer(identify_payload.dump()));
 }
 
 void WebSocket::SendResumePayload()
@@ -170,14 +169,14 @@ void WebSocket::SendResumePayload()
 			{ "seq", m_SequenceNumber }
 		} }
 	};
-	m_WebSocket.write(asio::buffer(resume_payload.dump()));
+	m_WebSocket->write(asio::buffer(resume_payload.dump()));
 }
 
 void WebSocket::Read()
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::WsRead");
 
-	m_WebSocket.async_read(m_WebSocketBuffer,
+	m_WebSocket->async_read(m_WebSocketBuffer,
 		std::bind(&WebSocket::OnRead, this, std::placeholders::_1));
 }
 
@@ -192,7 +191,7 @@ void WebSocket::OnRead(boost::system::error_code ec)
 		{
 		case boost::asio::ssl::error::stream_errors::stream_truncated:
 			CLog::Get()->Log(LogLevel::ERROR, "Discord terminated websocket connection; reason: {} ({})", 
-				m_WebSocket.reason().reason.c_str(), m_WebSocket.reason().code);
+				m_WebSocket->reason().reason.c_str(), m_WebSocket->reason().code);
 			reconnect = true;
 			break;
 		case boost::asio::error::operation_aborted:
@@ -332,7 +331,7 @@ void WebSocket::DoHeartbeat(boost::system::error_code ec)
 	};
 
 	boost::system::error_code error_code;
-	m_WebSocket.write(asio::buffer(heartbeat_payload.dump()), error_code);
+	m_WebSocket->write(asio::buffer(heartbeat_payload.dump()), error_code);
 	if (error_code)
 	{
 		CLog::Get()->Log(LogLevel::ERROR, "Heartbeat write error: {} ({})",

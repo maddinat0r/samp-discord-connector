@@ -5,6 +5,7 @@
 #include <chrono>
 #include <map>
 #include <thread>
+#include <memory>
 
 #include <json.hpp>
 #include <boost/asio.hpp>
@@ -68,9 +69,9 @@ private: // variables
 	asio::io_service m_IoService;
 	std::thread *m_IoThread = nullptr;
 	asio::ssl::context m_SslContext;
-	asio::ssl::stream<asio::ip::tcp::socket> m_WssStream;
-	beast::websocket::stream<decltype(m_WssStream)&> m_WebSocket;
-	asio::ip::tcp::resolver m_Resolver;
+	using SslStream_t = asio::ssl::stream<asio::ip::tcp::socket>;
+	using WebSocketStream_t = beast::websocket::stream<SslStream_t>;
+	std::unique_ptr<WebSocketStream_t> m_WebSocket;
 
 	beast::multi_buffer m_WebSocketBuffer;
 
