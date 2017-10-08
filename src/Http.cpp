@@ -271,6 +271,7 @@ Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 	req->method(method);
 	req->target("/api/v6" + url);
 	req->version(11);
+	req->insert("Connection", "keep-alive");
 	req->insert("Host", "discordapp.com");
 	req->insert("User-Agent", "DiscordBot (github.com/maddinat0r/samp-discord-connector, " PLUGIN_VERSION ")");
 	if (!content.empty())
