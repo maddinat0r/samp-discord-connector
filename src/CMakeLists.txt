@@ -103,7 +103,6 @@ if(MSVC)
 		-D_SCL_SECURE_NO_WARNINGS)
 	target_link_libraries(discord-connector Crypt32.lib)
 endif()
-add_definitions(-DJSON_NOEXCEPTION)
 
 target_link_libraries(discord-connector log-core fmt OpenSSL::SSL Boost::system)
 
