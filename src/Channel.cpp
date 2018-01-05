@@ -49,7 +49,22 @@ void Channel::SendMessage(std::string &&msg)
 	json data = {
 		{ "content", std::move(msg) }
 	};
-	Network::Get()->Http().Post(fmt::format("/channels/{}/messages", GetId()), data.dump());
+
+	try
+	{
+		Network::Get()->Http().Post(fmt::format("/channels/{}/messages", GetId()), data.dump());
+	}
+	catch (const json::type_error &e)
+	{
+		if (e.id == 316)
+		{
+			// TODO: error msg: invalid UTF-8 string (e.what())
+		}
+		else
+		{
+			// TODO: error msg: error while serializing json: e.what()
+		}
+	}
 }
 
 
