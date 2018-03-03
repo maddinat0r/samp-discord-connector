@@ -155,7 +155,7 @@ private:
 	std::map<GuildId_t, Guild_t> m_Guilds; //PAWN guild-id to actual channel map
 
 private:
-	Guild_t const &AddGuild(json &data);
+	GuildId_t AddGuild(json &data);
 	void DeleteGuild(Guild_t const &guild);
 
 public:

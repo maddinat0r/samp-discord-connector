@@ -144,10 +144,12 @@ void GuildManager::Initialize()
 		{
 			PawnDispatcher::Get()->Dispatch([data]() mutable
 			{
-				auto const &guild = GuildManager::Get()->AddGuild(data);
+				auto const guild_id = GuildManager::Get()->AddGuild(data);
+				if (guild_id == INVALID_GUILD_ID)
+					return;
 
 				// forward DCC_OnGuildCreate(DCC_Guild:guild);
-				PawnCallbackManager::Get()->Call("DCC_OnGuildCreate", guild->GetPawnId());
+				PawnCallbackManager::Get()->Call("DCC_OnGuildCreate", guild_id);
 			});
 		}
 	});
@@ -378,18 +380,21 @@ bool GuildManager::WaitForInitialization()
 	return true;
 }
 
-Guild_t const &GuildManager::AddGuild(json &data)
+GuildId_t GuildManager::AddGuild(json &data)
 {
 	Snowflake_t sfid = data["id"].get<std::string>();
 	auto const &guild = FindGuildById(sfid);
 	if (guild)
-		return guild; // guild already exists
+		return INVALID_GUILD_ID; // TODO: error log: guild already exists
 
 	GuildId_t id = 1;
 	while (m_Guilds.find(id) != m_Guilds.end())
 		++id;
 
-	return m_Guilds.emplace(id, Guild_t(new Guild(id, data))).first->second;
+	if (!m_Guilds.emplace(id, Guild_t(new Guild(id, data))).second)
+		return INVALID_GUILD_ID; // TODO: error log: duplicate key
+
+	return id;
 }
 
 void GuildManager::DeleteGuild(Guild_t const &guild)
