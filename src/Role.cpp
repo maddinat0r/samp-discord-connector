@@ -17,18 +17,20 @@ void Role::Update(json &data)
 }
 
 
-Role_t const &RoleManager::AddRole(json &data)
+RoleId_t RoleManager::AddRole(json &data)
 {
 	Snowflake_t sfid = data["id"].get<std::string>();
 	Role_t const &role = FindRoleById(sfid);
 	if (role)
-		return role; // role already exists
+		return INVALID_ROLE_ID; // TODO: error log: role already exists
 
 	RoleId_t id = 1;
 	while (m_Roles.find(id) != m_Roles.end())
 		++id;
 
-	return m_Roles.emplace(id, Role_t(new Role(id, data))).first->second;
+	if (!m_Roles.emplace(id, Role_t(new Role(id, data))).first->second)
+		return INVALID_ROLE_ID; // TODO: error log: duplicate key
+	return id;
 }
 
 void RoleManager::RemoveRole(Role_t const &role)
