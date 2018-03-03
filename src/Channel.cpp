@@ -5,6 +5,7 @@
 #include "CLog.hpp"
 #include "PawnCallback.hpp"
 #include "Guild.hpp"
+#include "utils.hpp"
 
 #include "fmt/format.h"
 
@@ -15,8 +16,15 @@
 Channel::Channel(ChannelId_t pawn_id, json &data, GuildId_t guild_id) :
 	m_PawnId(pawn_id)
 {
-	m_Id = data["id"].get<std::string>();
-	m_Type = static_cast<Type>(data["type"].get<int>());
+	std::underlying_type<Type>::type type;
+	if (!utils::TryGetJsonValue(data, type, "type")
+		|| !utils::TryGetJsonValue(data, m_Id, "id"))
+	{
+		return; // TODO error msg: invalid json
+	}
+
+	m_Type = static_cast<Type>(type);
+
 	if (m_Type == Type::GUILD_TEXT) // is a guild channel
 	{
 		if (guild_id != 0)
@@ -25,10 +33,10 @@ Channel::Channel(ChannelId_t pawn_id, json &data, GuildId_t guild_id) :
 		}
 		else
 		{
-			auto it = data.find("guild_id");
-			if (it != data.end() && !it->is_null())
+			std::string guild_id;
+			if (utils::TryGetJsonValue(data, guild_id, "guild_id"))
 			{
-				Guild_t const &guild = GuildManager::Get()->FindGuildById(it->get<std::string>());
+				Guild_t const &guild = GuildManager::Get()->FindGuildById(guild_id);
 				m_GuildId = guild->GetPawnId();
 				guild->AddChannel(pawn_id);
 			}
@@ -37,10 +45,10 @@ Channel::Channel(ChannelId_t pawn_id, json &data, GuildId_t guild_id) :
 				// TODO: error message (is a guild channel, but no guild id was given)
 			}
 		}
-		m_Name = data["name"].get<std::string>();
-		json &topic = data["topic"];
-		if (!topic.is_null())
-			m_Topic = topic.get<std::string>();
+
+		m_Name.clear();
+		utils::TryGetJsonValue(data, m_Name, "name");
+		utils::TryGetJsonValue(data, m_Topic, "topic");
 	}
 }
 
@@ -97,13 +105,22 @@ void ChannelManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json &data)
 	{
-		for (json &c : data["private_channels"])
-			AddChannel(c);
+		static std::string const PRIVATE_CHANNEL_KEY = "private_channels";
+		if (utils::IsValidJson(data, PRIVATE_CHANNEL_KEY, json::value_t::array))
+		{
+			for (json &c : data.at(PRIVATE_CHANNEL_KEY))
+				AddChannel(c);
+		}
+		else
+		{
+			// TODO: error msg: invalid json
+		}
 		m_Initialized++;
 	});
 
 	// PAWN callbacks
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_CREATE, [this](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_CREATE, 
+		[this](json &data)
 	{
 		Message msg(data);
 		Channel_t const &channel = FindChannelById(msg.GetChannelId());
@@ -137,19 +154,26 @@ bool ChannelManager::WaitForInitialization()
 
 ChannelId_t ChannelManager::AddChannel(json &data, GuildId_t guild_id/* = 0*/)
 {
-	json &type = data["type"];
-	if (!type.is_null())
+	std::underlying_type<Channel::Type>::type type_u;
+	if (!utils::TryGetJsonValue(data, type_u, "type"))
 	{
-		Channel::Type ch_type = static_cast<Channel::Type>(type.get<int>());
-		if (ch_type != Channel::Type::GUILD_TEXT
-			&& ch_type != Channel::Type::DM
-			&& ch_type != Channel::Type::GROUP_DM)
-		{
-			return INVALID_CHANNEL_ID; // we're only interested in text channels
-		}
+		return INVALID_CHANNEL_ID; // TODO error msg: invalid json
 	}
 
-	Snowflake_t sfid = data["id"].get<std::string>();
+	auto ch_type = static_cast<Channel::Type>(type_u);
+	if (ch_type != Channel::Type::GUILD_TEXT
+		&& ch_type != Channel::Type::DM
+		&& ch_type != Channel::Type::GROUP_DM)
+	{
+		return INVALID_CHANNEL_ID; // we're only interested in text channels
+	}
+
+	Snowflake_t sfid;
+	if (!utils::TryGetJsonValue(data, sfid, "id"))
+	{
+		return INVALID_CHANNEL_ID; // TODO error msg: invalid json
+	}
+
 	Channel_t const &channel = FindChannelById(sfid);
 	if (channel)
 		return INVALID_CHANNEL_ID; // channel already exists
@@ -166,32 +190,44 @@ ChannelId_t ChannelManager::AddChannel(json &data, GuildId_t guild_id/* = 0*/)
 
 void ChannelManager::UpdateChannel(json &data)
 {
-	Snowflake_t id = data["id"].get<std::string>();
-	Channel_t const &channel = FindChannelById(id);
+	Snowflake_t sfid;
+	if (!utils::TryGetJsonValue(data, sfid, "id"))
+	{
+		return; // TODO error msg: invalid json
+	}
+
+	Channel_t const &channel = FindChannelById(sfid);
 	if (!channel)
 	{
 		// TODO: error msg
 		return;
 	}
 
-	std::string
-		name = data["name"].get<std::string>(),
-		topic = data["topic"].get<std::string>();
+	std::string name, topic;
+	utils::TryGetJsonValue(data, name, "name");
+	utils::TryGetJsonValue(data, topic, "topic");
 
 	PawnDispatcher::Get()->Dispatch([name, topic, &channel]()
 	{
-		channel->m_Name = name;
-		channel->m_Topic = topic;
+		if (!name.empty())
+			channel->m_Name = name;
+		if (!topic.empty())
+			channel->m_Topic = topic;
 
 		// forward DCC_OnChannelUpdate(DCC_Channel:channel);
 		PawnCallbackManager::Get()->Call("DCC_OnChannelUpdate", channel->GetPawnId());
 	});
 }
 
-void ChannelManager::DeleteChannel(json & data)
+void ChannelManager::DeleteChannel(json &data)
 {
-	Snowflake_t id = data["id"].get<std::string>();
-	Channel_t const &channel = FindChannelById(id);
+	Snowflake_t sfid;
+	if (!utils::TryGetJsonValue(data, sfid, "id"))
+	{
+		return; // TODO error msg: invalid json
+	}
+
+	Channel_t const &channel = FindChannelById(sfid);
 	if (!channel)
 	{
 		// TODO: error msg

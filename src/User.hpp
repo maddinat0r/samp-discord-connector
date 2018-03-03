@@ -32,6 +32,8 @@ private:
 		m_IsBot = false,
 		m_IsVerified = false;
 
+	bool _valid = false;
+
 public:
 	inline UserId_t GetPawnId() const
 	{
@@ -60,6 +62,15 @@ public:
 	inline bool IsVerified() const
 	{
 		return m_IsVerified;
+	}
+
+	inline bool IsValid() const
+	{
+		return _valid;
+	}
+	inline operator bool() const
+	{
+		return IsValid();
 	}
 
 	void Update(json &data);

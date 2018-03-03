@@ -25,6 +25,8 @@ private:
 
 	bool m_MentionsEveryone;
 
+	bool _valid;
+
 public:
 	Snowflake_t const &GetId() const
 	{
@@ -47,4 +49,12 @@ public:
 		return m_MentionsEveryone;
 	}
 
+	bool IsValid() const
+	{
+		return _valid;
+	}
+	operator bool() const
+	{
+		return IsValid();
+	}
 };

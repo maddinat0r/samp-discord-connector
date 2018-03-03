@@ -2,31 +2,33 @@
 #include "Network.hpp"
 #include "PawnDispatcher.hpp"
 #include "PawnCallback.hpp"
+#include "utils.hpp"
 
 
 User::User(UserId_t pawn_id, json &data) :
 	m_PawnId(pawn_id)
 {
-	m_Id = data["id"].get<std::string>();
+	if (!utils::TryGetJsonValue(data, m_Id, "id"))
+		return; // TODO: error log: invalid json
+
 	Update(data);
 }
 
 void User::Update(json &data)
 {
-	m_Username = data["username"].get<std::string>();
-	m_Discriminator = data["discriminator"].get<std::string>();
+	_valid =
+		utils::TryGetJsonValue(data, m_Username, "username") &&
+		utils::TryGetJsonValue(data, m_Discriminator, "discriminator");
 
-	auto it = data.find("bot");
-	if (it != data.end())
-		m_IsBot = it->get<bool>();
+	if (!_valid)
+	{
+		// TODO: error log: invalid json
+		return;
+	}
 
-	it = data.find("verified");
-	if (it != data.end())
-		m_IsVerified = it->get<bool>();
-
-	it = data.find("email");
-	if (it != data.end() && !it->is_null())
-		m_Email = it->get<std::string>();
+	utils::TryGetJsonValue(data, m_IsBot, "bot");
+	utils::TryGetJsonValue(data, m_IsVerified, "verified");
+	utils::TryGetJsonValue(data, m_Email, "email");
 }
 
 
@@ -74,7 +76,10 @@ bool UserManager::WaitForInitialization()
 
 UserId_t UserManager::AddUser(json &data)
 {
-	Snowflake_t sfid = data["id"].get<std::string>();
+	Snowflake_t sfid;
+	if (!utils::TryGetJsonValue(data, sfid, "id"))
+		return INVALID_USER_ID; // TODO: error log: invalid json
+
 	User_t const &user = FindUserById(sfid);
 	if (user)
 		return INVALID_USER_ID; // TODO: error log: user already exists

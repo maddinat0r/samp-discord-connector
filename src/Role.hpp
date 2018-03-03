@@ -29,6 +29,8 @@ private:
 	unsigned long long int m_Permissions;
 	bool m_Mentionable;
 
+	bool _valid = false;
+
 public:
 	inline RoleId_t GetPawnId() const
 	{
@@ -57,6 +59,15 @@ public:
 	inline bool IsMentionable() const
 	{
 		return m_Mentionable;
+	}
+
+	inline bool IsValid() const
+	{
+		return _valid;
+	}
+	inline operator bool() const
+	{
+		return IsValid();
 	}
 
 	void Update(json &data);
