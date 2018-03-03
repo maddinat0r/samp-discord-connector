@@ -1,25 +1,38 @@
 #include "Role.hpp"
+#include "utils.hpp"
+
 
 Role::Role(RoleId_t pawn_id, json &data) :
 	m_PawnId(pawn_id)
 {
-	m_Id = data["id"].get<std::string>();
+	if (!utils::TryGetJsonValue(data, m_Id, "id"))
+		return; // TODO: error log: invalid json
+
 	Update(data);
 }
 
 void Role::Update(json &data)
 {
-	m_Name = data["name"].get<std::string>();
-	m_Color = data["color"].get<int>();
-	m_Hoist = data["hoist"].get<bool>();
-	m_Permissions = data["permissions"].get<decltype(m_Permissions)>();
-	m_Mentionable = data["mentionable"].get<bool>();
+	_valid =
+		utils::TryGetJsonValue(data, m_Name, "name") &&
+		utils::TryGetJsonValue(data, m_Color, "color") &&
+		utils::TryGetJsonValue(data, m_Hoist, "hoist") &&
+		utils::TryGetJsonValue(data, m_Permissions, "permissions") &&
+		utils::TryGetJsonValue(data, m_Mentionable, "mentionable");
+
+	if (!_valid)
+	{
+		// TODO: error log: invalid json
+	}
 }
 
 
 RoleId_t RoleManager::AddRole(json &data)
 {
-	Snowflake_t sfid = data["id"].get<std::string>();
+	Snowflake_t sfid;
+	if (!utils::TryGetJsonValue(data, sfid, "id"))
+		return INVALID_ROLE_ID; // TODO: error msg: invalid json
+
 	Role_t const &role = FindRoleById(sfid);
 	if (role)
 		return INVALID_ROLE_ID; // TODO: error log: role already exists

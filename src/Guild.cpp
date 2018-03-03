@@ -5,6 +5,7 @@
 #include "Role.hpp"
 #include "PawnDispatcher.hpp"
 #include "PawnCallback.hpp"
+#include "utils.hpp"
 
 #include <unordered_map>
 
@@ -12,36 +13,64 @@
 Guild::Guild(GuildId_t pawn_id, json &data) :
 	m_PawnId(pawn_id)
 {
-	m_Id = data["id"].get<std::string>();
+	if (!utils::TryGetJsonValue(data, m_Id, "id"))
+	{
+		return; // TODO: error msg: invalid json
+	}
 
 	Update(data);
 
-	for (auto &c : data["channels"])
+	if (utils::IsValidJson(data, "channels", json::value_t::array))
 	{
-		auto const &channel = ChannelManager::Get()->AddChannel(c, pawn_id);
-		if (channel)
-			m_Channels.push_back(channel->GetPawnId());
-	}
-
-	for (auto &m : data["members"])
-	{
-		Member member;
-		member.UserId = UserManager::Get()->AddUser(m["user"])->GetPawnId();
-		UpdateMember(member, m);
-		m_Members.push_back(std::move(member));
-	}
-
-	for (auto &p : data["presences"])
-	{
-		Snowflake_t userid = p["user"]["id"].get<std::string>();
-		for (auto &m : m_Members)
+		for (auto &c : data["channels"])
 		{
-			User_t const &user = UserManager::Get()->FindUser(m.UserId);
-			assert(user);
-			if (user->GetId() == userid)
+			auto const channel_id = ChannelManager::Get()->AddChannel(c, pawn_id);
+			if (channel_id == INVALID_CHANNEL_ID)
+				continue;
+
+			m_Channels.push_back(channel_id);
+		}
+	}
+
+	if (utils::IsValidJson(data, "members", json::value_t::array))
+	{
+		for (auto &m : data["members"])
+		{
+			if (!utils::IsValidJson(data, "user", json::value_t::object))
 			{
-				UpdateMemberPresence(m, p["status"].get<std::string>());
-				break;
+				// we break here because all other array entries are likely
+				// to be invalid too, and we don't want to spam an error message
+				// for every single element in this array
+				break; // TODO: error msg: invalid json
+			}
+
+			Member member;
+			member.UserId = UserManager::Get()->AddUser(m["user"]);
+			UpdateMember(member, m);
+			m_Members.push_back(std::move(member));
+		}
+	}
+
+	if (utils::IsValidJson(data, "presences", json::value_t::array))
+	{
+		for (auto &p : data["presences"])
+		{
+			Snowflake_t userid;
+			if (!utils::TryGetJsonValue(p, userid, "user", "id"))
+			{
+				// see above on why we break here
+				break; // TODO: error msg: invalid json
+			}
+
+			for (auto &m : m_Members)
+			{
+				User_t const &user = UserManager::Get()->FindUser(m.UserId);
+				assert(user);
+				if (user->GetId() == userid)
+				{
+					UpdateMemberPresence(m, p["status"].get<std::string>());
+					break;
+				}
 			}
 		}
 	}
@@ -50,24 +79,40 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 void Guild::UpdateMember(Member &member, json &data)
 {
 	// we don't care about the user object, there's an extra event for users
-	member.Roles.clear();
-	for (auto &mr : data["roles"])
+	if (utils::IsValidJson(data, "roles", json::value_t::array))
 	{
-		Role_t const &role = RoleManager::Get()->FindRoleById(mr.get<std::string>());
-		if (role)
+		member.Roles.clear();
+		for (auto &mr : data["roles"])
 		{
-			member.Roles.push_back(role->GetPawnId());
-		}
-		else
-		{
-			// TODO: error message
+			if (!mr.is_string())
+				break; // TODO: error msg: invalid json
+
+			Role_t const &role = RoleManager::Get()->FindRoleById(mr.get<std::string>());
+			if (role)
+			{
+				member.Roles.push_back(role->GetPawnId());
+			}
+			else
+			{
+				// TODO: error message
+			}
 		}
 	}
 
-	if (!data["nick"].is_null())
-		member.Nickname = data["nick"].get<std::string>();
+	if (data.find("nick") != data.end())
+	{
+		auto &nick_json = data["nick"];
+		if (nick_json.is_string())
+			member.Nickname = data["nick"].get<std::string>();
+		else if (nick_json.is_null())
+			member.Nickname.clear();
+		else
+			; // TODO: error msg: invalid json
+	}
 	else
-		member.Nickname.clear();
+	{
+		// TODO: error msg: invalid json
+	}
 }
 
 void Guild::UpdateMemberPresence(Member &member, std::string const &status)
@@ -109,16 +154,24 @@ void Guild::UpdateMemberPresence(UserId_t userid, std::string const &status)
 
 void Guild::Update(json &data)
 {
-	m_Name = data["name"].get<std::string>();
-	m_OwnerId = data["owner_id"].get<std::string>();
+	utils::TryGetJsonValue(data, m_Name, "name");
 
-	for (auto &r : data["roles"])
+	utils::TryGetJsonValue(data, m_OwnerId, "owner_id");
+
+	if (utils::IsValidJson(data, "roles", json::value_t::array))
 	{
-		auto const &role = RoleManager::Get()->FindRoleById(r["id"].get<std::string>());
-		if (role)
-			role->Update(r);
-		else
-			m_Roles.push_back(RoleManager::Get()->AddRole(r)->GetPawnId());
+		for (auto &r : data["roles"])
+		{
+			std::string role_id;
+			if (!utils::TryGetJsonValue(r, role_id, "id"))
+				break; // TODO: error msg: invalid json
+
+			auto const &role = RoleManager::Get()->FindRoleById(role_id);
+			if (role)
+				role->Update(r);
+			else
+				m_Roles.push_back(RoleManager::Get()->AddRole(r));
+		}
 	}
 }
 
@@ -129,6 +182,12 @@ void GuildManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json &data)
 	{
+		if (!utils::IsValidJson(data, "guilds", json::value_t::array))
+		{
+			// TODO: fatal msg: invalid json
+			return;
+		}
+
 		m_InitValue += data["guilds"].size();
 		m_Initialized++;
 	});
@@ -156,9 +215,15 @@ void GuildManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_DELETE, [](json &data)
 	{
-		PawnDispatcher::Get()->Dispatch([data]() mutable
+		Snowflake_t sfid;
+		if (!utils::TryGetJsonValue(data, sfid, "id"))
 		{
-			Snowflake_t sfid = data["id"].get<std::string>();
+			// TODO: error msg: invalid json
+			return;
+		}
+
+		PawnDispatcher::Get()->Dispatch([sfid]() mutable
+		{
 			Guild_t const &guild = GuildManager::Get()->FindGuildById(sfid);
 			if (!guild)
 				return; // TODO: warning msg: guild isn't cached, it probably should have
@@ -172,9 +237,15 @@ void GuildManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_UPDATE, [](json &data)
 	{
-		PawnDispatcher::Get()->Dispatch([data]() mutable
+		Snowflake_t sfid;
+		if (!utils::TryGetJsonValue(data, sfid, "id"))
 		{
-			Snowflake_t sfid = data["id"].get<std::string>();
+			// TODO: error msg: invalid json
+			return;
+		}
+
+		PawnDispatcher::Get()->Dispatch([data, sfid]() mutable
+		{
 			Guild_t const &guild = GuildManager::Get()->FindGuildById(sfid);
 			if (!guild)
 				return; // TODO: error msg: guild isn't cached, it probably should have
@@ -188,6 +259,15 @@ void GuildManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_ADD, [](json &data)
 	{
+		if (!utils::IsValidJson(data, 
+			"guild_id", json::value_t::string,
+			"user", json::value_t::object,
+			"roles", json::value_t::array))
+		{
+			// TODO: error msg: invalid json
+			return;
+		}
+
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
 			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
@@ -218,6 +298,14 @@ void GuildManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_REMOVE, [](json &data)
 	{
+		if (!utils::IsValidJson(data, 
+			"guild_id", json::value_t::string,
+			"user", "id", json::value_t::string))
+		{
+			// TODO: error msg: invalid json
+			return;
+		}
+
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
 			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
@@ -237,6 +325,14 @@ void GuildManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_UPDATE, [](json &data)
 	{
+		if (!utils::IsValidJson(data,
+			"guild_id", json::value_t::string,
+			"user", "id", json::value_t::string))
+		{
+			// TODO: error msg: invalid json
+			return;
+		}
+
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
 			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
@@ -256,6 +352,14 @@ void GuildManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_ROLE_CREATE, [](json &data)
 	{
+		if (!utils::IsValidJson(data,
+			"guild_id", json::value_t::string,
+			"role", json::value_t::object))
+		{
+			// TODO: error msg: invalid json
+			return;
+		}
+
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
 			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
@@ -272,6 +376,14 @@ void GuildManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_ROLE_DELETE, [](json &data)
 	{
+		if (!utils::IsValidJson(data,
+			"guild_id", json::value_t::string,
+			"role_id", json::value_t::string))
+		{
+			// TODO: error msg: invalid json
+			return;
+		}
+
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
 			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
@@ -292,6 +404,14 @@ void GuildManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_ROLE_UPDATE, [](json &data)
 	{
+		if (!utils::IsValidJson(data,
+			"guild_id", json::value_t::string,
+			"role", "id", json::value_t::string))
+		{
+			// TODO: error msg: invalid json
+			return;
+		}
+
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
 			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
@@ -313,47 +433,36 @@ void GuildManager::Initialize()
 	{
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
-			auto json_guildid_it = data.find("guild_id");
-			if (json_guildid_it == data.end())
+			std::string guild_id;
+			if (!utils::TryGetJsonValue(data, guild_id, "guild_id"))
+			{
+				// TODO: error msg: invalid json
 				return;
+			}
 
-			json &json_guildid = *json_guildid_it;
-			if (json_guildid.is_null())
+			std::string user_id;
+			if (!utils::TryGetJsonValue(data, user_id, "user", "id"))
+			{
+				// TODO: error msg: invalid json
 				return;
+			}
 
-			auto json_user_it = data.find("user");
-			if (json_user_it == data.end())
+			std::string status;
+			if (!utils::TryGetJsonValue(data, guild_id, "status"))
+			{
+				// TODO: error msg: invalid json
 				return;
+			}
 
-			json &json_user = *json_user_it;
-			if (json_user.is_null())
-				return;
-
-			auto json_user_id_it = json_user.find("id");
-			if (json_user_id_it == json_user.end())
-				return;
-
-			json &json_user_id = *json_user_id_it;
-			if (json_user_id.is_null())
-				return;
-
-			auto json_status_it = data.find("status");
-			if (json_status_it == data.end())
-				return;
-
-			json &json_status = *json_status_it;
-			if (json_status.is_null())
-				return;
-
-			auto const &guild = GuildManager::Get()->FindGuildById(json_guildid.get<std::string>());
+			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
 			if (!guild)
 				return; // TODO: error msg: guild isn't cached, it probably should have
 
-			auto const &user = UserManager::Get()->FindUserById(json_user_id.get<std::string>());
+			auto const &user = UserManager::Get()->FindUserById(user_id);
 			if (!user)
 				return; // TODO: error msg: user not cached (cache mismatch)
 
-			guild->UpdateMemberPresence(user->GetPawnId(), json_status.get<std::string>());
+			guild->UpdateMemberPresence(user->GetPawnId(), status);
 
 			// forward DCC_OnGuildMemberUpdate(DCC_Guild:guild, DCC_User:user);
 			PawnCallbackManager::Get()->Call("DCC_OnGuildMemberUpdate", guild->GetPawnId(), user->GetPawnId());
@@ -382,7 +491,10 @@ bool GuildManager::WaitForInitialization()
 
 GuildId_t GuildManager::AddGuild(json &data)
 {
-	Snowflake_t sfid = data["id"].get<std::string>();
+	Snowflake_t sfid;
+	if (!utils::TryGetJsonValue(data, sfid, "id"))
+		return INVALID_GUILD_ID; // TODO: error msg: invalid json
+
 	auto const &guild = FindGuildById(sfid);
 	if (guild)
 		return INVALID_GUILD_ID; // TODO: error log: guild already exists
