@@ -76,10 +76,12 @@ void ChannelManager::Initialize()
 	{
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
-			Channel_t const &channel = ChannelManager::Get()->AddChannel(data);
+			auto const channel_id = ChannelManager::Get()->AddChannel(data);
+			if (channel_id == INVALID_CHANNEL_ID)
+				return;
 
 			// forward DCC_OnChannelCreate(DCC_Channel:channel);
-			PawnCallbackManager::Get()->Call("DCC_OnChannelCreate", channel->GetPawnId());
+			PawnCallbackManager::Get()->Call("DCC_OnChannelCreate", channel_id);
 		});
 	});
 
@@ -133,9 +135,8 @@ bool ChannelManager::WaitForInitialization()
 	return true;
 }
 
-Channel_t const &ChannelManager::AddChannel(json &data, GuildId_t guild_id/* = 0*/)
+ChannelId_t ChannelManager::AddChannel(json &data, GuildId_t guild_id/* = 0*/)
 {
-	static Channel_t invalid_channel;
 	json &type = data["type"];
 	if (!type.is_null())
 	{
@@ -144,20 +145,23 @@ Channel_t const &ChannelManager::AddChannel(json &data, GuildId_t guild_id/* = 0
 			&& ch_type != Channel::Type::DM
 			&& ch_type != Channel::Type::GROUP_DM)
 		{
-			return invalid_channel; // we're only interested in text channels
+			return INVALID_CHANNEL_ID; // we're only interested in text channels
 		}
 	}
 
 	Snowflake_t sfid = data["id"].get<std::string>();
 	Channel_t const &channel = FindChannelById(sfid);
 	if (channel)
-		return channel; // channel already exists
+		return INVALID_CHANNEL_ID; // channel already exists
 
 	ChannelId_t id = 1;
 	while (m_Channels.find(id) != m_Channels.end())
 		++id;
 
-	return m_Channels.emplace(id, Channel_t(new Channel(id, data, guild_id))).first->second;
+	if (!m_Channels.emplace(id, Channel_t(new Channel(id, data, guild_id))).second)
+		return INVALID_CHANNEL_ID; // TODO: error msg: duplicate key
+
+	return id;
 }
 
 void ChannelManager::UpdateChannel(json &data)
