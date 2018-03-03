@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 project(discord-connector)
 
-set(DCC_PLUGIN_VERSION "0.2.1")
+set(DCC_PLUGIN_VERSION "0.2.2")
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/libs/cmake")
 
