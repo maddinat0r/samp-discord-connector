@@ -195,9 +195,9 @@ void GuildManager::Initialize()
 				return; // TODO: error msg: guild isn't cached, it probably should have
 
 			Guild::Member member;
-			// returns correct user if he alreadt exists
-			auto const &user = UserManager::Get()->AddUser(data["user"]);
-			member.UserId = user->GetPawnId();
+			// returns correct user if he already exists
+			auto const userid = UserManager::Get()->AddUser(data["user"]);
+			member.UserId = userid;
 			for (auto &mr : data["roles"])
 			{
 				Role_t const &role = RoleManager::Get()->FindRoleById(mr.get<std::string>());
@@ -212,7 +212,7 @@ void GuildManager::Initialize()
 			guild->AddMember(std::move(member));
 
 			// forward DCC_OnGuildMemberAdd(DCC_Guild:guild, DCC_User:user);
-			PawnCallbackManager::Get()->Call("DCC_OnGuildMemberAdd", guild->GetPawnId(), user->GetPawnId());
+			PawnCallbackManager::Get()->Call("DCC_OnGuildMemberAdd", guild->GetPawnId(), userid);
 		});
 	});
 
@@ -262,11 +262,11 @@ void GuildManager::Initialize()
 			if (!guild)
 				return; // TODO: error msg: guild isn't cached, it probably should have
 
-			auto const &role = RoleManager::Get()->AddRole(data["role"]);
-			guild->AddRole(role->GetPawnId());
+			auto const role = RoleManager::Get()->AddRole(data["role"]);
+			guild->AddRole(role);
 
 			// forward DCC_OnGuildRoleCreate(DCC_Guild:guild, DCC_Role:role);
-			PawnCallbackManager::Get()->Call("DCC_OnGuildRoleCreate", guild->GetPawnId(), role->GetPawnId());
+			PawnCallbackManager::Get()->Call("DCC_OnGuildRoleCreate", guild->GetPawnId(), role);
 		});
 	});
 

@@ -72,18 +72,21 @@ bool UserManager::WaitForInitialization()
 	return true;
 }
 
-User_t const &UserManager::AddUser(json &data)
+UserId_t UserManager::AddUser(json &data)
 {
 	Snowflake_t sfid = data["id"].get<std::string>();
 	User_t const &user = FindUserById(sfid);
 	if (user)
-		return user; // user already exists
+		return INVALID_USER_ID; // TODO: error log: user already exists
 
 	UserId_t id = 1;
 	while (m_Users.find(id) != m_Users.end())
 		++id;
 
-	return m_Users.emplace(id, User_t(new User(id, data))).first->second;
+	if (!m_Users.emplace(id, User_t(new User(id, data))).first->second)
+		return INVALID_USER_ID; // TODO: error log: duplicate key
+
+	return id;
 }
 
 User_t const &UserManager::FindUser(UserId_t id)

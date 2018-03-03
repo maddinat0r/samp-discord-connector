@@ -84,7 +84,7 @@ public:
 	void Initialize();
 	bool WaitForInitialization();
 
-	User_t const &AddUser(json &data);
+	UserId_t AddUser(json &data);
 
 	User_t const &FindUser(UserId_t id);
 	User_t const &FindUserByName(std::string const &name, std::string const &discriminator);
