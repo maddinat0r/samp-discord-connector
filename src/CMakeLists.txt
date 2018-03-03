@@ -56,6 +56,7 @@ add_samp_plugin(discord-connector
 	natives.hpp
 	sdk.hpp
 	types.hpp
+	utils.hpp
 	plugin.def
 )
 
