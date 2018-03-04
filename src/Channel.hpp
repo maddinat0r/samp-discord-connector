@@ -18,7 +18,7 @@ class Channel
 {
 	friend class ChannelManager;
 public:
-	enum class Type
+	enum class Type : unsigned int
 	{
 		GUILD_TEXT = 0,
 		DM = 1,
