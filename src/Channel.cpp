@@ -105,7 +105,7 @@ void ChannelManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json &data)
 	{
-		static std::string const PRIVATE_CHANNEL_KEY = "private_channels";
+		static const char *PRIVATE_CHANNEL_KEY = "private_channels";
 		if (utils::IsValidJson(data, PRIVATE_CHANNEL_KEY, json::value_t::array))
 		{
 			for (json &c : data.at(PRIVATE_CHANNEL_KEY))
