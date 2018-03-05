@@ -44,15 +44,28 @@ void UserManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json &data)
 	{
+		if (!utils::IsValidJson(data, "user", json::value_t::object))
+		{
+			// TODO: should be loglevel fatal
+			CLog::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected \"user\" in \"{}\"", data.dump());
+			return;
+		}
 		AddUser(data["user"]); // that's our bot
 		m_Initialized++;
 	});
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::USER_UPDATE, [](json &data)
 	{
-		PawnDispatcher::Get()->Dispatch([data]() mutable
+		Snowflake_t user_id;
+		if (!utils::TryGetJsonValue(data, user_id, "id"))
 		{
-			Snowflake_t user_id = data["id"].get<std::string>();
+			CLog::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected \"id\" in \"{}\"", data.dump());
+		}
+
+		PawnDispatcher::Get()->Dispatch([data, user_id]() mutable
+		{
 			auto const &user = UserManager::Get()->FindUserById(user_id);
 			if (!user)
 			{

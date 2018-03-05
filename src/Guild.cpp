@@ -69,6 +69,15 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 				break;
 			}
 
+			std::string status;
+			if (!utils::TryGetJsonValue(p, status, "status"))
+			{
+				// see above on why we break here
+				CLog::Get()->Log(LogLevel::ERROR,
+					"invalid JSON: expected \"status\" in \"{}\"", p.dump());
+				break;
+			}
+
 			for (auto &m : m_Members)
 			{
 				User_t const &user = UserManager::Get()->FindUser(m.UserId);
