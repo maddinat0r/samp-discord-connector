@@ -2,6 +2,7 @@
 #include "Network.hpp"
 #include "PawnDispatcher.hpp"
 #include "PawnCallback.hpp"
+#include "CLog.hpp"
 #include "utils.hpp"
 
 
@@ -9,7 +10,11 @@ User::User(UserId_t pawn_id, json &data) :
 	m_PawnId(pawn_id)
 {
 	if (!utils::TryGetJsonValue(data, m_Id, "id"))
-		return; // TODO: error log: invalid json
+	{
+		CLog::Get()->Log(LogLevel::ERROR,
+			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
+		return;
+	}
 
 	Update(data);
 }
@@ -22,7 +27,8 @@ void User::Update(json &data)
 
 	if (!_valid)
 	{
-		// TODO: error log: invalid json
+		CLog::Get()->Log(LogLevel::ERROR,
+			"can't update user: invalid JSON: \"{}\"", data.dump());
 		return;
 	}
 
@@ -46,9 +52,14 @@ void UserManager::Initialize()
 	{
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
-			auto const &user = UserManager::Get()->FindUserById(data["id"].get<std::string>());
+			Snowflake_t user_id = data["id"].get<std::string>();
+			auto const &user = UserManager::Get()->FindUserById(user_id);
 			if (!user)
-				return; // TODO: error msg: user not cached (cache mismatch)
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"can't update user: user id \"{}\" not cached", user_id);
+				return;
+			}
 
 			user->Update(data);
 
@@ -78,18 +89,31 @@ UserId_t UserManager::AddUser(json &data)
 {
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
-		return INVALID_USER_ID; // TODO: error log: invalid json
+	{
+		CLog::Get()->Log(LogLevel::ERROR,
+			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
+		return INVALID_USER_ID;
+	}
 
 	User_t const &user = FindUserById(sfid);
 	if (user)
-		return INVALID_USER_ID; // TODO: error log: user already exists
+	{
+		CLog::Get()->Log(LogLevel::ERROR,
+			"can't add user: user id \"{}\" already exists (PAWN id '{}')",
+			sfid, user->GetPawnId());
+		return INVALID_USER_ID;
+	}
 
 	UserId_t id = 1;
 	while (m_Users.find(id) != m_Users.end())
 		++id;
 
 	if (!m_Users.emplace(id, User_t(new User(id, data))).first->second)
-		return INVALID_USER_ID; // TODO: error log: duplicate key
+	{
+		CLog::Get()->Log(LogLevel::ERROR,
+			"can't create user: duplicate key '{}'", id);
+		return INVALID_USER_ID;
+	}
 
 	return id;
 }

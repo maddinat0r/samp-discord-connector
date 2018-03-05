@@ -5,6 +5,7 @@
 #include "Role.hpp"
 #include "PawnDispatcher.hpp"
 #include "PawnCallback.hpp"
+#include "CLog.hpp"
 #include "utils.hpp"
 
 #include <unordered_map>
@@ -15,7 +16,9 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 {
 	if (!utils::TryGetJsonValue(data, m_Id, "id"))
 	{
-		return; // TODO: error msg: invalid json
+		CLog::Get()->Log(LogLevel::ERROR,
+			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
+		return;
 	}
 
 	Update(data);
@@ -41,7 +44,9 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 				// we break here because all other array entries are likely
 				// to be invalid too, and we don't want to spam an error message
 				// for every single element in this array
-				break; // TODO: error msg: invalid json
+				CLog::Get()->Log(LogLevel::ERROR,
+					"invalid JSON: expected \"user\" in \"{}\"", m.dump());
+				break;
 			}
 
 			Member member;
@@ -59,7 +64,9 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 			if (!utils::TryGetJsonValue(p, userid, "user", "id"))
 			{
 				// see above on why we break here
-				break; // TODO: error msg: invalid json
+				CLog::Get()->Log(LogLevel::ERROR,
+					"invalid JSON: expected \"user.id\" in \"{}\"", p.dump());
+				break;
 			}
 
 			for (auto &m : m_Members)
@@ -85,16 +92,22 @@ void Guild::UpdateMember(Member &member, json &data)
 		for (auto &mr : data["roles"])
 		{
 			if (!mr.is_string())
-				break; // TODO: error msg: invalid json
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"invalid JSON: not a string: \"{}\"", mr.dump());
+				break;
+			}
 
-			Role_t const &role = RoleManager::Get()->FindRoleById(mr.get<std::string>());
+			Snowflake_t sfid = mr.get<std::string>();
+			Role_t const &role = RoleManager::Get()->FindRoleById(sfid);
 			if (role)
 			{
 				member.Roles.push_back(role->GetPawnId());
 			}
 			else
 			{
-				// TODO: error message
+				CLog::Get()->Log(LogLevel::ERROR,
+					"can't update member role: role id \"{}\" not cached", sfid);
 			}
 		}
 	}
@@ -107,11 +120,13 @@ void Guild::UpdateMember(Member &member, json &data)
 		else if (nick_json.is_null())
 			member.Nickname.clear();
 		else
-			; // TODO: error msg: invalid json
+			CLog::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: invalid datatype for \"nick\" in \"{}\"", data.dump());
 	}
 	else
 	{
-		// TODO: error msg: invalid json
+		CLog::Get()->Log(LogLevel::ERROR,
+			"invalid JSON: expected \"nick\" in \"{}\"", data.dump());
 	}
 }
 
@@ -164,7 +179,11 @@ void Guild::Update(json &data)
 		{
 			std::string role_id;
 			if (!utils::TryGetJsonValue(r, role_id, "id"))
-				break; // TODO: error msg: invalid json
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"invalid JSON: expected \"id\" in \"{}\"", r.dump());
+				break;
+			}
 
 			auto const &role = RoleManager::Get()->FindRoleById(role_id);
 			if (role)
@@ -184,7 +203,9 @@ void GuildManager::Initialize()
 	{
 		if (!utils::IsValidJson(data, "guilds", json::value_t::array))
 		{
-			// TODO: fatal msg: invalid json
+			// TODO: should be loglevel fatal
+			CLog::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected \"guilds\" in \"{}\"", data.dump());
 			return;
 		}
 
@@ -218,7 +239,8 @@ void GuildManager::Initialize()
 		Snowflake_t sfid;
 		if (!utils::TryGetJsonValue(data, sfid, "id"))
 		{
-			// TODO: error msg: invalid json
+			CLog::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected \"id\" in \"{}\"", data.dump());
 			return;
 		}
 
@@ -226,7 +248,11 @@ void GuildManager::Initialize()
 		{
 			Guild_t const &guild = GuildManager::Get()->FindGuildById(sfid);
 			if (!guild)
-				return; // TODO: warning msg: guild isn't cached, it probably should have
+			{
+				CLog::Get()->Log(LogLevel::WARNING,
+					"can't delete guild: guild id \"{}\" not cached", sfid);
+				return;
+			}
 
 			// forward DCC_OnGuildDelete(DCC_Guild:guild);
 			PawnCallbackManager::Get()->Call("DCC_OnGuildDelete", guild->GetPawnId());
@@ -240,7 +266,8 @@ void GuildManager::Initialize()
 		Snowflake_t sfid;
 		if (!utils::TryGetJsonValue(data, sfid, "id"))
 		{
-			// TODO: error msg: invalid json
+			CLog::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected \"id\" in \"{}\"", data.dump());
 			return;
 		}
 
@@ -248,7 +275,11 @@ void GuildManager::Initialize()
 		{
 			Guild_t const &guild = GuildManager::Get()->FindGuildById(sfid);
 			if (!guild)
-				return; // TODO: error msg: guild isn't cached, it probably should have
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"can't update guild: guild id \"{}\" not cached", sfid);
+				return;
+			}
 
 			guild->Update(data);
 
@@ -264,15 +295,22 @@ void GuildManager::Initialize()
 			"user", json::value_t::object,
 			"roles", json::value_t::array))
 		{
-			// TODO: error msg: invalid json
+			CLog::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected \"guild_id\", \"user\" and \"roles\" " \
+				"in \"{}\"", data.dump());
 			return;
 		}
 
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
-			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
+			Snowflake_t sfid = data["guild_id"].get<std::string>();
+			auto const &guild = GuildManager::Get()->FindGuildById(sfid);
 			if (!guild)
-				return; // TODO: error msg: guild isn't cached, it probably should have
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"can't add guild member: guild id \"{}\" not cached", sfid);
+				return;
+			}
 
 			Guild::Member member;
 			// returns correct user if he already exists
@@ -281,11 +319,16 @@ void GuildManager::Initialize()
 			for (auto &mr : data["roles"])
 			{
 				Role_t const &role = RoleManager::Get()->FindRoleById(mr.get<std::string>());
+				Snowflake_t sfid = mr.get<std::string>();
+				Role_t const &role = RoleManager::Get()->FindRoleById(sfid);
 				if (role)
+				{
 					member.Roles.push_back(role->GetPawnId());
+				}
 				else
 				{
-					// TODO: error message
+					CLog::Get()->Log(LogLevel::ERROR,
+						"can't update member role: role id \"{}\" not cached", sfid);
 				}
 			}
 
@@ -302,19 +345,30 @@ void GuildManager::Initialize()
 			"guild_id", json::value_t::string,
 			"user", "id", json::value_t::string))
 		{
-			// TODO: error msg: invalid json
+			CLog::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected \"guild_id\" and \"user.id\" in \"{}\"", data.dump());
 			return;
 		}
 
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
-			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
+			Snowflake_t guild_id = data["guild_id"].get<std::string>();
+			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
 			if (!guild)
-				return; // TODO: error msg: guild isn't cached, it probably should have
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"can't remove guild member: guild id \"{}\" not cached", guild_id);
+				return;
+			}
 
-			auto const &user = UserManager::Get()->FindUserById(data["user"]["id"].get<std::string>());
+			Snowflake_t user_id = data["user"]["id"].get<std::string>();
+			auto const &user = UserManager::Get()->FindUserById(user_id);
 			if (!user)
-				return; // TODO: error msg: user not cached (cache mismatch)
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"can't remove guild member: user id \"{}\" not cached", user_id);
+				return;
+			}
 
 			// forward DCC_OnGuildMemberRemove(DCC_Guild:guild, DCC_User:user);
 			PawnCallbackManager::Get()->Call("DCC_OnGuildMemberRemove", guild->GetPawnId(), user->GetPawnId());
@@ -329,19 +383,30 @@ void GuildManager::Initialize()
 			"guild_id", json::value_t::string,
 			"user", "id", json::value_t::string))
 		{
-			// TODO: error msg: invalid json
+			CLog::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected \"guild_id\" and \"user.id\" in \"{}\"", data.dump());
 			return;
 		}
 
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
-			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
+			Snowflake_t guild_id = data["guild_id"].get<std::string>();
+			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
 			if (!guild)
-				return; // TODO: error msg: guild isn't cached, it probably should have
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"can't update guild member: guild id \"{}\" not cached", guild_id);
+				return;
+			}
 
-			auto const &user = UserManager::Get()->FindUserById(data["user"]["id"].get<std::string>());
+			Snowflake_t user_id = data["user"]["id"].get<std::string>();
+			auto const &user = UserManager::Get()->FindUserById(user_id);
 			if (!user)
-				return; // TODO: error msg: user not cached (cache mismatch)
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"can't update guild member: user id \"{}\" not cached", user_id);
+				return;
+			}
 
 			guild->UpdateMember(user->GetPawnId(), data);
 
@@ -356,15 +421,21 @@ void GuildManager::Initialize()
 			"guild_id", json::value_t::string,
 			"role", json::value_t::object))
 		{
-			// TODO: error msg: invalid json
+			CLog::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected \"guild_id\" and \"role\" in \"{}\"", data.dump());
 			return;
 		}
 
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
-			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
+			Snowflake_t guild_id = data["guild_id"].get<std::string>();
+			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
 			if (!guild)
-				return; // TODO: error msg: guild isn't cached, it probably should have
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"can't add guild role: guild id \"{}\" not cached", guild_id);
+				return;
+			}
 
 			auto const role = RoleManager::Get()->AddRole(data["role"]);
 			guild->AddRole(role);
@@ -380,19 +451,30 @@ void GuildManager::Initialize()
 			"guild_id", json::value_t::string,
 			"role_id", json::value_t::string))
 		{
-			// TODO: error msg: invalid json
+			CLog::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected \"guild_id\" and \"role_id\" in \"{}\"", data.dump());
 			return;
 		}
 
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
-			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
+			Snowflake_t guild_id = data["guild_id"].get<std::string>();
+			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
 			if (!guild)
-				return; // TODO: error msg: guild isn't cached, it probably should have
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"can't delete guild role: guild id \"{}\" not cached", guild_id);
+				return;
+			}
 
-			auto const &role = RoleManager::Get()->FindRoleById(data["role_id"].get<std::string>());
+			Snowflake_t role_id = data["role_id"].get<std::string>();
+			auto const &role = RoleManager::Get()->FindRoleById(role_id);
 			if (!role)
-				return; // TODO: error msg: role isn't cached (cache mismatch)
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"can't delete guild role: role id \"{}\" not cached", role_id);
+				return;
+			}
 
 			// forward DCC_OnGuildRoleDelete(DCC_Guild:guild, DCC_Role:role);
 			PawnCallbackManager::Get()->Call("DCC_OnGuildRoleDelete", guild->GetPawnId(), role->GetPawnId());
@@ -408,19 +490,30 @@ void GuildManager::Initialize()
 			"guild_id", json::value_t::string,
 			"role", "id", json::value_t::string))
 		{
-			// TODO: error msg: invalid json
+			CLog::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected \"guild_id\" and \"role.id\" in \"{}\"", data.dump());
 			return;
 		}
 
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
-			auto const &guild = GuildManager::Get()->FindGuildById(data["guild_id"].get<std::string>());
+			Snowflake_t guild_id = data["guild_id"].get<std::string>();
+			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
 			if (!guild)
-				return; // TODO: error msg: guild isn't cached, it probably should have
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"can't update guild role: guild id \"{}\" not cached", guild_id);
+				return;
+			}
 
-			auto const &role = RoleManager::Get()->FindRoleById(data["role"]["id"].get<std::string>());
+			Snowflake_t role_id = data["role"]["id"].get<std::string>();
+			auto const &role = RoleManager::Get()->FindRoleById(role_id);
 			if (!role)
-				return; // TODO: error msg: role isn't cached (cache mismatch)
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"can't update guild role: role id \"{}\" not cached", role_id);
+				return;
+			}
 
 			role->Update(data["role"]);
 
@@ -436,31 +529,42 @@ void GuildManager::Initialize()
 			std::string guild_id;
 			if (!utils::TryGetJsonValue(data, guild_id, "guild_id"))
 			{
-				// TODO: error msg: invalid json
+				CLog::Get()->Log(LogLevel::ERROR,
+					"invalid JSON: expected \"guild_id\" in \"{}\"", data.dump());
 				return;
 			}
 
 			std::string user_id;
 			if (!utils::TryGetJsonValue(data, user_id, "user", "id"))
 			{
-				// TODO: error msg: invalid json
+				CLog::Get()->Log(LogLevel::ERROR,
+					"invalid JSON: expected \"user.id\" in \"{}\"", data.dump());
 				return;
 			}
 
 			std::string status;
 			if (!utils::TryGetJsonValue(data, guild_id, "status"))
 			{
-				// TODO: error msg: invalid json
+				CLog::Get()->Log(LogLevel::ERROR,
+					"invalid JSON: expected \"status\" in \"{}\"", data.dump());
 				return;
 			}
 
 			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
 			if (!guild)
-				return; // TODO: error msg: guild isn't cached, it probably should have
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"can't update guild member presence: guild id \"{}\" not cached", guild_id);
+				return;
+			}
 
 			auto const &user = UserManager::Get()->FindUserById(user_id);
 			if (!user)
-				return; // TODO: error msg: user not cached (cache mismatch)
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"can't update guild member presence: user id \"{}\" not cached", user_id);
+				return;
+			}
 
 			guild->UpdateMemberPresence(user->GetPawnId(), status);
 
@@ -493,19 +597,33 @@ GuildId_t GuildManager::AddGuild(json &data)
 {
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
-		return INVALID_GUILD_ID; // TODO: error msg: invalid json
+	{
+		CLog::Get()->Log(LogLevel::ERROR,
+			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
+		return INVALID_GUILD_ID;
+	}
 
 	auto const &guild = FindGuildById(sfid);
 	if (guild)
-		return INVALID_GUILD_ID; // TODO: error log: guild already exists
+	{
+		CLog::Get()->Log(LogLevel::ERROR,
+			"can't add guild: guild id \"{}\" already exists (PAWN id '{}')", 
+			sfid, guild->GetPawnId());
+		return INVALID_GUILD_ID;
+	}
 
 	GuildId_t id = 1;
 	while (m_Guilds.find(id) != m_Guilds.end())
 		++id;
 
 	if (!m_Guilds.emplace(id, Guild_t(new Guild(id, data))).second)
-		return INVALID_GUILD_ID; // TODO: error log: duplicate key
+	{
+		CLog::Get()->Log(LogLevel::ERROR,
+			"can't create guild: duplicate key '{}'", id);
+		return INVALID_GUILD_ID;
+	}
 
+	CLog::Get()->Log(LogLevel::INFO, "successfully created guild with id '{}'", id);
 	return id;
 }
 
