@@ -39,7 +39,7 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 	{
 		for (auto &m : data["members"])
 		{
-			if (!utils::IsValidJson(data, "user", json::value_t::object))
+			if (!utils::IsValidJson(m, "user", json::value_t::object))
 			{
 				// we break here because all other array entries are likely
 				// to be invalid too, and we don't want to spam an error message
