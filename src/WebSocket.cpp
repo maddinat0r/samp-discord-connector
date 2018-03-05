@@ -104,27 +104,6 @@ void WebSocket::Disconnect()
 			error.message(), error.value());
 	}
 
-	m_WebSocket->next_layer().shutdown(error);
-	if (error)
-	{
-		CLog::Get()->Log(LogLevel::WARNING, "Error while shutting down SSL on WS connection: {} ({})",
-			error.message(), error.value());
-	}
-
-	m_WebSocket->lowest_layer().shutdown(asio::ip::tcp::socket::shutdown_both, error);
-	if (error)
-	{
-		CLog::Get()->Log(LogLevel::WARNING, "Error while shutting down WS connection: {} ({})",
-			error.message(), error.value());
-	}
-
-	m_WebSocket->lowest_layer().close(error);
-	if (error)
-	{
-		CLog::Get()->Log(LogLevel::WARNING, "Error while closing WS connection: {} ({})",
-			error.message(), error.value());
-	}
-
 	m_HeartbeatTimer.cancel();
 }
 
