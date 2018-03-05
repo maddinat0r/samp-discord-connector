@@ -21,5 +21,5 @@ Message::Message(json &data)
 	}
 
 	User_t const &user = UserManager::Get()->FindUserById(author_id);
-	m_Author = user ? user->GetPawnId() : 0;
+	m_Author = user ? user->GetPawnId() : INVALID_USER_ID;
 }

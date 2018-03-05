@@ -20,7 +20,7 @@ private:
 		m_Id,
 		m_ChannelId;
 
-	UserId_t m_Author;
+	UserId_t m_Author = INVALID_USER_ID;
 	std::string m_Content;
 
 	bool m_MentionsEveryone;
