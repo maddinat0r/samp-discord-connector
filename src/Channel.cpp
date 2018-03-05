@@ -20,7 +20,9 @@ Channel::Channel(ChannelId_t pawn_id, json &data, GuildId_t guild_id) :
 	if (!utils::TryGetJsonValue(data, type, "type")
 		|| !utils::TryGetJsonValue(data, m_Id, "id"))
 	{
-		return; // TODO error msg: invalid json
+		CLog::Get()->Log(LogLevel::ERROR,
+			"invalid JSON: expected \"type\" and \"id\" in \"{}\"", data.dump());
+		return;
 	}
 
 	m_Type = static_cast<Type>(type);
@@ -42,7 +44,8 @@ Channel::Channel(ChannelId_t pawn_id, json &data, GuildId_t guild_id) :
 			}
 			else
 			{
-				// TODO: error message (is a guild channel, but no guild id was given)
+				CLog::Get()->Log(LogLevel::ERROR,
+					"invalid JSON: expected \"guild_id\" in \"{}\"", data.dump());
 			}
 		}
 
@@ -66,11 +69,11 @@ void Channel::SendMessage(std::string &&msg)
 	{
 		if (e.id == 316)
 		{
-			// TODO: error msg: invalid UTF-8 string (e.what())
+			CLog::Get()->Log(LogLevel::ERROR, "invalid UTF-8 string: {}", e.what());
 		}
 		else
 		{
-			// TODO: error msg: error while serializing json: e.what()
+			CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", e.what());
 		}
 	}
 }
@@ -113,7 +116,8 @@ void ChannelManager::Initialize()
 		}
 		else
 		{
-			// TODO: error msg: invalid json
+			CLog::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected \"{}\" in \"{}\"", PRIVATE_CHANNEL_KEY, data.dump());
 		}
 		m_Initialized++;
 	});
@@ -157,7 +161,9 @@ ChannelId_t ChannelManager::AddChannel(json &data, GuildId_t guild_id/* = 0*/)
 	std::underlying_type<Channel::Type>::type type_u;
 	if (!utils::TryGetJsonValue(data, type_u, "type"))
 	{
-		return INVALID_CHANNEL_ID; // TODO error msg: invalid json
+		CLog::Get()->Log(LogLevel::ERROR,
+			"invalid JSON: expected \"type\" in \"{}\"", data.dump());
+		return INVALID_CHANNEL_ID;
 	}
 
 	auto ch_type = static_cast<Channel::Type>(type_u);
@@ -171,7 +177,9 @@ ChannelId_t ChannelManager::AddChannel(json &data, GuildId_t guild_id/* = 0*/)
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
 	{
-		return INVALID_CHANNEL_ID; // TODO error msg: invalid json
+		CLog::Get()->Log(LogLevel::ERROR,
+			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
+		return INVALID_CHANNEL_ID;
 	}
 
 	Channel_t const &channel = FindChannelById(sfid);
@@ -183,8 +191,13 @@ ChannelId_t ChannelManager::AddChannel(json &data, GuildId_t guild_id/* = 0*/)
 		++id;
 
 	if (!m_Channels.emplace(id, Channel_t(new Channel(id, data, guild_id))).second)
-		return INVALID_CHANNEL_ID; // TODO: error msg: duplicate key
+	{
+		CLog::Get()->Log(LogLevel::ERROR,
+			"can't create channel: duplicate key '{}'", id);
+		return INVALID_CHANNEL_ID;
+	}
 
+	CLog::Get()->Log(LogLevel::INFO, "successfully created channel with id '{}'", id);
 	return id;
 }
 
@@ -193,13 +206,16 @@ void ChannelManager::UpdateChannel(json &data)
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
 	{
-		return; // TODO error msg: invalid json
+		CLog::Get()->Log(LogLevel::ERROR,
+			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
+		return;
 	}
 
 	Channel_t const &channel = FindChannelById(sfid);
 	if (!channel)
 	{
-		// TODO: error msg
+		CLog::Get()->Log(LogLevel::ERROR,
+			"can't update channel: channel id \"{}\" not cached", sfid);
 		return;
 	}
 
@@ -224,13 +240,16 @@ void ChannelManager::DeleteChannel(json &data)
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
 	{
-		return; // TODO error msg: invalid json
+		CLog::Get()->Log(LogLevel::ERROR,
+			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
+		return;
 	}
 
 	Channel_t const &channel = FindChannelById(sfid);
 	if (!channel)
 	{
-		// TODO: error msg
+		CLog::Get()->Log(LogLevel::ERROR,
+			"can't delete channel: channel id \"{}\" not cached", sfid);
 		return;
 	}
 

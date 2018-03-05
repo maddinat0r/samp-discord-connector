@@ -1,4 +1,5 @@
 #include "Role.hpp"
+#include "CLog.hpp"
 #include "utils.hpp"
 
 
@@ -6,7 +7,11 @@ Role::Role(RoleId_t pawn_id, json &data) :
 	m_PawnId(pawn_id)
 {
 	if (!utils::TryGetJsonValue(data, m_Id, "id"))
-		return; // TODO: error log: invalid json
+	{
+		CLog::Get()->Log(LogLevel::ERROR,
+			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
+		return;
+	}
 
 	Update(data);
 }
@@ -22,7 +27,8 @@ void Role::Update(json &data)
 
 	if (!_valid)
 	{
-		// TODO: error log: invalid json
+		CLog::Get()->Log(LogLevel::ERROR,
+			"can't update role: invalid JSON: \"{}\"", data.dump());
 	}
 }
 
@@ -31,18 +37,31 @@ RoleId_t RoleManager::AddRole(json &data)
 {
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
-		return INVALID_ROLE_ID; // TODO: error msg: invalid json
+	{
+		CLog::Get()->Log(LogLevel::ERROR,
+			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
+		return INVALID_ROLE_ID;
+	}
 
 	Role_t const &role = FindRoleById(sfid);
 	if (role)
-		return INVALID_ROLE_ID; // TODO: error log: role already exists
+	{
+		CLog::Get()->Log(LogLevel::ERROR,
+			"can't add role: role id \"{}\" already exists (PAWN id '{}')",
+			sfid, role->GetPawnId());
+		return INVALID_ROLE_ID;
+	}
 
 	RoleId_t id = 1;
 	while (m_Roles.find(id) != m_Roles.end())
 		++id;
 
 	if (!m_Roles.emplace(id, Role_t(new Role(id, data))).first->second)
-		return INVALID_ROLE_ID; // TODO: error log: duplicate key
+	{
+		CLog::Get()->Log(LogLevel::ERROR,
+			"can't create role: duplicate key '{}'", id);
+		return INVALID_ROLE_ID;
+	}
 	return id;
 }
 
