@@ -110,12 +110,7 @@ UserId_t UserManager::AddUser(json &data)
 
 	User_t const &user = FindUserById(sfid);
 	if (user)
-	{
-		CLog::Get()->Log(LogLevel::ERROR,
-			"can't add user: user id \"{}\" already exists (PAWN id '{}')",
-			sfid, user->GetPawnId());
-		return INVALID_USER_ID;
-	}
+		return user->GetPawnId();
 
 	UserId_t id = 1;
 	while (m_Users.find(id) != m_Users.end())
