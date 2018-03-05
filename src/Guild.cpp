@@ -132,11 +132,6 @@ void Guild::Member::Update(json &data)
 			CLog::Get()->Log(LogLevel::ERROR,
 				"invalid JSON: invalid datatype for \"nick\" in \"{}\"", data.dump());
 	}
-	else
-	{
-		CLog::Get()->Log(LogLevel::ERROR,
-			"invalid JSON: expected \"nick\" in \"{}\"", data.dump());
-	}
 }
 
 void Guild::Member::UpdatePresence(std::string const &status)
