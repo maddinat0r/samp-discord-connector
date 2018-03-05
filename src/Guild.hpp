@@ -31,6 +31,9 @@ public:
 		std::string Nickname;
 		std::vector<RoleId_t> Roles;
 		PresenceStatus Status;
+
+		void Update(json &data);
+		void UpdatePresence(std::string const &status);
 	};
 
 public:
@@ -52,8 +55,6 @@ private:
 	std::vector<Member> m_Members;
 
 private:
-	void UpdateMember(Member &member, json &data);
-	void UpdateMemberPresence(Member &member, std::string const &status);
 
 public:
 	inline GuildId_t GetPawnId() const

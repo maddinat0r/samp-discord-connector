@@ -51,7 +51,7 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 
 			Member member;
 			member.UserId = UserManager::Get()->AddUser(m["user"]);
-			UpdateMember(member, m);
+			member.Update(m);
 			m_Members.push_back(std::move(member));
 		}
 	}
@@ -84,7 +84,7 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 				assert(user);
 				if (user->GetId() == userid)
 				{
-					UpdateMemberPresence(m, p["status"].get<std::string>());
+					m.UpdatePresence(status);
 					break;
 				}
 			}
@@ -92,12 +92,12 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 	}
 }
 
-void Guild::UpdateMember(Member &member, json &data)
+void Guild::Member::Update(json &data)
 {
 	// we don't care about the user object, there's an extra event for users
 	if (utils::IsValidJson(data, "roles", json::value_t::array))
 	{
-		member.Roles.clear();
+		Roles.clear();
 		for (auto &mr : data["roles"])
 		{
 			if (!mr.is_string())
@@ -111,7 +111,7 @@ void Guild::UpdateMember(Member &member, json &data)
 			Role_t const &role = RoleManager::Get()->FindRoleById(sfid);
 			if (role)
 			{
-				member.Roles.push_back(role->GetPawnId());
+				Roles.push_back(role->GetPawnId());
 			}
 			else
 			{
@@ -125,9 +125,9 @@ void Guild::UpdateMember(Member &member, json &data)
 	{
 		auto &nick_json = data["nick"];
 		if (nick_json.is_string())
-			member.Nickname = data["nick"].get<std::string>();
+			Nickname = data["nick"].get<std::string>();
 		else if (nick_json.is_null())
-			member.Nickname.clear();
+			Nickname.clear();
 		else
 			CLog::Get()->Log(LogLevel::ERROR,
 				"invalid JSON: invalid datatype for \"nick\" in \"{}\"", data.dump());
@@ -139,7 +139,7 @@ void Guild::UpdateMember(Member &member, json &data)
 	}
 }
 
-void Guild::UpdateMemberPresence(Member &member, std::string const &status)
+void Guild::Member::UpdatePresence(std::string const &status)
 {
 	// "idle", "dnd", "online", or "offline"
 	static const std::unordered_map<std::string, Member::PresenceStatus> status_map{
@@ -149,7 +149,7 @@ void Guild::UpdateMemberPresence(Member &member, std::string const &status)
 		{ "offline", Member::PresenceStatus::OFFLINE }
 	};
 
-	member.Status = status_map.at(status);
+	Status = status_map.at(status);
 }
 
 void Guild::UpdateMember(UserId_t userid, json &data)
@@ -159,7 +159,7 @@ void Guild::UpdateMember(UserId_t userid, json &data)
 		if (m.UserId != userid)
 			continue;
 
-		UpdateMember(m, data);
+		m.Update(data);
 		break;
 	}
 }
@@ -171,7 +171,7 @@ void Guild::UpdateMemberPresence(UserId_t userid, std::string const &status)
 		if (m.UserId != userid)
 			continue;
 
-		UpdateMemberPresence(m, status);
+		m.UpdatePresence(status);
 		break;
 	}
 }
@@ -325,21 +325,7 @@ void GuildManager::Initialize()
 			// returns correct user if he already exists
 			auto const userid = UserManager::Get()->AddUser(data["user"]);
 			member.UserId = userid;
-			for (auto &mr : data["roles"])
-			{
-				Role_t const &role = RoleManager::Get()->FindRoleById(mr.get<std::string>());
-				Snowflake_t sfid = mr.get<std::string>();
-				Role_t const &role = RoleManager::Get()->FindRoleById(sfid);
-				if (role)
-				{
-					member.Roles.push_back(role->GetPawnId());
-				}
-				else
-				{
-					CLog::Get()->Log(LogLevel::ERROR,
-						"can't update member role: role id \"{}\" not cached", sfid);
-				}
-			}
+			member.Update(data);
 
 			guild->AddMember(std::move(member));
 
