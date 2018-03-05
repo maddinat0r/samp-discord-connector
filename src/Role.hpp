@@ -24,7 +24,7 @@ private:
 	Snowflake_t m_Id;
 
 	std::string m_Name;
-	int m_Color;
+	unsigned int m_Color;
 	bool m_Hoist;
 	unsigned long long int m_Permissions;
 	bool m_Mentionable;
@@ -44,7 +44,7 @@ public:
 	{
 		return m_Name;
 	}
-	inline int GetColor() const
+	inline unsigned int GetColor() const
 	{
 		return m_Color;
 	}
