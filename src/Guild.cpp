@@ -533,7 +533,7 @@ void GuildManager::Initialize()
 			}
 
 			std::string status;
-			if (!utils::TryGetJsonValue(data, guild_id, "status"))
+			if (!utils::TryGetJsonValue(data, status, "status"))
 			{
 				CLog::Get()->Log(LogLevel::ERROR,
 					"invalid JSON: expected \"status\" in \"{}\"", data.dump());
