@@ -6,13 +6,12 @@
 #include <unordered_map>
 #include <thread>
 #include <atomic>
-#include <mutex>
-#include <list>
 
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
+#include <concurrentqueue.h>
 
 
 namespace asio = boost::asio;
@@ -64,8 +63,7 @@ private:
 
 	std::string m_Token;
 
-	std::mutex m_QueueMutex;
-	std::list<QueueEntry_t> m_Queue;
+	moodycamel::ConcurrentQueue<QueueEntry_t> m_Queue;
 	std::atomic<bool> m_NetworkThreadRunning;
 	std::thread m_NetworkThread;
 

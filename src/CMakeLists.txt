@@ -91,6 +91,7 @@ set_property(TARGET discord-connector PROPERTY INCLUDE_DIRECTORIES
 	${PROJECT_SOURCE_DIR}/libs/samp-log-core/include
 	${PROJECT_SOURCE_DIR}/libs/beast/include
 	${PROJECT_SOURCE_DIR}/libs/json
+	${PROJECT_SOURCE_DIR}/libs/concurrentqueue
 )
 
 add_dependencies(discord-connector log-core fmt)

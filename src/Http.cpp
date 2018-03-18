@@ -9,6 +9,7 @@
 Http::Http(std::string token) :
 	m_SslContext(asio::ssl::context::sslv23),
 	m_Token(token),
+	m_Queue(8192, 0, 2),
 	m_NetworkThreadRunning(true),
 	m_NetworkThread(std::bind(&Http::NetworkThreadFunc, this))
 {
@@ -33,13 +34,11 @@ void Http::NetworkThreadFunc()
 	while (m_NetworkThreadRunning)
 	{
 		TimePoint_t current_time = std::chrono::system_clock::now();
-		
-		m_QueueMutex.lock(); 
-		auto it = m_Queue.begin();
-		while (it != m_Queue.end())
-		{
-			auto const &entry = *it;
+		std::list<QueueEntry_t> skipped_entries;
 
+		QueueEntry_t entry;
+		while (m_Queue.try_dequeue(entry))
+		{
 			// check if we're rate-limited
 			auto pr_it = path_ratelimit.find(entry->Request->target().to_string());
 			if (pr_it != path_ratelimit.end())
@@ -49,7 +48,7 @@ void Http::NetworkThreadFunc()
 				if (current_time < pr_it->second)
 				{
 					// yes, ignore this request for now
-					it++;
+					skipped_entries.push_back(entry);
 					continue;
 				}
 
@@ -95,7 +94,6 @@ void Http::NetworkThreadFunc()
 					{
 						// we failed to reconnect, discard this request
 						CLog::Get()->Log(LogLevel::WARNING, "Failed to send request, discarding");
-						it = m_Queue.erase(it);
 						skip_entry = true;
 						break; // break out of do-while loop
 					}
@@ -121,8 +119,8 @@ void Http::NetworkThreadFunc()
 							"Error while processing rate-limit: already rate-limited path '{}'",
 							limited_url);
 
-						// skip this request, but leave it in our list to retry later
-						it++;
+						// skip this request, we'll re-add it to the queue to retry later
+						skipped_entries.push_back(entry);
 						continue;
 					}
 
@@ -148,16 +146,14 @@ void Http::NetworkThreadFunc()
 				}
 			}
 
-			m_QueueMutex.unlock(); // allow requests to be queued from within callback
 			if (entry->Callback)
 				entry->Callback(sb, response);
-			m_QueueMutex.lock();
-
-			it = m_Queue.erase(it);
 		}
-		m_QueueMutex.unlock();
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		// add skipped entries back to queue
+		m_Queue.try_enqueue_bulk(skipped_entries.begin(), skipped_entries.size());
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	}
 
 	Disconnect();
@@ -291,8 +287,7 @@ void Http::SendRequest(beast::http::verb const method, std::string const &url,
 
 	SharedRequest_t req = PrepareRequest(method, url, content);
 
-	std::lock_guard<std::mutex> lock_guard(m_QueueMutex);
-	m_Queue.push_back(std::make_shared<QueueEntry>(req, std::move(callback)));
+	m_Queue.enqueue(std::make_shared<QueueEntry>(req, std::move(callback)));
 }
 
 void Http::Get(std::string const &url, GetCallback_t &&callback)
