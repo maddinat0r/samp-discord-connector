@@ -1,0 +1,34 @@
+{
+    "user": "maddinat0r",
+    "repo": "samp-discord-connector",
+    "resources": [
+        {
+            "name": "^discord-connector-.+-[Ll]inux\\.tar\\.gz$",
+            "platform": "linux",
+            "archive": true,
+            "includes": ["discord-connector-.+\\/pawno\\/include"],
+            "plugins": ["discord-connector-.+\\/plugins\\/discord-connector\\.so"],
+            "files": {
+                "discord-connector-.+\\/log-core.so": "log-core.so"
+            }
+        },
+        {
+            "name": "^discord-connector-.+-win(32)?.zip$",
+            "platform": "windows",
+            "archive": true,
+            "includes": ["discord-connector-.+\\/pawno\\/include"],
+            "plugins": ["discord-connector-.+\\/plugins\\/discord-connector\\.dll"],
+            "files": {
+                "discord-connector-.+\\/log-core.dll": "log-core.dll"
+            }
+        }
+    ],
+    "runtime": {
+        "plugins": ["maddinat0r/samp-discord-connector"]
+    },
+    "contributors": [
+        "maddinat0r",
+        "ghost",
+        "seanny"
+    ]
+}
