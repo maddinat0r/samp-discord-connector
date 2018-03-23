@@ -1,5 +1,5 @@
 {
-    "user": "seanny",
+    "user": "maddinat0r",
     "repo": "samp-discord-connector",
     "resources": [
         {
@@ -18,6 +18,6 @@
         }
     ],
     "runtime": {
-        "plugins": ["seanny/samp-discord-connector"]
+        "plugins": ["maddinat0r/samp-discord-connector"]
     }
 }
