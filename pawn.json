@@ -1,0 +1,23 @@
+{
+    "user": "seanny",
+    "repo": "samp-discord-connector",
+    "resources": [
+        {
+            "name": "^discord-connector-(.*)-Linux.tar.gz$",
+            "platform": "linux",
+            "archive": true,
+            "includes": ["pawno/include"],
+            "plugins": ["plugins/discord-connector.so"]
+        },
+        {
+            "name": "^discord-connector-(.*)-win32.zip$",
+            "platform": "windows",
+            "archive": true,
+            "includes": ["pawno/include"],
+            "plugins": ["plugins/discord-connector.dll"]
+        }
+    ],
+    "runtime": {
+        "plugins": ["seanny/samp-discord-connector"]
+    }
+}
