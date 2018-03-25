@@ -7,7 +7,7 @@
             "platform": "linux",
             "archive": true,
             "includes": ["discord-connector-.+\\/pawno\\/include"],
-            "plugins": ["discord-connector-.+\\/plugins\\/discord-connector\\.so"],
+            "plugins": ["discord-connector-.+\\/plugins\\/discord-connector.so"],
             "files": {
                 "discord-connector-.+\\/log-core.so": "log-core.so"
             }
@@ -17,7 +17,7 @@
             "platform": "windows",
             "archive": true,
             "includes": ["discord-connector-.+\\/pawno\\/include"],
-            "plugins": ["discord-connector-.+\\/plugins\\/discord-connector\\.dll"],
+            "plugins": ["discord-connector-.+\\/plugins\\/discord-connector.dll"],
             "files": {
                 "discord-connector-.+\\/log-core.dll": "log-core.dll"
             }
