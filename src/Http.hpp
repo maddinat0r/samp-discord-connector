@@ -42,7 +42,7 @@ private:
 	using Request_t = beast::http::request<beast::http::string_body>;
 	using SharedRequest_t = std::shared_ptr<Request_t>;
 	using ResponseCallback_t = std::function<void(Streambuf_t&, Response_t&)>;
-	using TimePoint_t = std::chrono::system_clock::time_point;
+	using TimePoint_t = std::chrono::steady_clock::time_point;
 
 	struct QueueEntry
 	{

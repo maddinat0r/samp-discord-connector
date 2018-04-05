@@ -4,6 +4,7 @@
 
 #include <boost/asio/system_timer.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <date/date.h>
 
 
 Http::Http(std::string token) :
@@ -33,7 +34,7 @@ void Http::NetworkThreadFunc()
 
 	while (m_NetworkThreadRunning)
 	{
-		TimePoint_t current_time = std::chrono::system_clock::now();
+		TimePoint_t current_time = std::chrono::steady_clock::now();
 		std::list<QueueEntry_t> skipped_entries;
 
 		QueueEntry_t entry;
@@ -54,6 +55,8 @@ void Http::NetworkThreadFunc()
 
 				// no, delete rate-limit and go on
 				path_ratelimit.erase(pr_it);
+				CLog::Get()->Log(LogLevel::DEBUG, "rate-limit on path '{}' lifted",
+					entry->Request->target().to_string());
 			}
 
 			boost::system::error_code error_code;
@@ -103,7 +106,6 @@ void Http::NetworkThreadFunc()
 				continue; // continue queue loop
 
 
-
 			auto it_r = response.find("X-RateLimit-Remaining");
 			if (it_r != response.end())
 			{
@@ -127,19 +129,24 @@ void Http::NetworkThreadFunc()
 					it_r = response.find("X-RateLimit-Reset");
 					if (it_r != response.end())
 					{
-						TimePoint_t current_time = std::chrono::system_clock::now();
+						auto date_str = response.find(boost::beast::http::field::date)->value().to_string();
+						std::istringstream date_ss{ date_str };
+						date::sys_seconds date_utc;
+						date_ss >> date::parse("%a, %d %b %Y %T %Z", date_utc); // RFC2616 HTTP header date format
+
+						std::chrono::seconds timepoint_now = date_utc.time_since_epoch();
 						CLog::Get()->Log(LogLevel::DEBUG, "rate-limiting path {} until {} (current time: {})",
 							limited_url,
 							it_r->value().to_string(),
-							std::chrono::duration_cast<std::chrono::seconds>(
-								current_time.time_since_epoch()).count());
+							timepoint_now.count());
 
 						string const &reset_time_str = it_r->value().to_string();
 						long long reset_time_secs = 0;
 						boost::spirit::qi::parse(reset_time_str.begin(), reset_time_str.end(),
 							boost::spirit::qi::any_int_parser<long long>(),
 							reset_time_secs);
-						TimePoint_t reset_time{ std::chrono::seconds(reset_time_secs) };
+						TimePoint_t reset_time = std::chrono::steady_clock::now() 
+							+ std::chrono::seconds(reset_time_secs - timepoint_now.count() + 1); // add a buffer of 1 second
 
 						path_ratelimit.insert({ limited_url, reset_time });
 					}
