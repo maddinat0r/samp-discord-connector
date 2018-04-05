@@ -108,6 +108,8 @@ if(MSVC)
 	target_link_libraries(discord-connector Crypt32.lib)
 endif()
 
+add_definitions(-DONLY_C_LOCALE) # make the date library use the C locale only
+
 target_link_libraries(discord-connector log-core fmt OpenSSL::SSL Boost::system)
 
 if(UNIX)
