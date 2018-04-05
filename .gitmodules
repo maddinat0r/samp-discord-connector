@@ -7,3 +7,6 @@
 [submodule "libs/samp-log-core"]
 	path = libs/samp-log-core
 	url = https://github.com/maddinat0r/samp-log-core.git
+[submodule "libs/date"]
+	path = libs/date
+	url = https://github.com/HowardHinnant/date.git
