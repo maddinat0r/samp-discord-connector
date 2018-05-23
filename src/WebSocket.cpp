@@ -105,18 +105,21 @@ void WebSocket::OnClose(boost::system::error_code ec, bool reconnect)
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::OnClose");
 
-	if (ec)
-	{
-		CLog::Get()->Log(LogLevel::WARNING, "Error while sending WS close frame: {} ({})",
-			ec.message(), ec.value());
-	}
-
 	m_HeartbeatTimer.cancel();
 
-	if (reconnect && Connect())
+	if (reconnect)
 	{
-		SendResumePayload();
-		Read();
+		if (Connect())
+		{
+			SendResumePayload();
+			Read();
+		}
+		else
+		{
+			// retry reconnect in 10 seconds
+			std::this_thread::sleep_for(std::chrono::seconds(10));
+			Disconnect(true);
+		}
 	}
 }
 
@@ -182,7 +185,7 @@ void WebSocket::OnRead(boost::system::error_code ec)
 		switch (ec.value())
 		{
 		case boost::asio::ssl::error::stream_errors::stream_truncated:
-			CLog::Get()->Log(LogLevel::ERROR, "Discord terminated websocket connection; reason: {} ({})", 
+			CLog::Get()->Log(LogLevel::ERROR, "Discord terminated websocket connection; reason: {} ({})",
 				m_WebSocket->reason().reason.c_str(), m_WebSocket->reason().code);
 			reconnect = true;
 			break;
