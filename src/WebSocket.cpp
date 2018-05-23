@@ -90,18 +90,18 @@ bool WebSocket::Connect()
 	return true;
 }
 
-void WebSocket::Disconnect()
+void WebSocket::Disconnect(bool reconnect /*= false*/)
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::Disconnect");
 
 	if (m_WebSocket)
 	{
 		m_WebSocket->async_close(beast::websocket::close_code::normal,
-			std::bind(&WebSocket::OnClose, this, std::placeholders::_1));
+			std::bind(&WebSocket::OnClose, this, std::placeholders::_1, reconnect));
 	}
 }
 
-void WebSocket::OnClose(boost::system::error_code ec)
+void WebSocket::OnClose(boost::system::error_code ec, bool reconnect)
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::OnClose");
 
@@ -112,6 +112,12 @@ void WebSocket::OnClose(boost::system::error_code ec)
 	}
 
 	m_HeartbeatTimer.cancel();
+
+	if (reconnect && Connect())
+	{
+		SendResumePayload();
+		Read();
+	}
 }
 
 void WebSocket::Identify()
@@ -194,8 +200,7 @@ void WebSocket::OnRead(boost::system::error_code ec)
 		{
 			CLog::Get()->Log(LogLevel::INFO,
 				"websocket gateway connection terminated, attempting reconnect...");
-			Reconnect();
-			Read();
+			Disconnect(true);
 		}
 		return;
 	}
@@ -272,8 +277,8 @@ void WebSocket::OnRead(boost::system::error_code ec)
 		}
 	} break;
 	case 7: // reconnect
-		Reconnect();
-		break;
+		Disconnect(true);
+		return;
 	case 9: // invalid session
 		Identify();
 		break;

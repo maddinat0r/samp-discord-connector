@@ -88,22 +88,13 @@ private: // variables
 private: // functions
 	void Initialize(std::string token, std::string gateway_url);
 	bool Connect();
-	void Disconnect();
-	void OnClose(boost::system::error_code ec);
+	void Disconnect(bool reconnect = false);
+	void OnClose(boost::system::error_code ec, bool reconnect);
 	void Identify();
 	void SendResumePayload();
 	void Read();
 	void OnRead(boost::system::error_code ec);
 	void DoHeartbeat(boost::system::error_code ec);
-	void Reconnect()
-	{
-		Disconnect();
-		if (Connect())
-		{
-			SendResumePayload();
-			DoHeartbeat({});
-		}
-	}
 
 public: // functions
 	void RegisterEvent(Event event, EventCallback_t &&callback)
