@@ -94,8 +94,11 @@ void WebSocket::Disconnect()
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::Disconnect");
 
-	m_WebSocket->async_close(beast::websocket::close_code::normal,
-		std::bind(&WebSocket::OnClose, this, std::placeholders::_1));
+	if (m_WebSocket)
+	{
+		m_WebSocket->async_close(beast::websocket::close_code::normal,
+			std::bind(&WebSocket::OnClose, this, std::placeholders::_1));
+	}
 }
 
 void WebSocket::OnClose(boost::system::error_code ec)
