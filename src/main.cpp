@@ -28,7 +28,7 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 	logprintf = (logprintf_t) ppData[PLUGIN_DATA_LOGPRINTF];
 	
 	samplog::Init();
-	CLog::Get()->SetLogLevel(LogLevel::DEBUG | LogLevel::INFO | LogLevel::WARNING | LogLevel::ERROR);
+	CLog::Get()->SetLogLevel(LogLevel::INFO | LogLevel::WARNING | LogLevel::ERROR);
 
 	bool ret_val = true;
 	std::string bot_token;
