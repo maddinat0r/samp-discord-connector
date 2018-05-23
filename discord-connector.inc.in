@@ -77,6 +77,7 @@ native DCC_IsUserVerified(DCC_User:user, &bool:is_verified);
 
 
 //  roles
+native DCC_Role:DCC_FindRoleByName(DCC_Guild:guild, const role_name[]);
 native DCC_Role:DCC_FindRoleById(const role_id[]);
 
 native DCC_GetRoleId(DCC_Role:role, dest[], max_size = sizeof dest);

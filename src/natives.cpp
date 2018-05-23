@@ -341,6 +341,39 @@ AMX_DECLARE_NATIVE(Native::DCC_IsUserVerified)
 	return 1;
 }
 
+// native DCC_Role:DCC_FindRoleByName(DCC_Guild:guild, const role_name[]);
+AMX_DECLARE_NATIVE(Native::DCC_FindRoleByName)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_FindRoleByName", params, "ds");
+
+	GuildId_t guildid = params[1];
+	std::string const role_name = amx_GetCppString(amx, params[2]);
+
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return INVALID_ROLE_ID;
+	}
+
+	cell ret_val = INVALID_ROLE_ID;
+	for (auto const &r : guild->GetRoles())
+	{
+		Role_t const &role = RoleManager::Get()->FindRole(r);
+		if (!role)
+			continue;
+
+		if (role->GetName() == role_name)
+		{
+			ret_val = role->GetPawnId();
+			break;
+		}
+	}
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	return ret_val;
+}
+
 // native DCC_Role:DCC_FindRoleById(const role_id[]);
 AMX_DECLARE_NATIVE(Native::DCC_FindRoleById)
 {
