@@ -87,6 +87,7 @@ private: // functions
 	void Initialize(std::string token, std::string gateway_url);
 	bool Connect();
 	void Disconnect();
+	void OnClose(boost::system::error_code ec);
 	void Identify();
 	void SendResumePayload();
 	void Read();

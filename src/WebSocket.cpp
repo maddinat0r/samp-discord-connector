@@ -12,7 +12,7 @@ WebSocket::WebSocket() :
 
 WebSocket::~WebSocket()
 {
-	m_IoService.stop();
+	Disconnect();
 
 	if (m_IoThread)
 	{
@@ -20,8 +20,6 @@ WebSocket::~WebSocket()
 		delete m_IoThread;
 		m_IoThread = nullptr;
 	}
-	
-	Disconnect();
 }
 
 void WebSocket::Initialize(std::string token, std::string gateway_url)
@@ -96,12 +94,18 @@ void WebSocket::Disconnect()
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::Disconnect");
 
-	boost::system::error_code error;
-	m_WebSocket->close(beast::websocket::close_code::normal, error);
-	if (error)
+	m_WebSocket->async_close(beast::websocket::close_code::normal,
+		std::bind(&WebSocket::OnClose, this, std::placeholders::_1));
+}
+
+void WebSocket::OnClose(boost::system::error_code ec)
+{
+	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::OnClose");
+
+	if (ec)
 	{
 		CLog::Get()->Log(LogLevel::WARNING, "Error while sending WS close frame: {} ({})",
-			error.message(), error.value());
+			ec.message(), ec.value());
 	}
 
 	m_HeartbeatTimer.cancel();
