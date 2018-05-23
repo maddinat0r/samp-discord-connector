@@ -82,20 +82,9 @@ void UserManager::Initialize()
 	});
 }
 
-bool UserManager::WaitForInitialization()
+bool UserManager::IsInitialized()
 {
-	unsigned int const
-		SLEEP_TIME_MS = 20,
-		TIMEOUT_TIME_MS = 20 * 1000;
-	unsigned int waited_time = 0;
-	while (m_Initialized != m_InitValue)
-	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_MS));
-		waited_time += SLEEP_TIME_MS;
-		if (waited_time > TIMEOUT_TIME_MS)
-			return false;
-	}
-	return true;
+	return m_Initialized == m_InitValue;
 }
 
 UserId_t UserManager::AddUser(json &data)

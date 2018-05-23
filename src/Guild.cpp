@@ -566,21 +566,12 @@ void GuildManager::Initialize()
 	// TODO: events
 }
 
-bool GuildManager::WaitForInitialization()
+bool GuildManager::IsInitialized()
 {
-	unsigned int const
-		SLEEP_TIME_MS = 20,
-		TIMEOUT_TIME_MS = 20 * 1000;
-	unsigned int waited_time = 0;
-	while (m_Initialized != m_InitValue)
-	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_MS));
-		waited_time += SLEEP_TIME_MS;
-		if (waited_time > TIMEOUT_TIME_MS)
-			return false;
-	}
-	m_IsInitialized = true;
-	return true;
+	if (!m_IsInitialized && m_Initialized == m_InitValue)
+		m_IsInitialized = true;
+
+	return m_IsInitialized;
 }
 
 GuildId_t GuildManager::AddGuild(json &data)

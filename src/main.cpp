@@ -11,11 +11,52 @@
 #include "version.hpp"
 
 #include <samplog/DebugInfo.h>
+#include <thread>
 
 
 extern void	*pAMXFunctions;
 logprintf_t logprintf;
 
+
+void InitializeEverything(std::string const &bot_token)
+{
+	GuildManager::Get()->Initialize();
+	UserManager::Get()->Initialize();
+	ChannelManager::Get()->Initialize();
+
+	Network::Get()->Initialize(bot_token);
+}
+
+void DestroyEverything()
+{
+	ChannelManager::CSingleton::Destroy();
+	UserManager::CSingleton::Destroy();
+	GuildManager::CSingleton::Destroy();
+	Network::CSingleton::Destroy();
+}
+
+bool WaitForInitialization()
+{
+	unsigned int const
+		SLEEP_TIME_MS = 20,
+		TIMEOUT_TIME_MS = 20 * 1000;
+	unsigned int waited_time = 0;
+	while (true)
+	{
+		if (GuildManager::Get()->IsInitialized()
+			&& UserManager::Get()->IsInitialized()
+			&& ChannelManager::Get()->IsInitialized())
+		{
+			return true;
+		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_MS));
+		waited_time += SLEEP_TIME_MS;
+		if (waited_time > TIMEOUT_TIME_MS)
+			break;
+	}
+	return false;
+}
 
 PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()
 {
@@ -34,22 +75,31 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 	std::string bot_token;
 	if (SampConfigReader::Get()->GetVar("discord_bot_token", bot_token))
 	{
-		GuildManager::Get()->Initialize();
-		UserManager::Get()->Initialize();
-		ChannelManager::Get()->Initialize();
+		InitializeEverything(bot_token);
 
-		Network::Get()->Initialize(bot_token);
-
-		if (GuildManager::Get()->WaitForInitialization()
-			&& UserManager::Get()->WaitForInitialization()
-			&& ChannelManager::Get()->WaitForInitialization())
+		if (WaitForInitialization())
 		{
 			logprintf(" >> plugin.dc-connector: " PLUGIN_VERSION " successfully loaded.");
 		}
 		else
 		{
 			logprintf(" >> plugin.dc-connector: timeout while initializing data.");
-			ret_val = false;
+
+			std::thread init_thread([bot_token]()
+			{
+				while (true)
+				{
+					std::this_thread::sleep_for(std::chrono::minutes(2));
+
+					DestroyEverything();
+					InitializeEverything(bot_token);
+					if (WaitForInitialization())
+						break;
+				}
+			});
+			init_thread.detach();
+
+			logprintf("                         plugin will proceed to retry connecting in the background.");
 		}
 	}
 	else
@@ -63,11 +113,8 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 PLUGIN_EXPORT void PLUGIN_CALL Unload()
 {
 	logprintf("plugin.dc-connector: Unloading plugin...");
-	
-	ChannelManager::CSingleton::Destroy();
-	UserManager::CSingleton::Destroy();
-	GuildManager::CSingleton::Destroy();
-	Network::CSingleton::Destroy();
+
+	DestroyEverything();
 	PawnCallbackManager::CSingleton::Destroy();
 	CLog::CSingleton::Destroy();
 	

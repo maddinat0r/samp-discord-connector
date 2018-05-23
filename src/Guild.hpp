@@ -161,7 +161,7 @@ private:
 
 public:
 	void Initialize();
-	bool WaitForInitialization();
+	bool IsInitialized();
 
 	Guild_t const &FindGuild(GuildId_t id);
 	Guild_t const &FindGuildByName(std::string const &name);

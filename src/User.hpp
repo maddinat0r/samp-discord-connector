@@ -93,7 +93,7 @@ private:
 
 public:
 	void Initialize();
-	bool WaitForInitialization();
+	bool IsInitialized();
 
 	UserId_t AddUser(json &data);
 
