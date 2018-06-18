@@ -27,32 +27,28 @@ Channel::Channel(ChannelId_t pawn_id, json &data, GuildId_t guild_id) :
 
 	m_Type = static_cast<Type>(type);
 
-	if (m_Type == Type::GUILD_TEXT) // is a guild channel
+	if (guild_id != 0)
 	{
-		if (guild_id != 0)
+		m_GuildId = guild_id;
+	}
+	else
+	{
+		std::string guild_id;
+		if (utils::TryGetJsonValue(data, guild_id, "guild_id"))
 		{
-			m_GuildId = guild_id;
+			Guild_t const &guild = GuildManager::Get()->FindGuildById(guild_id);
+			m_GuildId = guild->GetPawnId();
+			guild->AddChannel(pawn_id);
 		}
 		else
 		{
-			std::string guild_id;
-			if (utils::TryGetJsonValue(data, guild_id, "guild_id"))
-			{
-				Guild_t const &guild = GuildManager::Get()->FindGuildById(guild_id);
-				m_GuildId = guild->GetPawnId();
-				guild->AddChannel(pawn_id);
-			}
-			else
-			{
-				CLog::Get()->Log(LogLevel::ERROR,
-					"invalid JSON: expected \"guild_id\" in \"{}\"", data.dump());
-			}
+			CLog::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected \"guild_id\" in \"{}\"", data.dump());
 		}
-
-		m_Name.clear();
-		utils::TryGetJsonValue(data, m_Name, "name");
-		utils::TryGetJsonValue(data, m_Topic, "topic");
 	}
+
+	utils::TryGetJsonValue(data, m_Name, "name");
+	utils::TryGetJsonValue(data, m_Topic, "topic");
 }
 
 void Channel::SendMessage(std::string &&msg)
@@ -153,14 +149,6 @@ ChannelId_t ChannelManager::AddChannel(json &data, GuildId_t guild_id/* = 0*/)
 		CLog::Get()->Log(LogLevel::ERROR,
 			"invalid JSON: expected \"type\" in \"{}\"", data.dump());
 		return INVALID_CHANNEL_ID;
-	}
-
-	auto ch_type = static_cast<Channel::Type>(type_u);
-	if (ch_type != Channel::Type::GUILD_TEXT
-		&& ch_type != Channel::Type::DM
-		&& ch_type != Channel::Type::GROUP_DM)
-	{
-		return INVALID_CHANNEL_ID; // we're only interested in text channels
 	}
 
 	Snowflake_t sfid;
