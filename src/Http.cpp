@@ -282,12 +282,13 @@ Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 	req->method(method);
 	req->target("/api/v6" + url);
 	req->version(11);
-	req->insert("Connection", "keep-alive");
-	req->insert("Host", "discordapp.com");
-	req->insert("User-Agent", "DiscordBot (github.com/maddinat0r/samp-discord-connector, " PLUGIN_VERSION ")");
+	req->insert(beast::http::field::connection, "keep-alive");
+	req->insert(beast::http::field::host, "discordapp.com");
+	req->insert(beast::http::field::user_agent, 
+		"DiscordBot (github.com/maddinat0r/samp-discord-connector, " PLUGIN_VERSION ")");
 	if (!content.empty())
-		req->insert("Content-Type", "application/json");
-	req->insert("Authorization", "Bot " + m_Token);
+		req->insert(beast::http::field::content_type, "application/json");
+	req->insert(beast::http::field::authorization , "Bot " + m_Token);
 	req->body() = content;
 
 	req->prepare_payload();
