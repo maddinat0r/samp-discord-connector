@@ -90,7 +90,6 @@ set_property(TARGET discord-connector PROPERTY INCLUDE_DIRECTORIES
 	${DCC_PLUGIN_CONFIG_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/libs/samp-log-core/include
 	${PROJECT_SOURCE_DIR}/libs/json
-	${PROJECT_SOURCE_DIR}/libs/concurrentqueue
 	${PROJECT_SOURCE_DIR}/libs/date/include
 )
 

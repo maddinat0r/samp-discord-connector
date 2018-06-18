@@ -10,7 +10,6 @@
 Http::Http(std::string token) :
 	m_SslContext(asio::ssl::context::sslv23),
 	m_Token(token),
-	m_Queue(8192, 0, 2),
 	m_NetworkThreadRunning(true),
 	m_NetworkThread(std::bind(&Http::NetworkThreadFunc, this))
 {
@@ -20,6 +19,11 @@ Http::~Http()
 {
 	m_NetworkThreadRunning = false;
 	m_NetworkThread.join();
+
+	// drain requests queue
+	QueueEntry *entry;
+	while (m_Queue.pop(entry))
+		delete entry;
 }
 
 void Http::NetworkThreadFunc()
@@ -35,10 +39,10 @@ void Http::NetworkThreadFunc()
 	while (m_NetworkThreadRunning)
 	{
 		TimePoint_t current_time = std::chrono::steady_clock::now();
-		std::list<QueueEntry_t> skipped_entries;
+		std::list<QueueEntry*> skipped_entries;
 
-		QueueEntry_t entry;
-		while (m_Queue.try_dequeue(entry))
+		QueueEntry *entry;
+		while (m_Queue.pop(entry))
 		{
 			// check if we're rate-limited
 			auto pr_it = path_ratelimit.find(entry->Request->target().to_string());
@@ -155,10 +159,14 @@ void Http::NetworkThreadFunc()
 
 			if (entry->Callback)
 				entry->Callback(sb, response);
+
+			delete entry;
+			entry = nullptr;
 		}
 
 		// add skipped entries back to queue
-		m_Queue.try_enqueue_bulk(skipped_entries.begin(), skipped_entries.size());
+		for (auto e : skipped_entries)
+			m_Queue.push(e);
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	}
@@ -294,7 +302,7 @@ void Http::SendRequest(beast::http::verb const method, std::string const &url,
 
 	SharedRequest_t req = PrepareRequest(method, url, content);
 
-	m_Queue.enqueue(std::make_shared<QueueEntry>(req, std::move(callback)));
+	m_Queue.push(new QueueEntry(req, std::move(callback)));
 }
 
 void Http::Get(std::string const &url, GetCallback_t &&callback)

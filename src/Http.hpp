@@ -11,7 +11,7 @@
 #include <boost/asio/ssl.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
-#include <concurrentqueue.h>
+#include <boost/lockfree/queue.hpp>
 
 
 namespace asio = boost::asio;
@@ -53,7 +53,6 @@ private:
 		SharedRequest_t Request;
 		ResponseCallback_t Callback;
 	};
-	using QueueEntry_t = std::shared_ptr<QueueEntry>;
 
 private:
 	asio::io_service m_IoService;
@@ -63,7 +62,11 @@ private:
 
 	std::string m_Token;
 
-	moodycamel::ConcurrentQueue<QueueEntry_t> m_Queue;
+	boost::lockfree::queue<
+		QueueEntry*,
+		boost::lockfree::fixed_sized<true>,
+		boost::lockfree::capacity<8192>
+	> m_Queue;
 	std::atomic<bool> m_NetworkThreadRunning;
 	std::thread m_NetworkThread;
 
