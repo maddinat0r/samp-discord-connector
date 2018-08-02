@@ -112,6 +112,7 @@ UserId_t UserManager::AddUser(json &data)
 		return INVALID_USER_ID;
 	}
 
+	CLog::Get()->Log(LogLevel::INFO, "successfully created user with id '{}'", id);
 	return id;
 }
 
