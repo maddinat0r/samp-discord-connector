@@ -1039,3 +1039,36 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildChannelCount)
 	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
+
+// native DCC_GetAllGuilds(DCC_Guild:dest[], max_size = sizeof dest);
+AMX_DECLARE_NATIVE(Native::DCC_GetAllGuilds)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetAllGuilds", params, "rd");
+
+	cell *dest = nullptr;
+	if (amx_GetAddr(amx, params[1], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	auto guild_ids = GuildManager::Get()->GetAllGuildIds();
+
+	cell const
+		max_dest_size = params[2],
+		guilds_count = static_cast<cell>(guild_ids.size());
+
+	if (guilds_count > max_dest_size)
+	{
+		CLog::Get()->LogNative(LogLevel::WARNING,
+			"destination array is too small (should be at least '{}' cells)",
+			guilds_count);
+	}
+
+	cell const count = std::min(max_dest_size, guilds_count);
+	for (cell i = 0; i != count; ++i)
+		dest[i] = guild_ids.at(i);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", count);
+	return count;
+}

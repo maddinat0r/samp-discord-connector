@@ -108,6 +108,7 @@ native DCC_HasGuildMemberRole(DCC_Guild:guild, DCC_User:user, DCC_Role:role, &bo
 native DCC_GetGuildMemberStatus(DCC_Guild:guild, DCC_User:user, &DCC_UserPresenceStatus:status);
 native DCC_GetGuildChannel(DCC_Guild:guild, offset, &DCC_Channel:channel);
 native DCC_GetGuildChannelCount(DCC_Guild:guild, &count);
+native DCC_GetAllGuilds(DCC_Guild:dest[], max_size = sizeof dest);
 
 
 

@@ -163,6 +163,8 @@ public:
 	void Initialize();
 	bool IsInitialized();
 
+	std::vector<GuildId_t> GetAllGuildIds() const;
+
 	Guild_t const &FindGuild(GuildId_t id);
 	Guild_t const &FindGuildByName(std::string const &name);
 	Guild_t const &FindGuildById(Snowflake_t const &sfid);

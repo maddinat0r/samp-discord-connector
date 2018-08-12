@@ -613,6 +613,15 @@ void GuildManager::DeleteGuild(Guild_t const &guild)
 	m_Guilds.erase(guild->GetPawnId());
 }
 
+std::vector<GuildId_t> GuildManager::GetAllGuildIds() const
+{
+	std::vector<GuildId_t> guild_ids;
+	for (auto &g : m_Guilds)
+		guild_ids.push_back(g.first);
+
+	return guild_ids;
+}
+
 Guild_t const &GuildManager::FindGuild(GuildId_t id)
 {
 	static Guild_t invalid_guild;
