@@ -31,7 +31,7 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 			if (channel_id == INVALID_CHANNEL_ID)
 				continue;
 
-			m_Channels.push_back(channel_id);
+			AddChannel(channel_id);
 		}
 	}
 
@@ -52,7 +52,14 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 			Member member;
 			member.UserId = UserManager::Get()->AddUser(m["user"]);
 			member.Update(m);
-			m_Members.push_back(std::move(member));
+			AddMember(std::move(member));
+		}
+
+		unsigned int member_count;
+		if (!utils::TryGetJsonValue(data, member_count, "member_count")
+			|| member_count != m_Members.size())
+		{
+			Network::Get()->WebSocket().RequestGuildMembers(m_Id);
 		}
 	}
 
@@ -563,6 +570,54 @@ void GuildManager::Initialize()
 		});
 	});
 
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBERS_CHUNK, [](json &data)
+	{
+		Snowflake_t guild_id;
+		if (!utils::TryGetJsonValue(data, guild_id, "guild_id"))
+		{
+			CLog::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected \"guild_id\" in \"{}\"", data.dump());
+			return;
+		}
+
+		if (!utils::IsValidJson(data, "members", json::value_t::array))
+		{
+			CLog::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected array \"members\" in \"{}\"", data.dump());
+		}
+
+		PawnDispatcher::Get()->Dispatch([guild_id, data]() mutable
+		{
+			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
+			if (!guild)
+			{
+				CLog::Get()->Log(LogLevel::ERROR,
+					"can't sync offline guild members: guild id \"{}\" not cached", guild_id);
+				return;
+			}
+
+			for (auto &m : data["members"])
+			{
+				if (!utils::IsValidJson(m, "user", json::value_t::object))
+				{
+					// we break here because all other array entries are likely
+					// to be invalid too, and we don't want to spam an error message
+					// for every single element in this array
+					CLog::Get()->Log(LogLevel::ERROR,
+						"invalid JSON: expected \"user\" in \"{}\"", m.dump());
+					break;
+				}
+
+				Guild::Member member;
+				// returns correct user if he already exists
+				auto const userid = UserManager::Get()->AddUser(m["user"]);
+				member.UserId = userid;
+				member.Update(m);
+
+				guild->AddMember(std::move(member));
+			}
+		});
+	});
 	// TODO: events
 }
 

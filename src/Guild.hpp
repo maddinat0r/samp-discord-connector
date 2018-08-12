@@ -6,6 +6,7 @@
 #include <string>
 #include <atomic>
 #include <vector>
+#include <unordered_set>
 
 #include <json.hpp>
 
@@ -53,6 +54,7 @@ private:
 	std::vector<RoleId_t> m_Roles;
 	std::vector<ChannelId_t> m_Channels;
 	std::vector<Member> m_Members;
+	std::unordered_set<UserId_t> m_MembersSet;
 
 private:
 
@@ -104,6 +106,9 @@ public:
 
 	inline void AddMember(Member &&member)
 	{
+		if (m_MembersSet.count(member.UserId) == 1)
+			return;
+		m_MembersSet.insert(member.UserId);
 		m_Members.push_back(std::move(member));
 	}
 	inline void RemoveMember(UserId_t userid)
@@ -113,6 +118,7 @@ public:
 			if ((*it).UserId == userid)
 			{
 				m_Members.erase(it);
+				m_MembersSet.erase(userid);
 				break;
 			}
 		}

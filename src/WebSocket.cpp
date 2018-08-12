@@ -167,6 +167,21 @@ void WebSocket::SendResumePayload()
 	m_WebSocket->write(asio::buffer(resume_payload.dump()));
 }
 
+void WebSocket::RequestGuildMembers(std::string guild_id)
+{
+	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::RequestGuildMembers");
+	
+	json resume_payload = {
+		{ "op", 8 },
+		{ "d",{
+			{ "guild_id", guild_id },
+			{ "query", "" },
+			{ "limit", 0 }
+		} }
+	};
+	m_WebSocket->write(asio::buffer(resume_payload.dump()));
+}
+
 void WebSocket::Read()
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::WsRead");

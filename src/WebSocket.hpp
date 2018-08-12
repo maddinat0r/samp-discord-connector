@@ -101,4 +101,5 @@ public: // functions
 	{
 		m_EventMap.emplace(event, std::move(callback));
 	}
+	void RequestGuildMembers(std::string guild_id);
 };
