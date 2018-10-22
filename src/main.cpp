@@ -10,7 +10,7 @@
 #include "CLog.hpp"
 #include "version.hpp"
 
-#include <samplog/DebugInfo.h>
+#include <samplog/samplog.hpp>
 #include <thread>
 
 
@@ -68,9 +68,6 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 	pAMXFunctions = ppData[PLUGIN_DATA_AMX_EXPORTS];
 	logprintf = (logprintf_t) ppData[PLUGIN_DATA_LOGPRINTF];
 	
-	samplog::Init();
-	CLog::Get()->SetLogLevel(LogLevel::INFO | LogLevel::WARNING | LogLevel::ERROR);
-
 	bool ret_val = true;
 	std::string bot_token;
 	if (SampConfigReader::Get()->GetVar("discord_bot_token", bot_token))
@@ -118,7 +115,7 @@ PLUGIN_EXPORT void PLUGIN_CALL Unload()
 	PawnCallbackManager::CSingleton::Destroy();
 	CLog::CSingleton::Destroy();
 	
-	samplog::Exit();
+	samplog::Api::Destroy();
 	
 	logprintf("plugin.dc-connector: Plugin unloaded.");
 }
@@ -182,14 +179,14 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 
 PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX *amx)
 {
-	samplog::RegisterAmx(amx);
+	samplog::Api::Get()->RegisterAmx(amx);
 	PawnCallbackManager::Get()->AddAmx(amx);
 	return amx_Register(amx, native_list, -1);
 }
 
 PLUGIN_EXPORT int PLUGIN_CALL AmxUnload(AMX *amx)
 {
-	samplog::EraseAmx(amx);
+	samplog::Api::Get()->EraseAmx(amx);
 	PawnCallbackManager::Get()->RemoveAmx(amx);
 	return AMX_ERR_NONE;
 }

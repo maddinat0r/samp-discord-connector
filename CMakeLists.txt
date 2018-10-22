@@ -16,7 +16,12 @@ endif()
 if(NOT DEFINED OPENSSL_USE_STATIC_LIBS)
 	set(OPENSSL_USE_STATIC_LIBS ON)
 endif()
-find_package(OpenSSL REQUIRED)
+find_package(OpenSSL)
+if (NOT OPENSSL_FOUND)
+	set(OPENSSL_ROOT_DIR "${OPENSSL_ROOT_DIR}" CACHE PATH "Set the OpenSSL root folder.")
+	mark_as_advanced(CLEAR OPENSSL_ROOT_DIR)
+	message(FATAL_ERROR "Could NOT find OpenSSL; specify additional paths.")
+endif()
 
 
 set(Boost_USE_STATIC_LIBS ON)
@@ -30,9 +35,11 @@ if(NOT Boost_FOUND)
 endif()
 
 
-option(LOGCORE_INSTALL_DEV OFF)
-mark_as_advanced(LOGCORE_INSTALL_DEV)
-add_subdirectory(libs/samp-log-core)
+add_subdirectory(libs/fmt)
+mark_as_advanced(FMT_DOC FMT_INSTALL FMT_PEDANTIC FMT_TEST FMT_USE_CPP11 FMT_WERROR)
+
+
+find_package(log-core REQUIRED CONFIG)
 
 
 add_subdirectory(src)

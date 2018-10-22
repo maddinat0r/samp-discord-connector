@@ -88,7 +88,7 @@ set_property(TARGET discord-connector PROPERTY INCLUDE_DIRECTORIES
 	${Boost_INCLUDE_DIR}
 	${SAMPSDK_INCLUDE_DIR}
 	${DCC_PLUGIN_CONFIG_INCLUDE_DIR}
-	${PROJECT_SOURCE_DIR}/libs/samp-log-core/include
+	${LOGCORE_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/libs/json
 	${PROJECT_SOURCE_DIR}/libs/date/include
 )
@@ -121,6 +121,8 @@ endif()
 
 
 install(TARGETS discord-connector DESTINATION "plugins/")
+get_target_property(LOGCORE_LOCATION log-core LOCATION)
+install(FILES "${LOGCORE_LOCATION}" DESTINATION "./")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/discord-connector.inc" DESTINATION "pawno/include/")
 install(FILES "${PROJECT_SOURCE_DIR}/LICENSE" DESTINATION "./")
 
