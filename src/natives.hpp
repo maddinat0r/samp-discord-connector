@@ -28,6 +28,10 @@ namespace Native
 	AMX_DECLARE_NATIVE(DCC_GetMessageAuthor);
 	AMX_DECLARE_NATIVE(DCC_GetMessageContent);
 	AMX_DECLARE_NATIVE(DCC_IsMessageMentioningEveryone);
+	AMX_DECLARE_NATIVE(DCC_GetMessageUserMentionCount);
+	AMX_DECLARE_NATIVE(DCC_GetMessageUserMention);
+	AMX_DECLARE_NATIVE(DCC_GetMessageRoleMentionCount);
+	AMX_DECLARE_NATIVE(DCC_GetMessageRoleMention);
 
 	AMX_DECLARE_NATIVE(DCC_FindUserByName);
 	AMX_DECLARE_NATIVE(DCC_FindUserById);

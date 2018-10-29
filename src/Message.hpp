@@ -4,6 +4,7 @@
 #include "CSingleton.hpp"
 
 #include <string>
+#include <vector>
 
 #include <json.hpp>
 
@@ -29,6 +30,8 @@ private:
 	std::string m_Content;
 
 	bool m_MentionsEveryone;
+	std::vector<UserId_t> m_UserMentions;
+	std::vector<RoleId_t> m_RoleMentions;
 
 	bool _valid;
 
@@ -52,6 +55,14 @@ public:
 	bool MentionsEveryone() const
 	{
 		return m_MentionsEveryone;
+	}
+	auto const &GetUserMentions() const
+	{
+		return m_UserMentions;
+	}
+	auto const &GetRoleMentions() const
+	{
+		return m_RoleMentions;
 	}
 
 	bool IsValid() const

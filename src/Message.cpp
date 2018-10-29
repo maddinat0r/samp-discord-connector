@@ -1,6 +1,7 @@
 #include "Message.hpp"
 #include "User.hpp"
 #include "Channel.hpp"
+#include "Role.hpp"
 #include "CLog.hpp"
 #include "utils.hpp"
 
@@ -26,6 +27,34 @@ Message::Message(json &data)
 
 	User_t const &user = UserManager::Get()->FindUserById(author_id);
 	m_Author = user ? user->GetPawnId() : INVALID_USER_ID;
+
+	if (utils::IsValidJson(data, "mentions", json::value_t::array))
+	{
+		for (auto &c : data["mentions"])
+		{
+			std::string mu_id;
+			if (!utils::TryGetJsonValue(c, mu_id, "id"))
+				continue;
+
+			User_t const &mu = UserManager::Get()->FindUserById(mu_id);
+			if (mu)
+				m_UserMentions.push_back(mu->GetPawnId());
+		}
+	}
+
+	if (utils::IsValidJson(data, "mention_roles", json::value_t::array))
+	{
+		for (auto &c : data["mention_roles"])
+		{
+			std::string mr_id;
+			if (!utils::TryGetJsonValue(c, mr_id, "id"))
+				continue;
+
+			Role_t const &mr = RoleManager::Get()->FindRoleById(mr_id);
+			if (mr)
+				m_RoleMentions.push_back(mr->GetPawnId());
+		}
+	}
 }
 
 MessageId_t MessageManager::Create(json &data)

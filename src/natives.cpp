@@ -360,6 +360,130 @@ AMX_DECLARE_NATIVE(Native::DCC_IsMessageMentioningEveryone)
 	return 1;
 }
 
+// native DCC_GetMessageUserMentionCount(DCC_Message:message, &mentioned_user_count);
+AMX_DECLARE_NATIVE(Native::DCC_GetMessageUserMentionCount)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetMessageUserMentionCount", params, "dr");
+
+	MessageId_t id = params[1];
+	Message_t const &msg = MessageManager::Get()->Find(id);
+	if (!msg)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		return 0;
+	}
+
+	cell *dest = nullptr;
+	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = static_cast<cell>(msg->GetUserMentions().size());
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_GetMessageUserMention(DCC_Message:message, offset, &DCC_User:mentioned_user);
+AMX_DECLARE_NATIVE(Native::DCC_GetMessageUserMention)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetMessageUserMention", params, "ddr");
+
+	MessageId_t id = params[1];
+	Message_t const &msg = MessageManager::Get()->Find(id);
+	if (!msg)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		return 0;
+	}
+
+	auto const offset = static_cast<unsigned int>(params[2]);
+	auto const &mentions = msg->GetUserMentions();
+	if (offset >= mentions.size())
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR,
+			"invalid offset '{}', max size is '{}'",
+			offset, mentions.size());
+		return 0;
+	}
+
+	cell *dest = nullptr;
+	if (amx_GetAddr(amx, params[3], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = static_cast<cell>(mentions.at(offset));
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_GetMessageRoleMentionCount(DCC_Message:message, &mentioned_role_count);
+AMX_DECLARE_NATIVE(Native::DCC_GetMessageRoleMentionCount)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetMessageRoleMentionCount", params, "dr");
+
+	MessageId_t id = params[1];
+	Message_t const &msg = MessageManager::Get()->Find(id);
+	if (!msg)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		return 0;
+	}
+
+	cell *dest = nullptr;
+	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = static_cast<cell>(msg->GetRoleMentions().size());
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_GetMessageRoleMention(DCC_Message:message, offset, &DCC_Role:mentioned_role);
+AMX_DECLARE_NATIVE(Native::DCC_GetMessageRoleMention)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetMessageRoleMention", params, "ddr");
+
+	MessageId_t id = params[1];
+	Message_t const &msg = MessageManager::Get()->Find(id);
+	if (!msg)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		return 0;
+	}
+
+	auto const offset = static_cast<unsigned int>(params[2]);
+	auto const &mentions = msg->GetRoleMentions();
+	if (offset >= mentions.size())
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR,
+			"invalid offset '{}', max size is '{}'",
+			offset, mentions.size());
+		return 0;
+	}
+
+	cell *dest = nullptr;
+	if (amx_GetAddr(amx, params[3], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = static_cast<cell>(mentions.at(offset));
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
 // native DCC_User:DCC_FindUserByName(const user_name[], const user_discriminator[]);
 AMX_DECLARE_NATIVE(Native::DCC_FindUserByName)
 {

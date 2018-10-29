@@ -74,6 +74,10 @@ native DCC_GetMessageChannel(DCC_Message:message, &DCC_Channel:channel);
 native DCC_GetMessageAuthor(DCC_Message:message, &DCC_User:author);
 native DCC_GetMessageContent(DCC_Message:message, dest[], max_size = sizeof dest);
 native DCC_IsMessageMentioningEveryone(DCC_Message:message, &bool:mentions_everyone);
+native DCC_GetMessageUserMentionCount(DCC_Message:message, &mentioned_user_count);
+native DCC_GetMessageUserMention(DCC_Message:message, offset, &DCC_User:mentioned_user);
+native DCC_GetMessageRoleMentionCount(DCC_Message:message, &mentioned_role_count);
+native DCC_GetMessageRoleMention(DCC_Message:message, offset, &DCC_Role:mentioned_role);
 
 
 //  users
