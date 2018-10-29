@@ -118,6 +118,22 @@ void Channel::SetChannelNsfw(bool const is_nsfw)
 	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
 }
 
+void Channel::SetChannelParentCategory(Channel_t const &parent)
+{
+	if (parent->GetType() != Type::GUILD_CATEGORY)
+		return;
+
+	json data = {
+		{ "parent_id", parent->GetId() }
+	};
+
+	std::string json_str;
+	if (!utils::TryDumpJson(data, json_str))
+		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+
+	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
+}
+
 
 void ChannelManager::Initialize()
 {

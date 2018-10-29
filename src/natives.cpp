@@ -350,6 +350,41 @@ AMX_DECLARE_NATIVE(Native::DCC_SetChannelNsfw)
 	return 1;
 }
 
+// native DCC_SetChannelParentCategory(DCC_Channel:channel, DCC_Channel:parent_category);
+AMX_DECLARE_NATIVE(Native::DCC_SetChannelParentCategory)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_SetChannelParentCategory", params, "dd");
+
+	ChannelId_t channelid = static_cast<ChannelId_t>(params[1]);
+	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
+
+	ChannelId_t parent_channelid = static_cast<ChannelId_t>(params[2]);
+	Channel_t const &parent_channel = ChannelManager::Get()->FindChannel(parent_channelid);
+	if (!parent_channel)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid parent channel id '{}'", 
+			parent_channelid);
+		return 0;
+	}
+
+	if (parent_channel->GetType() != Channel::Type::GUILD_CATEGORY)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR,
+			"invalid channel type; must be guild category channel");
+		return 0;
+	}
+
+	channel->SetChannelParentCategory(parent_channel);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
 // native DCC_GetMessageId(DCC_Message:message, dest[DCC_ID_SIZE], max_size = DCC_ID_SIZE);
 AMX_DECLARE_NATIVE(Native::DCC_GetMessageId)
 {
