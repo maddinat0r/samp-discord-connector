@@ -6,6 +6,7 @@
 #include "Guild.hpp"
 #include "User.hpp"
 #include "Channel.hpp"
+#include "Message.hpp"
 #include "SampConfigReader.hpp"
 #include "CLog.hpp"
 #include "version.hpp"
@@ -23,12 +24,14 @@ void InitializeEverything(std::string const &bot_token)
 	GuildManager::Get()->Initialize();
 	UserManager::Get()->Initialize();
 	ChannelManager::Get()->Initialize();
+	MessageManager::Get()->Initialize();
 
 	Network::Get()->Initialize(bot_token);
 }
 
 void DestroyEverything()
 {
+	MessageManager::CSingleton::Destroy();
 	ChannelManager::CSingleton::Destroy();
 	UserManager::CSingleton::Destroy();
 	GuildManager::CSingleton::Destroy();

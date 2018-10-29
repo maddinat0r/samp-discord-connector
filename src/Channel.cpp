@@ -182,22 +182,6 @@ void ChannelManager::Initialize()
 		}
 		m_Initialized++;
 	});
-
-	// PAWN callbacks
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_CREATE, [](json &data)
-	{
-		PawnDispatcher::Get()->Dispatch([data]() mutable
-		{
-			MessageId_t msg = MessageManager::Get()->Create(data);
-			if (msg != INVALID_MESSAGE_ID)
-			{
-				// forward DCC_OnMessageCreate(DCC_Message:message);
-				PawnCallbackManager::Get()->Call("DCC_OnMessageCreate", msg);
-
-				MessageManager::Get()->Delete(msg);
-			}
-		});
-	});
 }
 
 bool ChannelManager::IsInitialized()

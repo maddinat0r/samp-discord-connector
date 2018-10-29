@@ -3,6 +3,8 @@
 #include "Channel.hpp"
 #include "Role.hpp"
 #include "Network.hpp"
+#include "PawnCallback.hpp"
+#include "PawnDispatcher.hpp"
 #include "CLog.hpp"
 #include "utils.hpp"
 
@@ -67,6 +69,25 @@ void Message::DeleteMessage()
 
 	Network::Get()->Http().Delete(fmt::format(
 		"/channels/{:s}/messages/{:s}", channel->GetId(), GetId()));
+}
+
+void MessageManager::Initialize()
+{
+	// PAWN callbacks
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_CREATE, [](json &data)
+	{
+		PawnDispatcher::Get()->Dispatch([data]() mutable
+		{
+			MessageId_t msg = MessageManager::Get()->Create(data);
+			if (msg != INVALID_MESSAGE_ID)
+			{
+				// forward DCC_OnMessageCreate(DCC_Message:message);
+				PawnCallbackManager::Get()->Call("DCC_OnMessageCreate", msg);
+
+				MessageManager::Get()->Delete(msg);
+			}
+		});
+	});
 }
 
 MessageId_t MessageManager::Create(json &data)

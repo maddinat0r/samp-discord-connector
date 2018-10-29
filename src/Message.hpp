@@ -94,6 +94,8 @@ private:
 	std::map<MessageId_t, Message_t> m_Messages; //PAWN message-id to actual channel map
 
 public:
+	void Initialize();
+
 	MessageId_t Create(json &data);
 	bool Delete(MessageId_t id);
 
