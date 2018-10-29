@@ -144,6 +144,7 @@ forward DCC_OnChannelDelete(DCC_Channel:channel);
 
 // messages
 forward DCC_OnMessageCreate(DCC_Message:message);
+forward DCC_OnMessageDelete(DCC_Message:message);
 
 //  users
 forward DCC_OnUserUpdate(DCC_User:user);

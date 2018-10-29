@@ -9,7 +9,7 @@
 #include "utils.hpp"
 
 
-Message::Message(json &data)
+Message::Message(MessageId_t pawn_id, json &data) : m_PawnId(pawn_id)
 {
 	std::string author_id, channel_id;
 	_valid =
@@ -88,6 +88,25 @@ void MessageManager::Initialize()
 			}
 		});
 	});
+
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_DELETE, [](json &data)
+	{
+		Snowflake_t sfid;
+		if (!utils::TryGetJsonValue(data, sfid, "id"))
+			return;
+
+		PawnDispatcher::Get()->Dispatch([sfid]() mutable
+		{
+			auto const &msg = MessageManager::Get()->FindById(sfid);
+			if (msg)
+			{
+				// forward DCC_OnMessageDelete(DCC_Message:message);
+				PawnCallbackManager::Get()->Call("DCC_OnMessageDelete", msg->GetPawnId());
+
+				MessageManager::Get()->Delete(msg->GetPawnId());
+			}
+		});
+	});
 }
 
 MessageId_t MessageManager::Create(json &data)
@@ -96,7 +115,7 @@ MessageId_t MessageManager::Create(json &data)
 	while (m_Messages.find(id) != m_Messages.end())
 		++id;
 
-	if (!m_Messages.emplace(id, Message_t(new Message(data))).first->second)
+	if (!m_Messages.emplace(id, Message_t(new Message(id, data))).first->second)
 	{
 		CLog::Get()->Log(LogLevel::ERROR,
 			"can't create message: duplicate key '{}'", id);
@@ -125,4 +144,16 @@ Message_t const &MessageManager::Find(MessageId_t id)
 	if (it == m_Messages.end())
 		return invalid_msg;
 	return it->second;
+}
+
+Message_t const &MessageManager::FindById(Snowflake_t const &sfid)
+{
+	static Message_t invalid_msg;
+	for (auto const &u : m_Messages)
+	{
+		auto const &msg = u.second;
+		if (msg->GetId().compare(sfid) == 0)
+			return msg;
+	}
+	return invalid_msg;
 }

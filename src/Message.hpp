@@ -17,12 +17,13 @@ class Message
 private:
 	Message() : _valid(false)
 	{ }
-	Message(json &data);
+	Message(MessageId_t pawn_id, json &data);
 public:
 	~Message() = default;
 
 private:
 	Snowflake_t m_Id;
+	MessageId_t m_PawnId = INVALID_MESSAGE_ID;
 
 	ChannelId_t m_Channel = INVALID_CHANNEL_ID;
 	UserId_t m_Author = INVALID_USER_ID;
@@ -40,6 +41,10 @@ public:
 	Snowflake_t const &GetId() const
 	{
 		return m_Id;
+	}
+	MessageId_t GetPawnId() const
+	{
+		return m_PawnId;
 	}
 	ChannelId_t const &GetChannel() const
 	{
@@ -100,4 +105,5 @@ public:
 	bool Delete(MessageId_t id);
 
 	Message_t const &Find(MessageId_t id);
+	Message_t const &FindById(Snowflake_t const &sfid);
 };
