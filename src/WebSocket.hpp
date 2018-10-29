@@ -68,6 +68,8 @@ public:
 	~WebSocket();
 
 private: // variables
+	const int LARGE_THRESHOLD_NUMBER = 100;
+
 	asio::io_service m_IoService;
 	std::thread *m_IoThread = nullptr;
 	asio::ssl::context m_SslContext;

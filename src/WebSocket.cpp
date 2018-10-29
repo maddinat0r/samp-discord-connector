@@ -138,7 +138,7 @@ void WebSocket::Identify()
 		{ "d",{
 			{ "token", m_Token },
 			{ "compress", false },
-			{ "large_threshold", 100 },
+			{ "large_threshold", LARGE_THRESHOLD_NUMBER },
 			{ "properties",{
 				{ "$os", os_name },
 				{ "$browser", "boost::asio" },
