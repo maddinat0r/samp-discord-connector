@@ -7,6 +7,21 @@
 
 namespace utils
 {
+	inline bool TryDumpJson(nlohmann::json const &data, std::string &dest)
+	{
+		try
+		{
+			dest = data.dump();
+		}
+		catch (const json::type_error &e)
+		{
+			dest = e.what();
+			return false;
+		}
+		return true;
+	}
+
+
 	inline bool IsValidJson(nlohmann::json const &data)
 	{
 		return true;

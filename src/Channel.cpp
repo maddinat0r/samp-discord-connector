@@ -58,22 +58,12 @@ void Channel::SendMessage(std::string &&msg)
 	json data = {
 		{ "content", std::move(msg) }
 	};
+	
+	std::string json_str;
+	if(!utils::TryDumpJson(data, json_str))
+		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
-	try
-	{
-		Network::Get()->Http().Post(fmt::format("/channels/{}/messages", GetId()), data.dump());
-	}
-	catch (const json::type_error &e)
-	{
-		if (e.id == 316)
-		{
-			CLog::Get()->Log(LogLevel::ERROR, "invalid UTF-8 string: {}", e.what());
-		}
-		else
-		{
-			CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", e.what());
-		}
-	}
+	Network::Get()->Http().Post(fmt::format("/channels/{}/messages", GetId()), json_str);
 }
 
 
