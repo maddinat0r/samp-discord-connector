@@ -19,6 +19,10 @@ using Channel_t = std::unique_ptr<class Channel>;
 using ChannelId_t = cell;
 const ChannelId_t INVALID_CHANNEL_ID = 0;
 
+using Message_t = std::unique_ptr<class Message>;
+using MessageId_t = cell;
+const MessageId_t INVALID_MESSAGE_ID = 0;
+
 using Role_t = std::unique_ptr<class Role>;
 using RoleId_t = cell;
 const RoleId_t INVALID_ROLE_ID = 0;

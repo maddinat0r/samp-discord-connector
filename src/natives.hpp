@@ -23,6 +23,12 @@ namespace Native
 	AMX_DECLARE_NATIVE(DCC_IsChannelNsfw);
 	AMX_DECLARE_NATIVE(DCC_SendChannelMessage);
 
+	AMX_DECLARE_NATIVE(DCC_GetMessageId);
+	AMX_DECLARE_NATIVE(DCC_GetMessageChannel);
+	AMX_DECLARE_NATIVE(DCC_GetMessageAuthor);
+	AMX_DECLARE_NATIVE(DCC_GetMessageContent);
+	AMX_DECLARE_NATIVE(DCC_IsMessageMentioningEveryone);
+
 	AMX_DECLARE_NATIVE(DCC_FindUserByName);
 	AMX_DECLARE_NATIVE(DCC_FindUserById);
 	AMX_DECLARE_NATIVE(DCC_GetUserId);

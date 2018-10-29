@@ -140,6 +140,12 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_IsChannelNsfw)
 	AMX_DEFINE_NATIVE(DCC_SendChannelMessage)
 
+	AMX_DEFINE_NATIVE(DCC_GetMessageId)
+	AMX_DEFINE_NATIVE(DCC_GetMessageChannel)
+	AMX_DEFINE_NATIVE(DCC_GetMessageAuthor)
+	AMX_DEFINE_NATIVE(DCC_GetMessageContent)
+	AMX_DEFINE_NATIVE(DCC_IsMessageMentioningEveryone)
+
 	AMX_DEFINE_NATIVE(DCC_FindUserByName)
 	AMX_DEFINE_NATIVE(DCC_FindUserById)
 	AMX_DEFINE_NATIVE(DCC_GetUserId)

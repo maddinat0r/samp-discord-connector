@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.hpp"
+#include "CSingleton.hpp"
 
 #include <string>
 
@@ -11,16 +12,20 @@ using json = nlohmann::json;
 
 class Message
 {
-public:
+	friend class MessageManager;
+private:
+	Message() : _valid(false)
+	{ }
 	Message(json &data);
+public:
 	~Message() = default;
 
 private:
-	Snowflake_t
-		m_Id,
-		m_ChannelId;
+	Snowflake_t m_Id;
 
+	ChannelId_t m_Channel = INVALID_CHANNEL_ID;
 	UserId_t m_Author = INVALID_USER_ID;
+
 	std::string m_Content;
 
 	bool m_MentionsEveryone;
@@ -32,9 +37,9 @@ public:
 	{
 		return m_Id;
 	}
-	Snowflake_t const &GetChannelId() const
+	ChannelId_t const &GetChannel() const
 	{
-		return m_ChannelId;
+		return m_Channel;
 	}
 	UserId_t const &GetAuthor() const
 	{
@@ -57,4 +62,22 @@ public:
 	{
 		return IsValid();
 	}
+};
+
+
+class MessageManager : public CSingleton<MessageManager>
+{
+	friend class CSingleton<MessageManager>;
+private:
+	MessageManager() = default;
+	~MessageManager() = default;
+
+private:
+	std::map<MessageId_t, Message_t> m_Messages; //PAWN message-id to actual channel map
+
+public:
+	MessageId_t Create(json &data);
+	bool Delete(MessageId_t id);
+
+	Message_t const &Find(MessageId_t id);
 };

@@ -1,6 +1,7 @@
 #include "natives.hpp"
 #include "Network.hpp"
 #include "Channel.hpp"
+#include "Message.hpp"
 #include "User.hpp"
 #include "Role.hpp"
 #include "Guild.hpp"
@@ -237,6 +238,123 @@ AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
 	}
 
 	channel->SendMessage(amx_GetCppString(amx, params[2]));
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_GetMessageId(DCC_Message:message, dest[DCC_ID_SIZE], max_size = DCC_ID_SIZE);
+AMX_DECLARE_NATIVE(Native::DCC_GetMessageId)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetMessageId", params, "drd");
+
+	MessageId_t id = params[1];
+	Message_t const &msg = MessageManager::Get()->Find(id);
+	if (!msg)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		return 0;
+	}
+
+	cell ret_val = amx_SetCppString(amx, params[2], msg->GetId(), params[3]) == AMX_ERR_NONE;
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	return ret_val;
+}
+
+// native DCC_GetMessageChannel(DCC_Message:message, &DCC_Channel:channel);
+AMX_DECLARE_NATIVE(Native::DCC_GetMessageChannel)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetMessageChannel", params, "dr");
+
+	MessageId_t id = params[1];
+	Message_t const &msg = MessageManager::Get()->Find(id);
+	if (!msg)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		return 0;
+	}
+
+	cell *dest = nullptr;
+	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = static_cast<cell>(msg->GetChannel());
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_GetMessageAuthor(DCC_Message:message, &DCC_User:author);
+AMX_DECLARE_NATIVE(Native::DCC_GetMessageAuthor)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetMessageAuthor", params, "dr");
+
+	MessageId_t id = params[1];
+	Message_t const &msg = MessageManager::Get()->Find(id);
+	if (!msg)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		return 0;
+	}
+
+	cell *dest = nullptr;
+	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = static_cast<cell>(msg->GetAuthor());
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_GetMessageContent(DCC_Message:message, dest[], max_size = sizeof dest);
+AMX_DECLARE_NATIVE(Native::DCC_GetMessageContent)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetMessageContent", params, "drd");
+
+	MessageId_t id = params[1];
+	Message_t const &msg = MessageManager::Get()->Find(id);
+	if (!msg)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		return 0;
+	}
+
+	cell ret_val = amx_SetCppString(
+		amx, params[2], msg->GetContent(), params[3]) == AMX_ERR_NONE;
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	return ret_val;
+}
+
+// native DCC_IsMessageMentioningEveryone(DCC_Message:message, &bool:mentions_everyone);
+AMX_DECLARE_NATIVE(Native::DCC_IsMessageMentioningEveryone)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_IsMessageMentioningEveryone", params, "dr");
+
+	MessageId_t id = params[1];
+	Message_t const &msg = MessageManager::Get()->Find(id);
+	if (!msg)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		return 0;
+	}
+
+	cell *dest = nullptr;
+	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = static_cast<cell>(msg->MentionsEveryone() ? 1 : 0);
 
 	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;

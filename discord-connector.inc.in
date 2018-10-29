@@ -68,6 +68,14 @@ native DCC_IsChannelNsfw(DCC_Channel:channel, &bool:is_nsfw);
 native DCC_SendChannelMessage(DCC_Channel:channel, const message[]);
 
 
+// messages
+native DCC_GetMessageId(DCC_Message:message, dest[DCC_ID_SIZE], max_size = DCC_ID_SIZE);
+native DCC_GetMessageChannel(DCC_Message:message, &DCC_Channel:channel);
+native DCC_GetMessageAuthor(DCC_Message:message, &DCC_User:author);
+native DCC_GetMessageContent(DCC_Message:message, dest[], max_size = sizeof dest);
+native DCC_IsMessageMentioningEveryone(DCC_Message:message, &bool:mentions_everyone);
+
+
 //  users
 native DCC_User:DCC_FindUserByName(const user_name[], const user_discriminator[]);
 native DCC_User:DCC_FindUserById(const user_id[]);
@@ -117,10 +125,12 @@ native DCC_GetAllGuilds(DCC_Guild:dest[], max_size = sizeof dest);
 
 // callbacks
 //  channels
-forward DCC_OnChannelMessage(DCC_Channel:channel, DCC_User:author, const message[]);
 forward DCC_OnChannelCreate(DCC_Channel:channel);
 forward DCC_OnChannelUpdate(DCC_Channel:channel);
 forward DCC_OnChannelDelete(DCC_Channel:channel);
+
+// messages
+forward DCC_OnMessageCreate(DCC_Message:message);
 
 //  users
 forward DCC_OnUserUpdate(DCC_User:user);
