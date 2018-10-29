@@ -85,4 +85,5 @@ private: // functions
 public: // functions
 	void Get(std::string const &url, GetCallback_t &&callback);
 	void Post(std::string const &url, std::string const &content);
+	void Patch(std::string const &url, std::string const &content);
 };

@@ -325,3 +325,10 @@ void Http::Post(std::string const &url, std::string const &content)
 
 	SendRequest(beast::http::verb::post, url, content, nullptr);
 }
+
+void Http::Patch(std::string const &url, std::string const &content)
+{
+	CLog::Get()->Log(LogLevel::DEBUG, "Http::Patch");
+
+	SendRequest(beast::http::verb::patch, url, content, nullptr);
+}
