@@ -329,25 +329,6 @@ AMX_DECLARE_NATIVE(Native::DCC_GetUserDiscriminator)
 	return ret_val;
 }
 
-// native DCC_GetUserEmail(DCC_User:user, dest[], max_size = sizeof dest);
-AMX_DECLARE_NATIVE(Native::DCC_GetUserEmail)
-{
-	CScopedDebugInfo dbg_info(amx, "DCC_GetUserEmail", params, "drd");
-
-	UserId_t userid = params[1];
-	User_t const &user = UserManager::Get()->FindUser(userid);
-	if (!user)
-	{
-		CLog::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
-		return 0;
-	}
-
-	cell ret_val = amx_SetCppString(amx, params[2], user->GetEmail(), params[3]) == AMX_ERR_NONE;
-
-	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
-	return ret_val;
-}
-
 // native DCC_IsUserBot(DCC_User:user, &bool:is_bot);
 AMX_DECLARE_NATIVE(Native::DCC_IsUserBot)
 {

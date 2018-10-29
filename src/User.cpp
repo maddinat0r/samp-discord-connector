@@ -34,7 +34,6 @@ void User::Update(json &data)
 
 	utils::TryGetJsonValue(data, m_IsBot, "bot");
 	utils::TryGetJsonValue(data, m_IsVerified, "verified");
-	utils::TryGetJsonValue(data, m_Email, "email");
 }
 
 

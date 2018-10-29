@@ -28,7 +28,6 @@ namespace Native
 	AMX_DECLARE_NATIVE(DCC_GetUserId);
 	AMX_DECLARE_NATIVE(DCC_GetUserName);
 	AMX_DECLARE_NATIVE(DCC_GetUserDiscriminator);
-	AMX_DECLARE_NATIVE(DCC_GetUserEmail);
 	AMX_DECLARE_NATIVE(DCC_IsUserBot);
 	AMX_DECLARE_NATIVE(DCC_IsUserVerified);
 

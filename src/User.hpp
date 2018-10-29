@@ -25,8 +25,7 @@ private:
 
 	std::string
 		m_Username,
-		m_Discriminator,
-		m_Email;
+		m_Discriminator;
 
 	bool
 		m_IsBot = false,
@@ -50,10 +49,6 @@ public:
 	inline std::string const &GetDiscriminator() const
 	{
 		return m_Discriminator;
-	}
-	inline std::string const &GetEmail() const
-	{
-		return m_Email;
 	}
 	inline bool IsBot() const
 	{

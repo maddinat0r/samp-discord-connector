@@ -145,7 +145,6 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_GetUserId)
 	AMX_DEFINE_NATIVE(DCC_GetUserName)
 	AMX_DEFINE_NATIVE(DCC_GetUserDiscriminator)
-	AMX_DEFINE_NATIVE(DCC_GetUserEmail)
 	AMX_DEFINE_NATIVE(DCC_IsUserBot)
 	AMX_DEFINE_NATIVE(DCC_IsUserVerified)
 
