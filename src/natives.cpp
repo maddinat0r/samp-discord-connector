@@ -671,6 +671,25 @@ AMX_DECLARE_NATIVE(Native::DCC_GetMessageRoleMention)
 	return 1;
 }
 
+// native DCC_DeleteMessage(DCC_Message:message);
+AMX_DECLARE_NATIVE(Native::DCC_DeleteMessage)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_DeleteMessage", params, "d");
+
+	MessageId_t id = params[1];
+	Message_t const &msg = MessageManager::Get()->Find(id);
+	if (!msg)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		return 0;
+	}
+
+	msg->DeleteMessage();
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
 // native DCC_User:DCC_FindUserByName(const user_name[], const user_discriminator[]);
 AMX_DECLARE_NATIVE(Native::DCC_FindUserByName)
 {

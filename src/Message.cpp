@@ -2,6 +2,7 @@
 #include "User.hpp"
 #include "Channel.hpp"
 #include "Role.hpp"
+#include "Network.hpp"
 #include "CLog.hpp"
 #include "utils.hpp"
 
@@ -56,6 +57,16 @@ Message::Message(json &data)
 				m_RoleMentions.push_back(mr->GetPawnId());
 		}
 	}
+}
+
+void Message::DeleteMessage()
+{
+	Channel_t const &channel = ChannelManager::Get()->FindChannel(GetChannel());
+	if (!channel)
+		return;
+
+	Network::Get()->Http().Delete(fmt::format(
+		"/channels/{:s}/messages/{:s}", channel->GetId(), GetId()));
 }
 
 MessageId_t MessageManager::Create(json &data)

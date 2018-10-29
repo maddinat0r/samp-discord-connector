@@ -78,6 +78,8 @@ public:
 	{
 		return IsValid();
 	}
+
+	void DeleteMessage();
 };
 
 

@@ -86,6 +86,8 @@ native DCC_GetMessageUserMention(DCC_Message:message, offset, &DCC_User:mentione
 native DCC_GetMessageRoleMentionCount(DCC_Message:message, &mentioned_role_count);
 native DCC_GetMessageRoleMention(DCC_Message:message, offset, &DCC_Role:mentioned_role);
 
+native DCC_DeleteMessage(DCC_Message:message);
+
 
 //  users
 native DCC_User:DCC_FindUserByName(const user_name[], const user_discriminator[]);
