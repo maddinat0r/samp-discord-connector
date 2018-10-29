@@ -62,6 +62,8 @@ native DCC_GetChannelType(DCC_Channel:channel, &DCC_ChannelType:type);
 native DCC_GetChannelGuild(DCC_Channel:channel, &DCC_Guild:guild);
 native DCC_GetChannelName(DCC_Channel:channel, dest[], max_size = sizeof dest);
 native DCC_GetChannelTopic(DCC_Channel:channel, dest[], max_size = sizeof dest);
+native DCC_GetChannelPosition(DCC_Channel:channel, &position);
+native DCC_IsChannelNsfw(DCC_Channel:channel, &bool:is_nsfw);
 
 native DCC_SendChannelMessage(DCC_Channel:channel, const message[]);
 

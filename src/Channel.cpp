@@ -49,6 +49,8 @@ Channel::Channel(ChannelId_t pawn_id, json &data, GuildId_t guild_id) :
 
 	utils::TryGetJsonValue(data, m_Name, "name");
 	utils::TryGetJsonValue(data, m_Topic, "topic");
+	utils::TryGetJsonValue(data, m_Position, "position");
+	utils::TryGetJsonValue(data, m_IsNsfw, "nsfw");
 }
 
 void Channel::SendMessage(std::string &&msg)
@@ -197,15 +199,24 @@ void ChannelManager::UpdateChannel(json &data)
 	}
 
 	std::string name, topic;
-	utils::TryGetJsonValue(data, name, "name");
-	utils::TryGetJsonValue(data, topic, "topic");
+	int position;
+	bool is_nsfw;
+	bool 
+		update_name = utils::TryGetJsonValue(data, name, "name"),
+		update_topic = utils::TryGetJsonValue(data, topic, "topic"),
+		update_position = utils::TryGetJsonValue(data, position, "position"),
+		update_nsfw = utils::TryGetJsonValue(data, is_nsfw, "nsfw");
 
-	PawnDispatcher::Get()->Dispatch([name, topic, &channel]()
+	PawnDispatcher::Get()->Dispatch([=, &channel]()
 	{
-		if (!name.empty())
+		if (update_name && !name.empty())
 			channel->m_Name = name;
-		if (!topic.empty())
+		if (update_topic && !topic.empty())
 			channel->m_Topic = topic;
+		if (update_position)
+			channel->m_Position = position;
+		if (update_nsfw)
+			channel->m_IsNsfw = is_nsfw;
 
 		// forward DCC_OnChannelUpdate(DCC_Channel:channel);
 		PawnCallbackManager::Get()->Call("DCC_OnChannelUpdate", channel->GetPawnId());

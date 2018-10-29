@@ -44,6 +44,9 @@ private:
 		m_Name,
 		m_Topic;
 
+	int m_Position = -1;
+	bool m_IsNsfw = false;
+
 public:
 	inline ChannelId_t GetPawnId() const
 	{
@@ -68,6 +71,14 @@ public:
 	inline std::string const &GetTopic() const
 	{
 		return m_Topic;
+	}
+	inline int GetPosition() const
+	{
+		return m_Position;
+	}
+	inline bool IsNsfw() const
+	{
+		return m_IsNsfw;
 	}
 
 	void SendMessage(std::string &&msg);

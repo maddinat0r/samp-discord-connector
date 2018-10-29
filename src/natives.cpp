@@ -164,6 +164,65 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelTopic)
 	return ret_val;
 }
 
+// native DCC_GetChannelPosition(DCC_Channel:channel, &position);
+AMX_DECLARE_NATIVE(Native::DCC_GetChannelPosition)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetChannelPosition", params, "dr");
+
+	ChannelId_t channelid = params[1];
+	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
+
+	cell *dest = nullptr;
+	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = static_cast<cell>(channel->GetPosition());
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_IsChannelNsfw(DCC_Channel:channel, &bool:is_nsfw);
+AMX_DECLARE_NATIVE(Native::DCC_IsChannelNsfw)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_IsChannelNsfw", params, "dr");
+
+	ChannelId_t channelid = params[1];
+	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
+
+	if (channel->GetType() != Channel::Type::GUILD_TEXT)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, 
+			"invalid channel type; must be guild text channel");
+		return 0;
+	}
+
+	cell *dest = nullptr;
+	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = static_cast<cell>(channel->IsNsfw() ? 1 : 0);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
 // native DCC_SendChannelMessage(DCC_Channel:channel, const message[]);
 AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
 {

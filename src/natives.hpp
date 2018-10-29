@@ -19,6 +19,8 @@ namespace Native
 	AMX_DECLARE_NATIVE(DCC_GetChannelGuild);
 	AMX_DECLARE_NATIVE(DCC_GetChannelName);
 	AMX_DECLARE_NATIVE(DCC_GetChannelTopic);
+	AMX_DECLARE_NATIVE(DCC_GetChannelPosition);
+	AMX_DECLARE_NATIVE(DCC_IsChannelNsfw);
 	AMX_DECLARE_NATIVE(DCC_SendChannelMessage);
 
 	AMX_DECLARE_NATIVE(DCC_FindUserByName);

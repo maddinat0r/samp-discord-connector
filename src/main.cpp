@@ -136,6 +136,8 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_GetChannelGuild)
 	AMX_DEFINE_NATIVE(DCC_GetChannelName)
 	AMX_DEFINE_NATIVE(DCC_GetChannelTopic)
+	AMX_DEFINE_NATIVE(DCC_GetChannelPosition)
+	AMX_DEFINE_NATIVE(DCC_IsChannelNsfw)
 	AMX_DEFINE_NATIVE(DCC_SendChannelMessage)
 
 	AMX_DEFINE_NATIVE(DCC_FindUserByName)
