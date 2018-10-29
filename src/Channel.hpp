@@ -82,7 +82,10 @@ public:
 	}
 
 	void SendMessage(std::string &&msg);
-
+	void SetChannelName(std::string const &name);
+	void SetChannelTopic(std::string const &topic);
+	void SetChannelPosition(int const position);
+	void SetChannelNsfw(bool const is_nsfw);
 };
 
 

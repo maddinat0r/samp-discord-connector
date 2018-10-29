@@ -66,6 +66,10 @@ native DCC_GetChannelPosition(DCC_Channel:channel, &position);
 native DCC_IsChannelNsfw(DCC_Channel:channel, &bool:is_nsfw);
 
 native DCC_SendChannelMessage(DCC_Channel:channel, const message[]);
+native DCC_SetChannelName(DCC_Channel:channel, const name[]);
+native DCC_SetChannelTopic(DCC_Channel:channel, const topic[]);
+native DCC_SetChannelPosition(DCC_Channel:channel, position);
+native DCC_SetChannelNsfw(DCC_Channel:channel, bool:is_nsfw);
 
 
 // messages

@@ -63,7 +63,59 @@ void Channel::SendMessage(std::string &&msg)
 	if(!utils::TryDumpJson(data, json_str))
 		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
-	Network::Get()->Http().Post(fmt::format("/channels/{}/messages", GetId()), json_str);
+	Network::Get()->Http().Post(fmt::format("/channels/{:s}/messages", GetId()), json_str);
+}
+
+void Channel::SetChannelName(std::string const &name)
+{
+	json data = {
+		{ "name", name }
+	};
+
+	std::string json_str;
+	if (!utils::TryDumpJson(data, json_str))
+		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+
+	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
+}
+
+void Channel::SetChannelTopic(std::string const &topic)
+{
+	json data = {
+		{ "topic", topic }
+	};
+
+	std::string json_str;
+	if (!utils::TryDumpJson(data, json_str))
+		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+
+	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
+}
+
+void Channel::SetChannelPosition(int const position)
+{
+	json data = {
+		{ "position", position }
+	};
+
+	std::string json_str;
+	if (!utils::TryDumpJson(data, json_str))
+		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+
+	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
+}
+
+void Channel::SetChannelNsfw(bool const is_nsfw)
+{
+	json data = {
+		{ "nsfw", is_nsfw }
+	};
+
+	std::string json_str;
+	if (!utils::TryDumpJson(data, json_str))
+		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+
+	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
 }
 
 

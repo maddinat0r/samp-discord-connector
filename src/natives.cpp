@@ -251,6 +251,105 @@ AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
 	return 1;
 }
 
+// native DCC_SetChannelName(DCC_Channel:channel, const name[]);
+AMX_DECLARE_NATIVE(Native::DCC_SetChannelName)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_SetChannelName", params, "ds");
+
+	ChannelId_t channelid = static_cast<ChannelId_t>(params[1]);
+	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
+
+	auto name = amx_GetCppString(amx, params[2]);
+	if (name.length() < 2 || name.length() > 100)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, 
+			"name must be between 2 and 100 characters in length");
+		return 0;
+	}
+
+	channel->SetChannelName(name);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetChannelTopic(DCC_Channel:channel, const topic[]);
+AMX_DECLARE_NATIVE(Native::DCC_SetChannelTopic)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_SetChannelTopic", params, "ds");
+
+	ChannelId_t channelid = static_cast<ChannelId_t>(params[1]);
+	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
+
+	if (channel->GetType() != Channel::Type::GUILD_TEXT)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR,
+			"invalid channel type; must be guild text channel");
+		return 0;
+	}
+
+	auto topic = amx_GetCppString(amx, params[2]);
+	if (topic.length() > 1024)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR,
+			"topic must be between 0 and 1024 characters in length");
+		return 0;
+	}
+
+	channel->SetChannelTopic(topic);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetChannelPosition(DCC_Channel:channel, position);
+AMX_DECLARE_NATIVE(Native::DCC_SetChannelPosition)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_SetChannelPosition", params, "dd");
+
+	ChannelId_t channelid = static_cast<ChannelId_t>(params[1]);
+	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
+
+	channel->SetChannelPosition(static_cast<int>(params[2]));
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetChannelNsfw(DCC_Channel:channel, bool:is_nsfw);
+AMX_DECLARE_NATIVE(Native::DCC_SetChannelNsfw)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_SetChannelNsfw", params, "dd");
+
+	ChannelId_t channelid = static_cast<ChannelId_t>(params[1]);
+	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
+
+	channel->SetChannelNsfw(params[2] != 0);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
 // native DCC_GetMessageId(DCC_Message:message, dest[DCC_ID_SIZE], max_size = DCC_ID_SIZE);
 AMX_DECLARE_NATIVE(Native::DCC_GetMessageId)
 {
