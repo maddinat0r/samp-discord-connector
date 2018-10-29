@@ -326,6 +326,13 @@ void Http::Post(std::string const &url, std::string const &content)
 	SendRequest(beast::http::verb::post, url, content, nullptr);
 }
 
+void Http::Delete(std::string const &url)
+{
+	CLog::Get()->Log(LogLevel::DEBUG, "Http::Delete");
+
+	SendRequest(beast::http::verb::delete_, url, "", nullptr);
+}
+
 void Http::Patch(std::string const &url, std::string const &content)
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "Http::Patch");
