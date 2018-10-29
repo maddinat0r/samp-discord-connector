@@ -13,6 +13,7 @@ Message::Message(json &data)
 		utils::TryGetJsonValue(data, author_id, "author", "id") &&
 		utils::TryGetJsonValue(data, channel_id, "channel_id") &&
 		utils::TryGetJsonValue(data, m_Content, "content") &&
+		utils::TryGetJsonValue(data, m_IsTts, "tts") &&
 		utils::TryGetJsonValue(data, m_MentionsEveryone, "mention_everyone");
 
 	if (!_valid)

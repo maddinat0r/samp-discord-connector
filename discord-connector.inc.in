@@ -73,6 +73,7 @@ native DCC_GetMessageId(DCC_Message:message, dest[DCC_ID_SIZE], max_size = DCC_I
 native DCC_GetMessageChannel(DCC_Message:message, &DCC_Channel:channel);
 native DCC_GetMessageAuthor(DCC_Message:message, &DCC_User:author);
 native DCC_GetMessageContent(DCC_Message:message, dest[], max_size = sizeof dest);
+native DCC_IsMessageTts(DCC_Message:message, &bool:is_tts);
 native DCC_IsMessageMentioningEveryone(DCC_Message:message, &bool:mentions_everyone);
 native DCC_GetMessageUserMentionCount(DCC_Message:message, &mentioned_user_count);
 native DCC_GetMessageUserMention(DCC_Message:message, offset, &DCC_User:mentioned_user);

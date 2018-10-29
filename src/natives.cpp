@@ -334,6 +334,32 @@ AMX_DECLARE_NATIVE(Native::DCC_GetMessageContent)
 	return ret_val;
 }
 
+// native DCC_IsMessageTts(DCC_Message:message, &bool:is_tts);
+AMX_DECLARE_NATIVE(Native::DCC_IsMessageTts)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_IsMessageTts", params, "dr");
+
+	MessageId_t id = params[1];
+	Message_t const &msg = MessageManager::Get()->Find(id);
+	if (!msg)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		return 0;
+	}
+
+	cell *dest = nullptr;
+	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = static_cast<cell>(msg->IsTts() ? 1 : 0);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
 // native DCC_IsMessageMentioningEveryone(DCC_Message:message, &bool:mentions_everyone);
 AMX_DECLARE_NATIVE(Native::DCC_IsMessageMentioningEveryone)
 {

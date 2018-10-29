@@ -27,6 +27,7 @@ namespace Native
 	AMX_DECLARE_NATIVE(DCC_GetMessageChannel);
 	AMX_DECLARE_NATIVE(DCC_GetMessageAuthor);
 	AMX_DECLARE_NATIVE(DCC_GetMessageContent);
+	AMX_DECLARE_NATIVE(DCC_IsMessageTts);
 	AMX_DECLARE_NATIVE(DCC_IsMessageMentioningEveryone);
 	AMX_DECLARE_NATIVE(DCC_GetMessageUserMentionCount);
 	AMX_DECLARE_NATIVE(DCC_GetMessageUserMention);

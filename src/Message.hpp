@@ -28,6 +28,7 @@ private:
 	UserId_t m_Author = INVALID_USER_ID;
 
 	std::string m_Content;
+	bool m_IsTts;
 
 	bool m_MentionsEveryone;
 	std::vector<UserId_t> m_UserMentions;
@@ -51,6 +52,10 @@ public:
 	std::string const &GetContent() const
 	{
 		return m_Content;
+	}
+	bool IsTts() const
+	{
+		return m_IsTts;
 	}
 	bool MentionsEveryone() const
 	{
