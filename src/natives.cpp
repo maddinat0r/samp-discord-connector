@@ -237,7 +237,15 @@ AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
 		return 0;
 	}
 
-	channel->SendMessage(amx_GetCppString(amx, params[2]));
+	auto message = amx_GetCppString(amx, params[2]);
+	if (message.length() > 2000)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR,
+			"message must be shorter than 2000 characters");
+		return 0;
+	}
+
+	channel->SendMessage(std::move(message));
 
 	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;
