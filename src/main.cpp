@@ -144,6 +144,7 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_SetChannelPosition)
 	AMX_DEFINE_NATIVE(DCC_SetChannelNsfw)
 	AMX_DEFINE_NATIVE(DCC_SetChannelParentCategory)
+	AMX_DEFINE_NATIVE(DCC_DeleteChannel)
 
 	AMX_DEFINE_NATIVE(DCC_GetMessageId)
 	AMX_DEFINE_NATIVE(DCC_GetMessageChannel)

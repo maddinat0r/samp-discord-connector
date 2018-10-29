@@ -385,6 +385,25 @@ AMX_DECLARE_NATIVE(Native::DCC_SetChannelParentCategory)
 	return 1;
 }
 
+// native DCC_DeleteChannel(DCC_Channel:channel);
+AMX_DECLARE_NATIVE(Native::DCC_DeleteChannel)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_DeleteChannel", params, "d");
+
+	ChannelId_t channelid = static_cast<ChannelId_t>(params[1]);
+	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
+
+	channel->DeleteChannel();
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
 // native DCC_GetMessageId(DCC_Message:message, dest[DCC_ID_SIZE], max_size = DCC_ID_SIZE);
 AMX_DECLARE_NATIVE(Native::DCC_GetMessageId)
 {

@@ -134,6 +134,11 @@ void Channel::SetChannelParentCategory(Channel_t const &parent)
 	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
 }
 
+void Channel::DeleteChannel()
+{
+	Network::Get()->Http().Delete(fmt::format("/channels/{:s}", GetId()));
+}
+
 
 void ChannelManager::Initialize()
 {

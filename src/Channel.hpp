@@ -87,6 +87,7 @@ public:
 	void SetChannelPosition(int const position);
 	void SetChannelNsfw(bool const is_nsfw);
 	void SetChannelParentCategory(Channel_t const &parent);
+	void DeleteChannel();
 };
 
 
