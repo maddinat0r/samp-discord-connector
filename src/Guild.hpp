@@ -143,6 +143,8 @@ public:
 	}
 
 	void Update(json &data);
+
+	void SetGuildName(std::string const &name);
 };
 
 

@@ -205,6 +205,19 @@ void Guild::Update(json &data)
 	}
 }
 
+void Guild::SetGuildName(std::string const &name)
+{
+	json data = {
+		{ "name", name }
+	};
+
+	std::string json_str;
+	if (!utils::TryDumpJson(data, json_str))
+		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+
+	Network::Get()->Http().Patch(fmt::format("/guilds/{:s}", GetId()), json_str);
+}
+
 
 void GuildManager::Initialize()
 {

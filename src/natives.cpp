@@ -1586,3 +1586,30 @@ AMX_DECLARE_NATIVE(Native::DCC_GetAllGuilds)
 	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", count);
 	return count;
 }
+
+// native DCC_SetGuildName(DCC_Guild:guild, const name[]);
+AMX_DECLARE_NATIVE(Native::DCC_SetGuildName)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_SetGuildName", params, "ds");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	auto name = amx_GetCppString(amx, params[2]);
+	if (name.length() < 2 || name.length() > 100)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR,
+			"name must be between 2 and 100 characters in length");
+		return 0;
+	}
+
+	guild->SetGuildName(name);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
