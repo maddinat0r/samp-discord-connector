@@ -45,8 +45,7 @@ void UserManager::Initialize()
 	{
 		if (!utils::IsValidJson(data, "user", json::value_t::object))
 		{
-			// TODO: should be loglevel fatal
-			CLog::Get()->Log(LogLevel::ERROR,
+			CLog::Get()->Log(LogLevel::FATAL,
 				"invalid JSON: expected \"user\" in \"{}\"", data.dump());
 			return;
 		}

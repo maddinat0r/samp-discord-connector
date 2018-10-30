@@ -214,8 +214,7 @@ void GuildManager::Initialize()
 	{
 		if (!utils::IsValidJson(data, "guilds", json::value_t::array))
 		{
-			// TODO: should be loglevel fatal
-			CLog::Get()->Log(LogLevel::ERROR,
+			CLog::Get()->Log(LogLevel::FATAL,
 				"invalid JSON: expected \"guilds\" in \"{}\"", data.dump());
 			return;
 		}
