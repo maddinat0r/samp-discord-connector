@@ -56,6 +56,7 @@ namespace Native
 	AMX_DECLARE_NATIVE(DCC_GetRoleColor);
 	AMX_DECLARE_NATIVE(DCC_GetRolePermissions);
 	AMX_DECLARE_NATIVE(DCC_IsRoleHoist);
+	AMX_DECLARE_NATIVE(DCC_GetRolePosition);
 	AMX_DECLARE_NATIVE(DCC_IsRoleMentionable);
 
 	AMX_DECLARE_NATIVE(DCC_FindGuildByName);

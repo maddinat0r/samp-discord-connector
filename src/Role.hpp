@@ -26,6 +26,7 @@ private:
 	std::string m_Name;
 	unsigned int m_Color;
 	bool m_Hoist;
+	int m_Position;
 	unsigned long long int m_Permissions;
 	bool m_Mentionable;
 
@@ -51,6 +52,10 @@ public:
 	inline bool IsHoist() const
 	{
 		return m_Hoist;
+	}
+	inline int GetPosition() const
+	{
+		return m_Position;
 	}
 	inline decltype(m_Permissions) GetPermissions() const
 	{

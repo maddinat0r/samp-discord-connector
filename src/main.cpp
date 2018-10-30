@@ -176,6 +176,7 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_GetRoleColor)
 	AMX_DEFINE_NATIVE(DCC_GetRolePermissions)
 	AMX_DEFINE_NATIVE(DCC_IsRoleHoist)
+	AMX_DEFINE_NATIVE(DCC_GetRolePosition)
 	AMX_DEFINE_NATIVE(DCC_IsRoleMentionable)
 
 	AMX_DEFINE_NATIVE(DCC_FindGuildByName)

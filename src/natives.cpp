@@ -1001,6 +1001,32 @@ AMX_DECLARE_NATIVE(Native::DCC_IsRoleHoist)
 	return 1;
 }
 
+// native DCC_GetRolePosition(DCC_Role:role, &position);
+AMX_DECLARE_NATIVE(Native::DCC_GetRolePosition)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetRolePosition", params, "dr");
+
+	RoleId_t roleid = params[1];
+	Role_t const &role = RoleManager::Get()->FindRole(roleid);
+	if (!role)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		return 0;
+	}
+
+	cell *dest = nullptr;
+	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = static_cast<cell>(role->GetPosition());
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
 // native DCC_IsRoleMentionable(DCC_Role:role, &bool:is_mentionable);
 AMX_DECLARE_NATIVE(Native::DCC_IsRoleMentionable)
 {

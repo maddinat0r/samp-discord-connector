@@ -111,6 +111,7 @@ native DCC_GetRoleColor(DCC_Role:role, &color);
 native DCC_GetRoleColour(DCC_Role:role, &colour) = DCC_GetRoleColor; // for our British mates
 native DCC_GetRolePermissions(DCC_Role:role, &perm_high, &perm_low); // 64 bit integer
 native DCC_IsRoleHoist(DCC_Role:role, &bool:is_hoist);
+native DCC_GetRolePosition(DCC_Role:role, &position);
 native DCC_IsRoleMentionable(DCC_Role:role, &bool:is_mentionable);
 
 

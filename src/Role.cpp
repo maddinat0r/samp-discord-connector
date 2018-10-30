@@ -22,6 +22,7 @@ void Role::Update(json &data)
 		utils::TryGetJsonValue(data, m_Name, "name") &&
 		utils::TryGetJsonValue(data, m_Color, "color") &&
 		utils::TryGetJsonValue(data, m_Hoist, "hoist") &&
+		utils::TryGetJsonValue(data, m_Position, "position") &&
 		utils::TryGetJsonValue(data, m_Permissions, "permissions") &&
 		utils::TryGetJsonValue(data, m_Mentionable, "mentionable");
 
