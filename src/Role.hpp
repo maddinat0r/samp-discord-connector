@@ -26,7 +26,7 @@ private:
 	std::string m_Name;
 	unsigned int m_Color;
 	bool m_Hoist;
-	int m_Position;
+	unsigned int m_Position;
 	unsigned long long int m_Permissions;
 	bool m_Mentionable;
 
@@ -53,7 +53,7 @@ public:
 	{
 		return m_Hoist;
 	}
-	inline int GetPosition() const
+	inline unsigned int GetPosition() const
 	{
 		return m_Position;
 	}
