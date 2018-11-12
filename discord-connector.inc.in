@@ -11,19 +11,6 @@
 
 
 
-#if !defined E_LOGLEVEL
-enum E_LOGLEVEL
-{
-	NONE = 0,
-	DEBUG = 1,
-	INFO = 2,
-	WARNING = 4,
-	ERROR = 8,
-	
-	ALL = ERROR | WARNING | INFO | DEBUG
-};
-#endif
-
 enum DCC_ChannelType
 {
 	GUILD_TEXT = 0,
