@@ -60,6 +60,17 @@ bool WaitForInitialization()
 	return false;
 }
 
+std::string GetEnviron(std::string key) {
+	#ifdef WIN32
+	char* buffer[128];
+	result = GetEnvironmentVariableA(key.c_str(), buffer, length);
+	#else
+	const char* buffer = getenv(key);
+	#endif
+	return std::string(buffer);
+
+}
+
 PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()
 {
 	return SUPPORTS_VERSION | SUPPORTS_AMX_NATIVES | SUPPORTS_PROCESS_TICK;
@@ -71,8 +82,13 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 	logprintf = (logprintf_t) ppData[PLUGIN_DATA_LOGPRINTF];
 	
 	bool ret_val = true;
-	std::string bot_token;
-	if (SampConfigReader::Get()->GetVar("discord_bot_token", bot_token))
+	std::string bot_token = GetEnviron("DISCORD_BOT_TOKEN");
+
+	if(bot_token.empty()) {
+		SampConfigReader::Get()->GetVar("discord_bot_token", bot_token);
+	}
+
+	if (!bot_token.empty())
 	{
 		InitializeEverything(bot_token);
 
@@ -103,7 +119,7 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 	}
 	else
 	{
-		logprintf(" >> plugin.dc-connector: bot token not specified in server config.");
+		logprintf(" >> plugin.dc-connector: bot token not specified in environment variable or server config.");
 		ret_val = false;
 	}
 	return ret_val;
