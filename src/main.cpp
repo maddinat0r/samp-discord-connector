@@ -61,15 +61,16 @@ bool WaitForInitialization()
 	return false;
 }
 
-std::string GetEnviron(std::string key) {
+std::string GetEnviron(std::string key)
+{
 	#ifdef WIN32
 	char* buffer[128];
 	result = GetEnvironmentVariableA(key.c_str(), buffer, length);
 	#else
 	const char* buffer = getenv(key);
 	#endif
-	return std::string(buffer);
 
+	return std::string(buffer);
 }
 
 PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()
@@ -85,7 +86,8 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 	bool ret_val = true;
 	std::string bot_token = GetEnviron("DISCORD_BOT_TOKEN");
 
-	if(bot_token.empty()) {
+	if(bot_token.empty())
+	{
 		SampConfigReader::Get()->GetVar("discord_bot_token", bot_token);
 	}
 
