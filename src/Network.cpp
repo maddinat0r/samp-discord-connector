@@ -9,7 +9,7 @@ void Network::Initialize(std::string const &token)
 	m_Http = std::unique_ptr<::Http>(new ::Http(token));
 
 	// retrieve WebSocket host URL
-	m_Http->Get("/gateway", [this, token](Http::GetResponse res)
+	m_Http->Get("/gateway", [this, token](Http::Response res)
 	{
 		if (res.status != 200)
 		{

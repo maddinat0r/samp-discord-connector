@@ -306,24 +306,36 @@ void Http::SendRequest(beast::http::verb const method, std::string const &url,
 	m_Queue.push(new QueueEntry(req, std::move(callback)));
 }
 
-void Http::Get(std::string const &url, GetCallback_t &&callback)
+Http::ResponseCallback_t Http::CreateResponseCallback(ResponseCb_t &&callback)
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "Http::Get");
+	if (callback == nullptr)
+		return nullptr;
 
-	SendRequest(beast::http::verb::get, url, "", [callback](Streambuf_t &sb, Response_t &resp)
+	return [callback](Streambuf_t &sb, Response_t &resp)
 	{
 		std::stringstream ss_body, ss_data;
 		ss_body << beast::buffers(resp.body().data());
 		ss_data << beast::buffers(sb.data());
 		callback({ resp.result_int(), resp.reason().to_string(), ss_body.str(), ss_data.str() });
-	});
+	};
 }
 
-void Http::Post(std::string const &url, std::string const &content)
+
+void Http::Get(std::string const &url, ResponseCb_t &&callback)
+{
+	CLog::Get()->Log(LogLevel::DEBUG, "Http::Get");
+
+	SendRequest(beast::http::verb::get, url, "", 
+		CreateResponseCallback(std::move(callback)));
+}
+
+void Http::Post(std::string const &url, std::string const &content,
+	ResponseCb_t &&callback /*= nullptr*/)
 {
 	CLog::Get()->Log(LogLevel::DEBUG, "Http::Post");
 
-	SendRequest(beast::http::verb::post, url, content, nullptr);
+	SendRequest(beast::http::verb::post, url, content, 
+		CreateResponseCallback(std::move(callback)));
 }
 
 void Http::Delete(std::string const &url)

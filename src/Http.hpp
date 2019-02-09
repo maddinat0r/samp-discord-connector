@@ -13,6 +13,10 @@
 #include <boost/beast/http.hpp>
 #include <boost/lockfree/queue.hpp>
 
+#ifdef DELETE
+#undef DELETE
+#endif
+
 
 namespace asio = boost::asio;
 namespace beast = boost::beast;
@@ -21,14 +25,14 @@ namespace beast = boost::beast;
 class Http
 {
 public:
-	struct GetResponse
+	struct Response
 	{
 		unsigned int status;
 		std::string reason;
 		std::string body;
 		std::string additional_data;
 	};
-	using GetCallback_t = std::function<void(GetResponse)>;
+	using ResponseCb_t = std::function<void(Response)>;
 
 public:
 	Http(std::string token);
@@ -81,10 +85,12 @@ private: // functions
 		std::string const &url, std::string const &content);
 	void SendRequest(beast::http::verb const method, std::string const &url,
 		std::string const &content, ResponseCallback_t &&callback);
+	ResponseCallback_t CreateResponseCallback(ResponseCb_t &&callback);
 
 public: // functions
-	void Get(std::string const &url, GetCallback_t &&callback);
-	void Post(std::string const &url, std::string const &content);
+	void Get(std::string const &url, ResponseCb_t &&callback);
+	void Post(std::string const &url, std::string const &content,
+		ResponseCb_t &&callback = nullptr);
 	void Delete(std::string const &url);
 	void Patch(std::string const &url, std::string const &content);
 };
