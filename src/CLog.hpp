@@ -2,7 +2,7 @@
 
 #include <samplog/samplog.hpp>
 #include "CSingleton.hpp"
-#include "CError.hpp"
+#include "Error.hpp"
 
 #include <fmt/format.h>
 
@@ -114,7 +114,7 @@ public:
 	}
 
 	template<typename T>
-	inline void LogNative(const CError<T> &error)
+	inline void LogNative(const Error<T> &error)
 	{
 		LogNative(LogLevel::ERROR, "{} error: {}",
 				  error.module(), error.msg());

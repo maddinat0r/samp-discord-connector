@@ -7,34 +7,34 @@ using std::string;
 
 
 template<typename T>
-class CError
+class Error
 {
-	using ErrorType = typename T::Error;
+	using Type = typename T::Error;
 public:
-	CError() :
-		m_Type(ErrorType::NONE)
+	Error() :
+		m_Type(Type::NONE)
 	{ }
-	CError(ErrorType type, string &&msg) :
+	Error(Type type, string &&msg) :
 		m_Type(type),
 		m_Message(std::move(msg))
 	{ }
 	template<typename... Args>
-	CError(ErrorType type, string &&format, Args &&...args) :
+	Error(Type type, string &&format, Args &&...args) :
 		m_Type(type),
 		m_Message(fmt::format(format, std::forward<Args>(args)...))
 	{ }
-	~CError() = default;
+	~Error() = default;
 
 	operator bool() const
 	{
-		return m_Type != ErrorType::NONE;
+		return m_Type != Type::NONE;
 	}
 
 	const string &msg() const
 	{
 		return m_Message;
 	}
-	const ErrorType type() const
+	const Type type() const
 	{
 		return m_Type;
 	}
@@ -43,24 +43,24 @@ public:
 		return T::ModuleName;
 	}
 
-	operator ErrorType() const
+	operator Type() const
 	{
 		return type();
 	}
 
-	void set(ErrorType type, string &&msg)
+	void set(Type type, string &&msg)
 	{
 		m_Type = type;
 		m_Message.assign(std::move(msg));
 	}
 	template<typename... Args>
-	void set(ErrorType type, string &&format, Args &&...args)
+	void set(Type type, string &&format, Args &&...args)
 	{
 		m_Type = type;
 		m_Message.assign(fmt::format(format, std::forward<Args>(args)...));
 	}
 
 private:
-	ErrorType m_Type;
+	Type m_Type;
 	string m_Message;
 };

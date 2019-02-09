@@ -26,7 +26,7 @@ add_samp_plugin(discord-connector
 	${SAMPSDK_DIR}/amx/getch.c
 	Channel.cpp
 	Channel.hpp
-	CError.hpp
+	Error.hpp
 	Guild.cpp
 	Guild.hpp
 	CLog.cpp
