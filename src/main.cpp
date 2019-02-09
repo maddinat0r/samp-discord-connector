@@ -195,6 +195,8 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_GetGuildChannelCount)
 	AMX_DEFINE_NATIVE(DCC_GetAllGuilds)
 	AMX_DEFINE_NATIVE(DCC_SetGuildName)
+	AMX_DEFINE_NATIVE(DCC_CreateGuildChannel)
+	AMX_DEFINE_NATIVE(DCC_GetCreatedGuildChannel)
 	
 	{ NULL, NULL }
 };

@@ -77,4 +77,6 @@ namespace Native
 	AMX_DECLARE_NATIVE(DCC_GetGuildChannelCount);
 	AMX_DECLARE_NATIVE(DCC_GetAllGuilds);
 	AMX_DECLARE_NATIVE(DCC_SetGuildName);
+	AMX_DECLARE_NATIVE(DCC_CreateGuildChannel);
+	AMX_DECLARE_NATIVE(DCC_GetCreatedGuildChannel);
 };

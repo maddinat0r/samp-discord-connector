@@ -104,10 +104,18 @@ private:
 	std::atomic<unsigned int> m_Initialized{ 0 };
 
 	std::map<ChannelId_t, Channel_t> m_Channels; //PAWN channel-id to actual channel map
+	ChannelId_t m_CreatedChannelId = INVALID_CHANNEL_ID;
 
 public:
 	void Initialize();
 	bool IsInitialized();
+
+	bool CreateGuildChannel(Guild_t const &guild, 
+		std::string const &name, Channel::Type type, pawn_cb::Callback_t &&callback);
+	ChannelId_t GetCreatedGuildChannelId() const
+	{
+		return m_CreatedChannelId;
+	}
 
 	ChannelId_t AddChannel(json &data, GuildId_t guild_id = 0);
 	void UpdateChannel(json &data);

@@ -189,16 +189,47 @@ bool ChannelManager::IsInitialized()
 	return m_Initialized == m_InitValue;
 }
 
-ChannelId_t ChannelManager::AddChannel(json &data, GuildId_t guild_id/* = 0*/)
+bool ChannelManager::CreateGuildChannel(Guild_t const &guild,
+	std::string const &name, Channel::Type type, pawn_cb::Callback_t &&cb)
 {
-	std::underlying_type<Channel::Type>::type type_u;
-	if (!utils::TryGetJsonValue(data, type_u, "type"))
+	json data = {
+		{ "name", name },
+		{ "type", static_cast<int>(type) }
+	};
+
+	std::string json_str;
+	if (!utils::TryDumpJson(data, json_str))
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
-			"invalid JSON: expected \"type\" in \"{}\"", data.dump());
-		return INVALID_CHANNEL_ID;
+		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		return false;
 	}
 
+	Network::Get()->Http().Post(fmt::format("/guilds/{:s}/channels", guild->GetId()), json_str,
+		[this, cb](Http::Response r)
+	{
+		CLog::Get()->Log(LogLevel::DEBUG,
+			"channel create response: status {}; body: {}; add: {}",
+			r.status, r.body, r.additional_data);
+		if (r.status / 100 == 2) // success
+		{
+			auto const channel_id = ChannelManager::Get()->AddChannel(json::parse(r.body));
+			if (channel_id == INVALID_CHANNEL_ID)
+				return;
+
+			PawnDispatcher::Get()->Dispatch([=]()
+			{
+				m_CreatedChannelId = channel_id;
+				cb->Execute();
+				m_CreatedChannelId = INVALID_CHANNEL_ID;
+			});
+		}
+	});
+
+	return true;
+}
+
+ChannelId_t ChannelManager::AddChannel(json &data, GuildId_t guild_id/* = 0*/)
+{
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
 	{
@@ -236,14 +267,6 @@ void ChannelManager::UpdateChannel(json &data)
 		return;
 	}
 
-	Channel_t const &channel = FindChannelById(sfid);
-	if (!channel)
-	{
-		CLog::Get()->Log(LogLevel::ERROR,
-			"can't update channel: channel id \"{}\" not cached", sfid);
-		return;
-	}
-
 	std::string name, topic;
 	int position;
 	bool is_nsfw;
@@ -253,8 +276,16 @@ void ChannelManager::UpdateChannel(json &data)
 		update_position = utils::TryGetJsonValue(data, position, "position"),
 		update_nsfw = utils::TryGetJsonValue(data, is_nsfw, "nsfw");
 
-	PawnDispatcher::Get()->Dispatch([=, &channel]()
+	PawnDispatcher::Get()->Dispatch([=]()
 	{
+		Channel_t const &channel = FindChannelById(sfid);
+		if (!channel)
+		{
+			CLog::Get()->Log(LogLevel::ERROR,
+				"can't update channel: channel id \"{}\" not cached", sfid);
+			return;
+		}
+
 		if (update_name && !name.empty())
 			channel->m_Name = name;
 		if (update_topic && !topic.empty())
@@ -280,16 +311,16 @@ void ChannelManager::DeleteChannel(json &data)
 		return;
 	}
 
-	Channel_t const &channel = FindChannelById(sfid);
-	if (!channel)
+	PawnDispatcher::Get()->Dispatch([this, sfid]()
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
-			"can't delete channel: channel id \"{}\" not cached", sfid);
-		return;
-	}
+		Channel_t const &channel = FindChannelById(sfid);
+		if (!channel)
+		{
+			CLog::Get()->Log(LogLevel::ERROR,
+				"can't delete channel: channel id \"{}\" not cached", sfid);
+			return;
+		}
 
-	PawnDispatcher::Get()->Dispatch([this, &channel]()
-	{
 		// forward DCC_OnChannelDelete(DCC_Channel:channel);
 		pawn_cb::Error error;
 		pawn_cb::Callback::CallFirst(error, "DCC_OnChannelDelete", channel->GetPawnId());

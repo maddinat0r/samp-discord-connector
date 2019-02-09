@@ -1614,3 +1614,55 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildName)
 	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
+
+// native DCC_CreateGuildChannel(DCC_Guild:guild, const name[], DCC_ChannelType:type,
+//     const callback[], const format[], {Float, _}:...);
+AMX_DECLARE_NATIVE(Native::DCC_CreateGuildChannel)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_CreateGuildChannel", params, "dsdss");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	auto name = amx_GetCppString(amx, params[2]);
+	if (name.length() < 2 || name.length() > 100)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR,
+			"name must be between 2 and 100 characters in length");
+		return 0;
+	}
+
+	auto type = static_cast<Channel::Type>(params[3]);
+	if (type != Channel::Type::GUILD_CATEGORY
+		&& type != Channel::Type::GUILD_TEXT
+		&& type != Channel::Type::GUILD_VOICE)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid channel type");
+		return 0;
+	}
+
+	pawn_cb::Error cb_error;
+	auto cb = pawn_cb::Callback::Prepare(amx, "", "", params, 6, cb_error);
+	if (cb_error)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "could not prepare callback");
+		return 0;
+	}
+
+	ChannelManager::Get()->CreateGuildChannel(guild, name, type, std::move(cb));
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_GetCreatedGuildChannel();
+AMX_DECLARE_NATIVE(Native::DCC_GetCreatedGuildChannel)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetCreatedGuildChannel", params);
+	return ChannelManager::Get()->GetCreatedGuildChannelId();
+}
