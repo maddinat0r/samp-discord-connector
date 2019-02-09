@@ -38,8 +38,7 @@ add_samp_plugin(discord-connector
 	CSingleton.hpp
 	Http.cpp
 	Http.hpp
-	PawnCallback.cpp
-	PawnCallback.hpp
+	Callback.hpp
 	PawnDispatcher.cpp
 	PawnDispatcher.hpp
 	Role.cpp

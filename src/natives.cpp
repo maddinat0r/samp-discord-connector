@@ -8,6 +8,7 @@
 #include "misc.hpp"
 #include "types.hpp"
 #include "CLog.hpp"
+#include "Callback.hpp"
 
 #include <fmt/printf.h>
 

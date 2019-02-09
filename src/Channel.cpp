@@ -3,7 +3,6 @@
 #include "Network.hpp"
 #include "PawnDispatcher.hpp"
 #include "CLog.hpp"
-#include "PawnCallback.hpp"
 #include "Guild.hpp"
 #include "utils.hpp"
 
@@ -153,7 +152,8 @@ void ChannelManager::Initialize()
 				return;
 
 			// forward DCC_OnChannelCreate(DCC_Channel:channel);
-			PawnCallbackManager::Get()->Call("DCC_OnChannelCreate", channel_id);
+			pawn_cb::Error error;
+			pawn_cb::Callback::CallFirst(error, "DCC_OnChannelCreate", channel_id);
 		});
 	});
 
@@ -265,7 +265,8 @@ void ChannelManager::UpdateChannel(json &data)
 			channel->m_IsNsfw = is_nsfw;
 
 		// forward DCC_OnChannelUpdate(DCC_Channel:channel);
-		PawnCallbackManager::Get()->Call("DCC_OnChannelUpdate", channel->GetPawnId());
+		pawn_cb::Error error;
+		pawn_cb::Callback::CallFirst(error, "DCC_OnChannelUpdate", channel->GetPawnId());
 	});
 }
 
@@ -290,7 +291,8 @@ void ChannelManager::DeleteChannel(json &data)
 	PawnDispatcher::Get()->Dispatch([this, &channel]()
 	{
 		// forward DCC_OnChannelDelete(DCC_Channel:channel);
-		PawnCallbackManager::Get()->Call("DCC_OnChannelDelete", channel->GetPawnId());
+		pawn_cb::Error error;
+		pawn_cb::Callback::CallFirst(error, "DCC_OnChannelDelete", channel->GetPawnId());
 
 		Guild_t const &guild = GuildManager::Get()->FindGuild(channel->GetGuildId());
 		if (guild)

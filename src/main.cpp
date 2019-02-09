@@ -1,7 +1,6 @@
 #include "sdk.hpp"
 #include "natives.hpp"
 #include "PawnDispatcher.hpp"
-#include "PawnCallback.hpp"
 #include "Network.hpp"
 #include "Guild.hpp"
 #include "User.hpp"
@@ -115,7 +114,6 @@ PLUGIN_EXPORT void PLUGIN_CALL Unload()
 	logprintf("plugin.dc-connector: Unloading plugin...");
 
 	DestroyEverything();
-	PawnCallbackManager::CSingleton::Destroy();
 	CLog::CSingleton::Destroy();
 	
 	samplog::Api::Destroy();
@@ -204,13 +202,13 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX *amx)
 {
 	samplog::Api::Get()->RegisterAmx(amx);
-	PawnCallbackManager::Get()->AddAmx(amx);
+	pawn_cb::AddAmx(amx);
 	return amx_Register(amx, native_list, -1);
 }
 
 PLUGIN_EXPORT int PLUGIN_CALL AmxUnload(AMX *amx)
 {
 	samplog::Api::Get()->EraseAmx(amx);
-	PawnCallbackManager::Get()->RemoveAmx(amx);
+	pawn_cb::RemoveAmx(amx);
 	return AMX_ERR_NONE;
 }

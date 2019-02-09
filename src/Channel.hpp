@@ -2,6 +2,7 @@
 
 #include "CSingleton.hpp"
 #include "types.hpp"
+#include "Callback.hpp"
 
 #include <string>
 #include <atomic>

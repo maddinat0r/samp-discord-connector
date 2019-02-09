@@ -1,7 +1,7 @@
 #include "User.hpp"
 #include "Network.hpp"
 #include "PawnDispatcher.hpp"
-#include "PawnCallback.hpp"
+#include "Callback.hpp"
 #include "CLog.hpp"
 #include "utils.hpp"
 
@@ -75,7 +75,8 @@ void UserManager::Initialize()
 			user->Update(data);
 
 			// forward DCC_OnUserUpdate(DCC_User:user);
-			PawnCallbackManager::Get()->Call("DCC_OnUserUpdate", user->GetPawnId());
+			pawn_cb::Error error;
+			pawn_cb::Callback::CallFirst(error, "DCC_OnUserUpdate", user->GetPawnId());
 		});
 	});
 }

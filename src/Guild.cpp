@@ -4,7 +4,6 @@
 #include "User.hpp"
 #include "Role.hpp"
 #include "PawnDispatcher.hpp"
-#include "PawnCallback.hpp"
 #include "CLog.hpp"
 #include "utils.hpp"
 
@@ -252,7 +251,8 @@ void GuildManager::Initialize()
 					return;
 
 				// forward DCC_OnGuildCreate(DCC_Guild:guild);
-				PawnCallbackManager::Get()->Call("DCC_OnGuildCreate", guild_id);
+				pawn_cb::Error error;
+				pawn_cb::Callback::CallFirst(error, "DCC_OnGuildCreate", guild_id);
 			});
 		}
 	});
@@ -278,7 +278,8 @@ void GuildManager::Initialize()
 			}
 
 			// forward DCC_OnGuildDelete(DCC_Guild:guild);
-			PawnCallbackManager::Get()->Call("DCC_OnGuildDelete", guild->GetPawnId());
+			pawn_cb::Error error;
+			pawn_cb::Callback::CallFirst(error, "DCC_OnGuildDelete", guild->GetPawnId());
 
 			GuildManager::Get()->DeleteGuild(guild);
 		});
@@ -307,7 +308,8 @@ void GuildManager::Initialize()
 			guild->Update(data);
 
 			// forward DCC_OnGuildUpdate(DCC_Guild:guild);
-			PawnCallbackManager::Get()->Call("DCC_OnGuildUpdate", guild->GetPawnId());
+			pawn_cb::Error error;
+			pawn_cb::Callback::CallFirst(error, "DCC_OnGuildUpdate", guild->GetPawnId());
 		});
 	});
 
@@ -344,7 +346,8 @@ void GuildManager::Initialize()
 			guild->AddMember(std::move(member));
 
 			// forward DCC_OnGuildMemberAdd(DCC_Guild:guild, DCC_User:user);
-			PawnCallbackManager::Get()->Call("DCC_OnGuildMemberAdd", guild->GetPawnId(), userid);
+			pawn_cb::Error error;
+			pawn_cb::Callback::CallFirst(error, "DCC_OnGuildMemberAdd", guild->GetPawnId(), userid);
 		});
 	});
 
@@ -380,7 +383,8 @@ void GuildManager::Initialize()
 			}
 
 			// forward DCC_OnGuildMemberRemove(DCC_Guild:guild, DCC_User:user);
-			PawnCallbackManager::Get()->Call("DCC_OnGuildMemberRemove", guild->GetPawnId(), user->GetPawnId());
+			pawn_cb::Error error;
+			pawn_cb::Callback::CallFirst(error, "DCC_OnGuildMemberRemove", guild->GetPawnId(), user->GetPawnId());
 
 			guild->RemoveMember(user->GetPawnId());
 		});
@@ -420,7 +424,8 @@ void GuildManager::Initialize()
 			guild->UpdateMember(user->GetPawnId(), data);
 
 			// forward DCC_OnGuildMemberUpdate(DCC_Guild:guild, DCC_User:user);
-			PawnCallbackManager::Get()->Call("DCC_OnGuildMemberUpdate", guild->GetPawnId(), user->GetPawnId());
+			pawn_cb::Error error;
+			pawn_cb::Callback::CallFirst(error, "DCC_OnGuildMemberUpdate", guild->GetPawnId(), user->GetPawnId());
 		});
 	});
 
@@ -450,7 +455,8 @@ void GuildManager::Initialize()
 			guild->AddRole(role);
 
 			// forward DCC_OnGuildRoleCreate(DCC_Guild:guild, DCC_Role:role);
-			PawnCallbackManager::Get()->Call("DCC_OnGuildRoleCreate", guild->GetPawnId(), role);
+			pawn_cb::Error error;
+			pawn_cb::Callback::CallFirst(error, "DCC_OnGuildRoleCreate", guild->GetPawnId(), role);
 		});
 	});
 
@@ -486,7 +492,8 @@ void GuildManager::Initialize()
 			}
 
 			// forward DCC_OnGuildRoleDelete(DCC_Guild:guild, DCC_Role:role);
-			PawnCallbackManager::Get()->Call("DCC_OnGuildRoleDelete", guild->GetPawnId(), role->GetPawnId());
+			pawn_cb::Error error;
+			pawn_cb::Callback::CallFirst(error, "DCC_OnGuildRoleDelete", guild->GetPawnId(), role->GetPawnId());
 
 			guild->RemoveRole(role->GetPawnId());
 			RoleManager::Get()->RemoveRole(role);
@@ -527,7 +534,8 @@ void GuildManager::Initialize()
 			role->Update(data["role"]);
 
 			// forward DCC_OnGuildRoleUpdate(DCC_Guild:guild, DCC_Role:role);
-			PawnCallbackManager::Get()->Call("DCC_OnGuildRoleUpdate", guild->GetPawnId(), role->GetPawnId());
+			pawn_cb::Error error;
+			pawn_cb::Callback::CallFirst(error, "DCC_OnGuildRoleUpdate", guild->GetPawnId(), role->GetPawnId());
 		});
 	});
 
@@ -578,7 +586,8 @@ void GuildManager::Initialize()
 			guild->UpdateMemberPresence(user->GetPawnId(), status);
 
 			// forward DCC_OnGuildMemberUpdate(DCC_Guild:guild, DCC_User:user);
-			PawnCallbackManager::Get()->Call("DCC_OnGuildMemberUpdate", guild->GetPawnId(), user->GetPawnId());
+			pawn_cb::Error error;
+			pawn_cb::Callback::CallFirst(error, "DCC_OnGuildMemberUpdate", guild->GetPawnId(), user->GetPawnId());
 		});
 	});
 

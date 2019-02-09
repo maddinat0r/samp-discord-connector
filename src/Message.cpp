@@ -3,8 +3,8 @@
 #include "Channel.hpp"
 #include "Role.hpp"
 #include "Network.hpp"
-#include "PawnCallback.hpp"
 #include "PawnDispatcher.hpp"
+#include "Callback.hpp"
 #include "CLog.hpp"
 #include "utils.hpp"
 
@@ -82,7 +82,8 @@ void MessageManager::Initialize()
 			if (msg != INVALID_MESSAGE_ID)
 			{
 				// forward DCC_OnMessageCreate(DCC_Message:message);
-				PawnCallbackManager::Get()->Call("DCC_OnMessageCreate", msg);
+				pawn_cb::Error error;
+				pawn_cb::Callback::CallFirst(error, "DCC_OnMessageCreate", msg);
 
 				MessageManager::Get()->Delete(msg);
 			}
@@ -101,7 +102,8 @@ void MessageManager::Initialize()
 			if (msg)
 			{
 				// forward DCC_OnMessageDelete(DCC_Message:message);
-				PawnCallbackManager::Get()->Call("DCC_OnMessageDelete", msg->GetPawnId());
+				pawn_cb::Error error;
+				pawn_cb::Callback::CallFirst(error, "DCC_OnMessageDelete", msg->GetPawnId());
 
 				MessageManager::Get()->Delete(msg->GetPawnId());
 			}
