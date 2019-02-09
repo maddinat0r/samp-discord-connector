@@ -209,7 +209,7 @@ ChannelId_t ChannelManager::AddChannel(json &data, GuildId_t guild_id/* = 0*/)
 
 	Channel_t const &channel = FindChannelById(sfid);
 	if (channel)
-		return INVALID_CHANNEL_ID; // channel already exists
+		return channel->GetPawnId(); // channel already exists
 
 	ChannelId_t id = 1;
 	while (m_Channels.find(id) != m_Channels.end())
@@ -222,7 +222,7 @@ ChannelId_t ChannelManager::AddChannel(json &data, GuildId_t guild_id/* = 0*/)
 		return INVALID_CHANNEL_ID;
 	}
 
-	CLog::Get()->Log(LogLevel::INFO, "successfully created channel with id '{}'", id);
+	CLog::Get()->Log(LogLevel::INFO, "successfully added channel with id '{}'", id);
 	return id;
 }
 
