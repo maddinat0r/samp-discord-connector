@@ -217,6 +217,131 @@ void Guild::SetGuildName(std::string const &name)
 	Network::Get()->Http().Patch(fmt::format("/guilds/{:s}", GetId()), json_str);
 }
 
+void Guild::SetMemberNickname(User_t const &user, std::string const &nickname)
+{
+	json data = {
+		{ "nick", nickname }
+	};
+	
+	std::string json_str;
+	if (!utils::TryDumpJson(data, json_str))
+		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+
+	if (m_MembersSet.count(user->GetPawnId()) == 0)
+		return;
+
+	Network::Get()->Http().Patch(fmt::format(
+		"/guilds/{:s}/members/{:s}", GetId(), user->GetId()), json_str);
+}
+
+void Guild::AddMemberRole(User_t const &user, Role_t const &role)
+{
+	if (m_MembersSet.count(user->GetPawnId()) == 0)
+		return;
+
+	Network::Get()->Http().Put(fmt::format(
+		"/guilds/{:s}/members/{:s}/roles/{:s}", GetId(), user->GetId(), role->GetId()));
+}
+
+void Guild::RemoveMemberRole(User_t const &user, Role_t const &role)
+{
+	if (m_MembersSet.count(user->GetPawnId()) == 0)
+		return;
+
+	Network::Get()->Http().Delete(fmt::format(
+		"/guilds/{:s}/members/{:s}/roles/{:s}", GetId(), user->GetId(), role->GetId()));
+}
+
+void Guild::RemoveMember(User_t const &user)
+{
+	if (m_MembersSet.count(user->GetPawnId()) == 0)
+		return;
+
+	Network::Get()->Http().Delete(fmt::format(
+		"/guilds/{:s}/members/{:s}", GetId(), user->GetId()));
+}
+
+void Guild::CreateMemberBan(User_t const &user, std::string const &reason)
+{
+	if (m_MembersSet.count(user->GetPawnId()) == 0)
+		return;
+
+	Network::Get()->Http().Put(fmt::format(
+		"/guilds/{:s}/bans/{:s}?reason={:s}", GetId(), user->GetId(), reason));
+}
+
+void Guild::RemoveMemberBan(User_t const &user)
+{
+	if (m_MembersSet.count(user->GetPawnId()) == 0)
+		return;
+
+	Network::Get()->Http().Delete(fmt::format(
+		"/guilds/{:s}/bans/{:s}", GetId(), user->GetId()));
+}
+
+void Guild::SetRolePosition(Role_t const &role, int position)
+{
+	json data = {
+		{
+			{ "id", role->GetId() },
+			{ "position", position }
+		}
+	};
+
+	std::string json_str;
+	if (!utils::TryDumpJson(data, json_str))
+		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+
+	Network::Get()->Http().Patch(fmt::format(
+		"/guilds/{guild.id}/roles", GetId()), json_str);
+}
+
+template<typename T>
+void GuildModifyRole(Guild *guild, Role_t const &role, const char *name, T value)
+{
+	json data = {
+		{ name, value },
+	};
+
+	std::string json_str;
+	if (!utils::TryDumpJson(data, json_str))
+		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+
+	Network::Get()->Http().Patch(fmt::format(
+		"/guilds/{guild.id}/roles/{:s}", guild->GetId(), role->GetId()), json_str);
+}
+
+void Guild::SetRoleName(Role_t const &role, std::string const &name)
+{
+	GuildModifyRole(this, role, "name", name);
+}
+
+void Guild::SetRolePermissions(Role_t const &role, unsigned long long permissions)
+{
+	GuildModifyRole(this, role, "permissions", permissions);
+}
+
+void Guild::SetRoleColor(Role_t const &role, unsigned int color)
+{
+	GuildModifyRole(this, role, "color", color);
+}
+
+void Guild::SetRoleHoist(Role_t const &role, bool hoist)
+{
+	GuildModifyRole(this, role, "hoist", hoist);
+}
+
+void Guild::SetRoleMentionable(Role_t const &role, bool mentionable)
+{
+	GuildModifyRole(this, role, "mentionable", mentionable);
+}
+
+void Guild::DeleteRole(Role_t const &role)
+{
+	Network::Get()->Http().Delete(fmt::format(
+		"/guilds/{:s}/roles/{:s}", GetId(), role->GetId()));
+}
+
 
 void GuildManager::Initialize()
 {

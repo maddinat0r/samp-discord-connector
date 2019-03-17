@@ -145,6 +145,21 @@ public:
 	void Update(json &data);
 
 	void SetGuildName(std::string const &name);
+
+	void SetMemberNickname(User_t const &user, std::string const &nickname);
+	void AddMemberRole(User_t const &user, Role_t const &role);
+	void RemoveMemberRole(User_t const &user, Role_t const &role);
+	void RemoveMember(User_t const &user);
+	void CreateMemberBan(User_t const &user, std::string const &reason);
+	void RemoveMemberBan(User_t const &user);
+
+	void SetRolePosition(Role_t const &role, int position);
+	void SetRoleName(Role_t const &role, std::string const &name);
+	void SetRolePermissions(Role_t const &role, unsigned long long permissions);
+	void SetRoleColor(Role_t const &role, unsigned int color);
+	void SetRoleHoist(Role_t const &role, bool hoist);
+	void SetRoleMentionable(Role_t const &role, bool mentionable);
+	void DeleteRole(Role_t const &role);
 };
 
 
