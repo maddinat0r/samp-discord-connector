@@ -92,5 +92,6 @@ public: // functions
 	void Post(std::string const &url, std::string const &content,
 		ResponseCb_t &&callback = nullptr);
 	void Delete(std::string const &url);
+	void Put(std::string const &url);
 	void Patch(std::string const &url, std::string const &content);
 };
