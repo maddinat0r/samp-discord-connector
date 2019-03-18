@@ -124,7 +124,7 @@ native DCC_GetAllGuilds(DCC_Guild:dest[], max_size = sizeof dest);
 
 native DCC_SetGuildName(DCC_Guild:guild, const name[]);
 native DCC_CreateGuildChannel(DCC_Guild:guild, const name[], DCC_ChannelType:type, const callback[], const format[], {Float, _}:...);
-native DCC_GetCreatedGuildChannel();
+native DCC_Channel:DCC_GetCreatedGuildChannel();
 
 
 

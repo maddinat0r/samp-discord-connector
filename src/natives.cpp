@@ -1660,7 +1660,7 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateGuildChannel)
 	return 1;
 }
 
-// native DCC_GetCreatedGuildChannel();
+// native DCC_Channel:DCC_GetCreatedGuildChannel();
 AMX_DECLARE_NATIVE(Native::DCC_GetCreatedGuildChannel)
 {
 	CScopedDebugInfo dbg_info(amx, "DCC_GetCreatedGuildChannel", params);
