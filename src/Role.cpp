@@ -47,10 +47,7 @@ RoleId_t RoleManager::AddRole(json &data)
 	Role_t const &role = FindRoleById(sfid);
 	if (role)
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
-			"can't add role: role id \"{}\" already exists (PAWN id '{}')",
-			sfid, role->GetPawnId());
-		return INVALID_ROLE_ID;
+		return role->GetPawnId();
 	}
 
 	RoleId_t id = 1;
