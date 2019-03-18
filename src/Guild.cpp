@@ -252,7 +252,7 @@ void Guild::RemoveMemberRole(User_t const &user, Role_t const &role)
 		"/guilds/{:s}/members/{:s}/roles/{:s}", GetId(), user->GetId(), role->GetId()));
 }
 
-void Guild::RemoveMember(User_t const &user)
+void Guild::KickMember(User_t const &user)
 {
 	if (m_MembersSet.count(user->GetPawnId()) == 0)
 		return;

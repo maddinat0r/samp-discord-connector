@@ -150,7 +150,7 @@ public:
 	void SetMemberNickname(User_t const &user, std::string const &nickname);
 	void AddMemberRole(User_t const &user, Role_t const &role);
 	void RemoveMemberRole(User_t const &user, Role_t const &role);
-	void RemoveMember(User_t const &user);
+	void KickMember(User_t const &user);
 	void CreateMemberBan(User_t const &user, std::string const &reason);
 	void RemoveMemberBan(User_t const &user);
 
