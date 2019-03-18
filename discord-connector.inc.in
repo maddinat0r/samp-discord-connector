@@ -125,6 +125,21 @@ native DCC_GetAllGuilds(DCC_Guild:dest[], max_size = sizeof dest);
 native DCC_SetGuildName(DCC_Guild:guild, const name[]);
 native DCC_CreateGuildChannel(DCC_Guild:guild, const name[], DCC_ChannelType:type, const callback[], const format[], {Float, _}:...);
 native DCC_Channel:DCC_GetCreatedGuildChannel();
+native DCC_SetGuildMemberNickname(DCC_Guild:guild, DCC_User:user, const nickname[]);
+native DCC_AddGuildMemberRole(DCC_Guild:guild, DCC_User:user, DCC_Role:role);
+native DCC_RemoveGuildMemberRole(DCC_Guild:guild, DCC_User:user, DCC_Role:role);
+native DCC_RemoveGuildMember(DCC_Guild:guild, DCC_User:user); // kicks the user from the server
+native DCC_CreateGuildMemberBan(DCC_Guild:guild, DCC_User:user, const reason[] = "");
+native DCC_RemoveGuildMemberBan(DCC_Guild:guild, DCC_User:user);
+native DCC_SetGuildRolePosition(DCC_Guild:guild, DCC_Role:role, position);
+native DCC_SetGuildRoleName(DCC_Guild:guild, DCC_Role:role, const name[]);
+native DCC_SetGuildRolePermissions(DCC_Guild:guild, DCC_Role:role, perm_high, perm_low);
+native DCC_SetGuildRoleColor(DCC_Guild:guild, DCC_Role:role, color);
+native DCC_SetGuildRoleHoist(DCC_Guild:guild, DCC_Role:role, bool:hoist);
+native DCC_SetGuildRoleMentionable(DCC_Guild:guild, DCC_Role:role, bool:mentionable);
+native DCC_CreateGuildRole(DCC_Guild:guild, const name[], const callback[], const format[], {Float, _}:...);
+native DCC_Role:DCC_GetCreatedGuildRole();
+native DCC_DeleteGuildRole(DCC_Guild:guild, DCC_Role:role);
 
 
 

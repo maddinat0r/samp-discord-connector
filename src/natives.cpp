@@ -1666,3 +1666,418 @@ AMX_DECLARE_NATIVE(Native::DCC_GetCreatedGuildChannel)
 	CScopedDebugInfo dbg_info(amx, "DCC_GetCreatedGuildChannel", params);
 	return ChannelManager::Get()->GetCreatedGuildChannelId();
 }
+
+// native DCC_SetGuildMemberNickname(DCC_Guild:guild, DCC_User:user, const nickname[]);
+AMX_DECLARE_NATIVE(Native::DCC_SetGuildMemberNickname)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_SetGuildMemberNickname", params, "dds");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	UserId_t userid = params[2];
+	User_t const &user = UserManager::Get()->FindUser(userid);
+	if (!user)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		return 0;
+	}
+
+	guild->SetMemberNickname(user, amx_GetCppString(amx, params[3]));
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_AddGuildMemberRole(DCC_Guild:guild, DCC_User:user, DCC_Role:role);
+AMX_DECLARE_NATIVE(Native::DCC_AddGuildMemberRole)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_AddGuildMemberRole", params, "ddd");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	UserId_t userid = params[2];
+	User_t const &user = UserManager::Get()->FindUser(userid);
+	if (!user)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		return 0;
+	}
+
+	RoleId_t roleid = params[3];
+	Role_t const &role = RoleManager::Get()->FindRole(roleid);
+	if (!role)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		return 0;
+	}
+
+	guild->AddMemberRole(user, role);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_RemoveGuildMemberRole(DCC_Guild:guild, DCC_User:user, DCC_Role:role);
+AMX_DECLARE_NATIVE(Native::DCC_RemoveGuildMemberRole)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_RemoveGuildMemberRole", params, "ddd");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	UserId_t userid = params[2];
+	User_t const &user = UserManager::Get()->FindUser(userid);
+	if (!user)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		return 0;
+	}
+
+	RoleId_t roleid = params[3];
+	Role_t const &role = RoleManager::Get()->FindRole(roleid);
+	if (!role)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		return 0;
+	}
+
+	guild->RemoveMemberRole(user, role);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_RemoveGuildMember(DCC_Guild:guild, DCC_User:user);
+AMX_DECLARE_NATIVE(Native::DCC_RemoveGuildMember)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_RemoveGuildMember", params, "dd");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	UserId_t userid = params[2];
+	User_t const &user = UserManager::Get()->FindUser(userid);
+	if (!user)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		return 0;
+	}
+
+	guild->KickMember(user);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_CreateGuildMemberBan(DCC_Guild:guild, DCC_User:user, const reason[] = "");
+AMX_DECLARE_NATIVE(Native::DCC_CreateGuildMemberBan)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_CreateGuildMemberBan", params, "dds");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	UserId_t userid = params[2];
+	User_t const &user = UserManager::Get()->FindUser(userid);
+	if (!user)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		return 0;
+	}
+
+	guild->CreateMemberBan(user, amx_GetCppString(amx, params[3]));
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_RemoveGuildMemberBan(DCC_Guild:guild, DCC_User:user);
+AMX_DECLARE_NATIVE(Native::DCC_RemoveGuildMemberBan)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_RemoveGuildMemberBan", params, "dd");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	UserId_t userid = params[2];
+	User_t const &user = UserManager::Get()->FindUser(userid);
+	if (!user)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		return 0;
+	}
+
+	guild->RemoveMemberBan(user);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetGuildRolePosition(DCC_Guild:guild, DCC_Role:role, position);
+AMX_DECLARE_NATIVE(Native::DCC_SetGuildRolePosition)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_SetGuildRolePosition", params, "ddd");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	RoleId_t roleid = params[2];
+	Role_t const &role = RoleManager::Get()->FindRole(roleid);
+	if (!role)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		return 0;
+	}
+
+	guild->SetRolePosition(role, static_cast<int>(params[3]));
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetGuildRoleName(DCC_Guild:guild, DCC_Role:role, const name[]);
+AMX_DECLARE_NATIVE(Native::DCC_SetGuildRoleName)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_SetGuildRoleName", params, "dds");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	RoleId_t roleid = params[2];
+	Role_t const &role = RoleManager::Get()->FindRole(roleid);
+	if (!role)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		return 0;
+	}
+
+	guild->SetRoleName(role, amx_GetCppString(amx, params[3]));
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetGuildRolePermissions(DCC_Guild:guild, DCC_Role:role, perm_high, perm_low);
+AMX_DECLARE_NATIVE(Native::DCC_SetGuildRolePermissions)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_SetGuildRolePermissions", params, "dddd");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	RoleId_t roleid = params[2];
+	Role_t const &role = RoleManager::Get()->FindRole(roleid);
+	if (!role)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		return 0;
+	}
+
+	unsigned long long
+		perm_high = static_cast<unsigned int>(params[3]) << 32,
+		perm_low = static_cast<unsigned int>(params[4]),
+		permissions = perm_high & perm_low;
+
+	guild->SetRolePermissions(role, permissions);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetGuildRoleColor(DCC_Guild:guild, DCC_Role:role, color);
+AMX_DECLARE_NATIVE(Native::DCC_SetGuildRoleColor)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_SetGuildRoleColor", params, "ddd");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	RoleId_t roleid = params[2];
+	Role_t const &role = RoleManager::Get()->FindRole(roleid);
+	if (!role)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		return 0;
+	}
+
+	guild->SetRoleColor(role, static_cast<unsigned int>(params[3]));
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetGuildRoleHoist(DCC_Guild:guild, DCC_Role:role, bool:hoist);
+AMX_DECLARE_NATIVE(Native::DCC_SetGuildRoleHoist)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_SetGuildRoleColor", params, "ddd");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	RoleId_t roleid = params[2];
+	Role_t const &role = RoleManager::Get()->FindRole(roleid);
+	if (!role)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		return 0;
+	}
+
+	guild->SetRoleHoist(role, params[3] != 0);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetGuildRoleMentionable(DCC_Guild:guild, DCC_Role:role, bool:mentionable);
+AMX_DECLARE_NATIVE(Native::DCC_SetGuildRoleMentionable)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_SetGuildRoleColor", params, "ddd");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	RoleId_t roleid = params[2];
+	Role_t const &role = RoleManager::Get()->FindRole(roleid);
+	if (!role)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		return 0;
+	}
+
+	guild->SetRoleMentionable(role, params[3] != 0);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_CreateGuildRole(DCC_Guild:guild, const name[],
+//     const callback[], const format[], {Float, _}:...);
+AMX_DECLARE_NATIVE(Native::DCC_CreateGuildRole)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_CreateGuildRole", params, "dsss");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	auto name = amx_GetCppString(amx, params[2]);
+	if (name.length() < 2 || name.length() > 100)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR,
+			"name must be between 2 and 100 characters in length");
+		return 0;
+	}
+
+	pawn_cb::Error cb_error;
+	auto cb = pawn_cb::Callback::Prepare(amx, "", "", params, 5, cb_error);
+	if (cb_error)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "could not prepare callback");
+		return 0;
+	}
+
+	GuildManager::Get()->CreateGuildRole(guild, name, std::move(cb));
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_Role:DCC_GetCreatedGuildRole();
+AMX_DECLARE_NATIVE(Native::DCC_GetCreatedGuildRole)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_GetCreatedGuildRole", params);
+	return GuildManager::Get()->GetCreatedRoleChannelId();
+}
+
+// native DCC_DeleteGuildRole(DCC_Guild:guild, DCC_Role:role);
+AMX_DECLARE_NATIVE(Native::DCC_DeleteGuildRole)
+{
+	CScopedDebugInfo dbg_info(amx, "DCC_DeleteGuildRole", params, "dd");
+
+	GuildId_t guildid = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	RoleId_t roleid = params[2];
+	Role_t const &role = RoleManager::Get()->FindRole(roleid);
+	if (!role)
+	{
+		CLog::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		return 0;
+	}
+
+	guild->DeleteRole(role);
+
+	CLog::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
