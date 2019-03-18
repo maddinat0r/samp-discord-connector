@@ -2,6 +2,7 @@
 
 #include "CSingleton.hpp"
 #include "types.hpp"
+#include "Callback.hpp"
 
 #include <string>
 #include <atomic>
@@ -177,6 +178,7 @@ private:
 	std::atomic<bool> m_IsInitialized{ false };
 
 	std::map<GuildId_t, Guild_t> m_Guilds; //PAWN guild-id to actual guild map
+	RoleId_t m_CreatedRoleId = INVALID_ROLE_ID;
 
 private:
 	GuildId_t AddGuild(json &data);
@@ -186,6 +188,12 @@ public:
 	void Initialize();
 	bool IsInitialized();
 
+	bool CreateGuildRole(Guild_t const &guild,
+		std::string const &name, pawn_cb::Callback_t &&callback);
+	RoleId_t GetCreatedRoleChannelId() const
+	{
+		return m_CreatedRoleId;
+	}
 	std::vector<GuildId_t> GetAllGuildIds() const;
 
 	Guild_t const &FindGuild(GuildId_t id);

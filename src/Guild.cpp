@@ -775,6 +775,51 @@ bool GuildManager::IsInitialized()
 	return m_IsInitialized;
 }
 
+bool GuildManager::CreateGuildRole(Guild_t const &guild,
+	std::string const &name, pawn_cb::Callback_t &&cb)
+{
+	json data = {
+		{ "name", name }
+	};
+
+	std::string json_str;
+	if (!utils::TryDumpJson(data, json_str))
+	{
+		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		return false;
+	}
+
+	auto guild_id = guild->GetPawnId();
+	Network::Get()->Http().Post(fmt::format("/guilds/{:s}/roles", guild->GetId()), json_str,
+		[this, cb, guild_id](Http::Response r)
+	{
+		CLog::Get()->Log(LogLevel::DEBUG,
+			"role create response: status {}; body: {}; add: {}",
+			r.status, r.body, r.additional_data);
+		if (r.status / 100 == 2) // success
+		{
+			auto const &guild = GuildManager::Get()->FindGuild(guild_id);
+			if (!guild)
+			{
+				CLog::Get()->Log(LogLevel::ERROR, "lost cached guild between network calls");
+				return;
+			}
+
+			auto const role = RoleManager::Get()->AddRole(json::parse(r.body));
+			guild->AddRole(role);
+
+			PawnDispatcher::Get()->Dispatch([=]()
+			{
+				m_CreatedRoleId = role;
+				cb->Execute();
+				m_CreatedRoleId = INVALID_ROLE_ID;
+			});
+		}
+	});
+
+	return true;
+}
+
 GuildId_t GuildManager::AddGuild(json &data)
 {
 	Snowflake_t sfid;
