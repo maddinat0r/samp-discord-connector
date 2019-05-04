@@ -5,7 +5,7 @@ include(AddSAMPPlugin)
 set(SAMP_SDK_ROOT "${PROJECT_SOURCE_DIR}/libs/sdk")
 find_package(SAMPSDK REQUIRED)
 
-set(DCC_PLUGIN_CONFIG_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/config_headers")
+set(DCC_CONFIG_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/config_headers")
 
 configure_file(
 	"../discord-connector.inc.in"
@@ -15,7 +15,7 @@ configure_file(
 
 configure_file(
 	"version.hpp.in"
-	"${DCC_PLUGIN_CONFIG_INCLUDE_DIR}/version.hpp"
+	"${DCC_CONFIG_INCLUDE_DIR}/version.hpp"
 	@ONLY
 )
 
@@ -59,55 +59,33 @@ add_samp_plugin(discord-connector
 	plugin.def
 )
 
-target_compile_features(discord-connector PUBLIC 
-	cxx_auto_type 
-	cxx_decltype 
-	cxx_default_function_template_args
-	cxx_defaulted_functions 
-	cxx_delegating_constructors
-	cxx_deleted_functions
-	cxx_enum_forward_declarations
-	cxx_explicit_conversions
-	cxx_extended_friend_declarations
-	cxx_inheriting_constructors
-	cxx_lambdas
-	cxx_noexcept
-	cxx_nonstatic_member_init
-	cxx_nullptr
-	cxx_range_for
-	cxx_reference_qualified_functions
-	cxx_right_angle_brackets
-	cxx_rvalue_references
-	cxx_strong_enums
-	cxx_variadic_templates
-)
+set_property(TARGET discord-connector PROPERTY CXX_STANDARD 11)
+set_property(TARGET discord-connector PROPERTY CXX_STANDARD_REQUIRED ON)
 
-set_property(TARGET discord-connector PROPERTY INCLUDE_DIRECTORIES
+target_include_directories(discord-connector PRIVATE
 	${OPENSSL_INCLUDE_DIR}
 	${Boost_INCLUDE_DIR}
 	${SAMPSDK_INCLUDE_DIR}
-	${DCC_PLUGIN_CONFIG_INCLUDE_DIR}
+	${DCC_CONFIG_INCLUDE_DIR}
 	${LOGCORE_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/libs/json
 	${PROJECT_SOURCE_DIR}/libs/date/include
 )
 
-add_dependencies(discord-connector log-core fmt)
-
 if(MSVC)
-	add_definitions(
-		-DBOOST_ALL_NO_LIB #disable auto-linking
-		-D_CRT_SECURE_NO_WARNINGS 
-		-DNOMINMAX 
-		-D_ENABLE_ATOMIC_ALIGNMENT_FIX 
-		-D_WIN32_WINNT=0x0600
-		-D_SCL_SECURE_NO_WARNINGS)
+	target_compile_definitions(discord-connector PRIVATE
+		BOOST_ALL_NO_LIB # disable auto-linking
+		_CRT_SECURE_NO_WARNINGS
+		NOMINMAX
+		_WIN32_WINNT=0x0600
+		_SCL_SECURE_NO_WARNINGS
+	)
 	target_link_libraries(discord-connector Crypt32.lib)
 endif()
 
-add_definitions(-DONLY_C_LOCALE) # make the date library use the C locale only
+target_compile_definitions(discord-connector PRIVATE ONLY_C_LOCALE) # make the date library use the C locale only
 
-target_link_libraries(discord-connector log-core fmt OpenSSL::SSL Boost::system)
+target_link_libraries(discord-connector log-core fmt OpenSSL::SSL)
 
 if(UNIX)
 	if(NOT APPLE)
@@ -124,9 +102,15 @@ get_target_property(LOGCORE_LOCATION log-core LOCATION)
 install(FILES "${LOGCORE_LOCATION}" DESTINATION "./")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/discord-connector.inc" DESTINATION "pawno/include/")
 install(FILES "${PROJECT_SOURCE_DIR}/LICENSE" DESTINATION "./")
+if (WIN32 AND NOT OPENSSL_USE_STATIC_LIBS)
+	file (GLOB _openssl_dlls  "${OPENSSL_ROOT_DIR}/bin/lib*.dll")
+	foreach (_dll_file ${_openssl_dlls})
+		install (FILES "${_dll_file}" DESTINATION "./")
+	endforeach()
+endif()
 
 
-set(CPACK_PACKAGE_VERSION ${DCC_PLUGIN_VERSION})
+set(CPACK_PACKAGE_VERSION ${DCC_VERSION})
 if(WIN32)
 	set(CPACK_GENERATOR ZIP)
 else()
