@@ -1,29 +1,61 @@
-version: '{build}'
-image: Visual Studio 2017
+version: '{branch}-{build}'
 
-configuration:
-    # OpenSSL static libs are not compiled with msvc14
-    # links to dynamic OpenSSL libs
-    - Debug
-    - Release
-
-platform: x86
-
-clone_depth: 1
+image:
+  - Ubuntu1604
+  - Visual Studio 2017
 
 environment:
-    BOOST_ROOT: C:/Libraries/boost_1_66_0
-    BOOST_LIBRARYDIR: C:/Libraries/boost_1_66_0/lib32-msvc-14.1
+  global:
+    CMAKE_BUILD_PARALLEL_LEVEL: 2
+  matrix:
+    - BUILD_TYPE: Debug
+    - BUILD_TYPE: Release
 
 install:
-    - git submodule update --init --recursive
+  # set version environment variable
+  - ps: $env:GIT_REPO_VERSION = "$(git describe --tags --always)"
+  # appveyor workaround: initialize all submodules
+  - git submodule update --init --recursive
+  # Linux: install multilib compilers
+  - sh: sudo dpkg --add-architecture i386 # needed for i386 openssl libs
+  - sh: sudo apt-get -qq update
+  - sh: sudo apt-get -qq -y install g++-multilib gcc-multilib
+  - sh: "echo g++ version: $(g++ --version | cut -d$'\n' -f1)"
 
 before_build:
-    - cmake . -G "Visual Studio 15 2017" -DOPENSSL_USE_STATIC_LIBS=OFF -DBOOST_ROOT="%BOOST_ROOT%" -DBOOST_LIBRARYDIR="%BOOST_LIBRARYDIR%"
+  # set up boost
+  # Windows: boost already exists in a predefined path
+  - cmd: set BOOST_ROOT="C:\Libraries\boost_1_69_0"
+  # Linux: download and set root path
+  - sh: wget -q https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz -O boost.tar.gz
+  - sh: mkdir -p boost && tar xfz boost.tar.gz -C boost --strip-components=1
+  - sh: export BOOST_ROOT="boost"
+
+  # set up OpenSSL
+  # Windows: OpenSSL already exsits at predefined path
+  - cmd: set OPENSSL_ROOT="C:\OpenSSL-v111-Win32\bin"
+  # Linux: install OpenSSL through apt
+  - sh: sudo apt-get -y install libssl-dev:i386
+  - sh: export OPENSSL_ROOT="/usr"
+  
+  # set up log-core
+  # Windows
+  - cmd: appveyor DownloadFile "https://github.com/maddinat0r/samp-log-core/releases/download/v0.5/samp-log-core-v0.5-win32.zip" -FileName samp-log-core.zip
+  - cmd: 7z x samp-log-core.zip -y
+  - cmd: move samp-log-core-* "C:\samp-log-core"
+  - cmd: set LOGCORE_DIR="C:\samp-log-core\cmake"
+  # Linux
+  - sh: wget -q "https://github.com/maddinat0r/samp-log-core/releases/download/v0.5/samp-log-core-v0.5-Linux.tar.gz" -O samp-log-core.tar.gz
+  - sh: mkdir -p samp-log-core && tar zfx samp-log-core.tar.gz -C samp-log-core --strip-components=1
+  - sh: export LOGCORE_DIR="samp-log-core/cmake"
+
 build_script:
-    - cmake --build . --config %CONFIGURATION%
-    - cmake --build . --config %CONFIGURATION% --target package
+  # Linux: configure OpenSSL paths and ignore exit code to not fail build
+  - sh: cmake -DOPENSSL_SSL_LIBRARY="/usr/lib/i386-linux-gnu/libssl.so" -DOPENSSL_CRYPTO_LIBRARY="/usr/lib/i386-linux-gnu/libcrypto.so" -S . -B build || true
+
+  - ps: cmake -DOPENSSL_ROOT_DIR="$env:OPENSSL_ROOT" -DBOOST_ROOT="$env:BOOST_ROOT" -Dlog-core_DIR="$env:LOGCORE_DIR" -DDCC_VERSION="$env:GIT_REPO_VERSION" -DCMAKE_BUILD_TYPE="$env:BUILD_TYPE" -S . -B build
+  - ps: cmake --build build --config $env:BUILD_TYPE --target package
 
 artifacts:
-    - path: discord-connector-*-win32.zip
-      name: DCC plugin
+  - path: 'build/*.zip'
+  - path: 'build/*.tar.gz'
