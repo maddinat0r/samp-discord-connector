@@ -1646,8 +1646,13 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateGuildChannel)
 		return 0;
 	}
 
+	auto
+		cb_name = amx_GetCppString(amx, params[4]),
+		cb_format = amx_GetCppString(amx, params[5]);
+
 	pawn_cb::Error cb_error;
-	auto cb = pawn_cb::Callback::Prepare(amx, "", "", params, 6, cb_error);
+	auto cb = pawn_cb::Callback::Prepare(
+		amx, cb_name.c_str(), cb_format.c_str(),params, 6, cb_error);
 	if (cb_error && cb_error.get() != pawn_cb::Error::Type::EMPTY_NAME)
 	{
 		CLog::Get()->LogNative(LogLevel::ERROR, "could not prepare callback");
@@ -2034,8 +2039,13 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateGuildRole)
 		return 0;
 	}
 
+	auto
+		cb_name = amx_GetCppString(amx, params[3]),
+		cb_format = amx_GetCppString(amx, params[4]);
+
 	pawn_cb::Error cb_error;
-	auto cb = pawn_cb::Callback::Prepare(amx, "", "", params, 5, cb_error);
+	auto cb = pawn_cb::Callback::Prepare(
+		amx, cb_name.c_str(), cb_format.c_str(), params, 5, cb_error);
 	if (cb_error && cb_error.get() != pawn_cb::Error::Type::EMPTY_NAME)
 	{
 		CLog::Get()->LogNative(LogLevel::ERROR, "could not prepare callback");
