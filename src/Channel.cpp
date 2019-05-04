@@ -216,12 +216,15 @@ bool ChannelManager::CreateGuildChannel(Guild_t const &guild,
 			if (channel_id == INVALID_CHANNEL_ID)
 				return;
 
-			PawnDispatcher::Get()->Dispatch([=]()
+			if (cb)
 			{
-				m_CreatedChannelId = channel_id;
-				cb->Execute();
-				m_CreatedChannelId = INVALID_CHANNEL_ID;
-			});
+				PawnDispatcher::Get()->Dispatch([=]()
+				{
+					m_CreatedChannelId = channel_id;
+					cb->Execute();
+					m_CreatedChannelId = INVALID_CHANNEL_ID;
+				});
+			}
 		}
 	});
 

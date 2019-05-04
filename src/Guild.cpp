@@ -808,12 +808,15 @@ bool GuildManager::CreateGuildRole(Guild_t const &guild,
 			auto const role = RoleManager::Get()->AddRole(json::parse(r.body));
 			guild->AddRole(role);
 
-			PawnDispatcher::Get()->Dispatch([=]()
+			if (cb)
 			{
-				m_CreatedRoleId = role;
-				cb->Execute();
-				m_CreatedRoleId = INVALID_ROLE_ID;
-			});
+				PawnDispatcher::Get()->Dispatch([=]()
+				{
+					m_CreatedRoleId = role;
+					cb->Execute();
+					m_CreatedRoleId = INVALID_ROLE_ID;
+				});
+			}
 		}
 	});
 
