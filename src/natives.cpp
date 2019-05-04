@@ -1921,8 +1921,8 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildRolePermissions)
 	}
 
 	unsigned long long
-		perm_high = static_cast<unsigned int>(params[3]) << 32,
-		perm_low = static_cast<unsigned int>(params[4]),
+		perm_high = static_cast<unsigned long long>(params[3]) << 32,
+		perm_low = static_cast<unsigned long long>(params[4]),
 		permissions = perm_high & perm_low;
 
 	guild->SetRolePermissions(role, permissions);
