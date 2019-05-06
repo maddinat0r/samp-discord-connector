@@ -313,10 +313,8 @@ Http::ResponseCallback_t Http::CreateResponseCallback(ResponseCb_t &&callback)
 
 	return [callback](Streambuf_t &sb, Response_t &resp)
 	{
-		std::stringstream ss_body, ss_data;
-		ss_body << beast::buffers(resp.body().data());
-		ss_data << beast::buffers(sb.data());
-		callback({ resp.result_int(), resp.reason().to_string(), ss_body.str(), ss_data.str() });
+		callback({ resp.result_int(), resp.reason().to_string(),
+			beast::buffers_to_string(resp.body().data()), beast::buffers_to_string(sb.data()) });
 	};
 }
 
