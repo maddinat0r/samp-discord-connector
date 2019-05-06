@@ -32,8 +32,7 @@ public:
 		std::lock_guard<std::mutex> lock(m_Mutex);
 		if (m_Instance != nullptr)
 		{
-			delete m_Instance;
-			m_Instance = nullptr;
+			delete m_Instance.exchange(nullptr, std::memory_order_relaxed);
 		}
 	}
 };
