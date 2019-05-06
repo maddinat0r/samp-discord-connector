@@ -66,11 +66,11 @@ public:
 	{
 		return m_MentionsEveryone;
 	}
-	auto const &GetUserMentions() const
+	decltype(m_UserMentions) const &GetUserMentions() const
 	{
 		return m_UserMentions;
 	}
-	auto const &GetRoleMentions() const
+	decltype(m_RoleMentions) const &GetRoleMentions() const
 	{
 		return m_RoleMentions;
 	}
