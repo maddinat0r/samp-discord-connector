@@ -58,6 +58,7 @@ public:
 		VOICE_STATE_UPDATE,
 		VOICE_SERVER_UPDATE,
 		WEBHOOKS_UPDATE,
+		PRESENCES_REPLACE,
 	};
 	using EventCallback_t = std::function<void(json const &)>;
 

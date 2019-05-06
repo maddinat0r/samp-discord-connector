@@ -270,6 +270,7 @@ void WebSocket::OnRead(boost::system::error_code ec)
 			__WS_EVENT_MAP_PAIR(VOICE_STATE_UPDATE),
 			__WS_EVENT_MAP_PAIR(VOICE_SERVER_UPDATE),
 			__WS_EVENT_MAP_PAIR(WEBHOOKS_UPDATE),
+			__WS_EVENT_MAP_PAIR(PRESENCES_REPLACE),
 		};
 
 		auto it = events_map.find(result["t"].get<std::string>());
