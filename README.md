@@ -15,6 +15,9 @@ How to install
 
 F.A.Q.
 ------
+Q: *I get a* `libssl.so.1.1: cannot open shared object file: No such file or directory` *error (or similar) on server startup. How can I solve this?*  
+A: You have to install the OpenSSL 32bit package for your distribution.
+
 Q: *I get a* `version GLIBCXX_3.4.15' not found` *error (or similar). How can I solve this?*  
 A: Update your system. If that still didn't work, you'll need to upgrade your Linux distribution to a version which provides the gcc 4.9 (or higher) compiler.
 
@@ -36,16 +39,18 @@ Build instruction
 *Note*: The plugin has to be a 32-bit library; that means all required libraries have to be compiled in 32-bit and the compiler has to support 32-bit.
 #### Windows
 1. install a C++ compiler of your choice
-3. install the [Boost libraries (version 1.62)](http://www.boost.org/users/download/)
+3. install the [Boost libraries (version 1.69)](http://www.boost.org/users/download/)
 4. install [CMake](http://www.cmake.org/)
-5. clone this repository recursively
-6. create a folder named `build` and execute CMake in there
-7. build the generated project files with your C++ compiler
+5. clone this repository recursively (`git clone --recursive https://...`)
+6. download the full log-core package [here](https://github.com/maddinat0r/samp-log-core/releases/latest)
+7. create a folder named `build` and execute CMake in there
+8. build the generated project files with your C++ compiler
 
 #### Linux
 1. install a C++ compiler of your choice
-3. install the [Boost libraries (version 1.62)](http://www.boost.org/users/download/)
+3. install the [Boost libraries (version 1.69)](http://www.boost.org/users/download/)
 4. install [CMake](http://www.cmake.org/)
-5. clone this repository recursively
-6. create a folder named `build` and execute CMake in there (`mkdir build && cd build && cmake ..`)
-7. build the generated project files with your C++ compiler
+5. clone this repository recursively (`git clone --recursive https://...`)
+6. download the full log-core package [here](https://github.com/maddinat0r/samp-log-core/releases/latest)
+7. create a folder named `build` and execute CMake in there (`mkdir build && cd build && ccmake ..`)
+8. build the generated project files with your C++ compiler
