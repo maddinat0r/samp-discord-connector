@@ -29,7 +29,7 @@ public:
 	};
 
 public:
-	Channel(ChannelId_t pawn_id, json &data, GuildId_t guild_id);
+	Channel(ChannelId_t pawn_id, json const &data, GuildId_t guild_id);
 	~Channel() = default;
 
 private:
@@ -117,9 +117,9 @@ public:
 		return m_CreatedChannelId;
 	}
 
-	ChannelId_t AddChannel(json &data, GuildId_t guild_id = 0);
-	void UpdateChannel(json &data);
-	void DeleteChannel(json &data);
+	ChannelId_t AddChannel(json const &data, GuildId_t guild_id = 0);
+	void UpdateChannel(json const &data);
+	void DeleteChannel(json const &data);
 
 	Channel_t const &FindChannel(ChannelId_t id);
 	Channel_t const &FindChannelByName(std::string const &name);

@@ -17,7 +17,7 @@ class Message
 private:
 	Message() : _valid(false)
 	{ }
-	Message(MessageId_t pawn_id, json &data);
+	Message(MessageId_t pawn_id, json const &data);
 public:
 	~Message() = default;
 
@@ -101,7 +101,7 @@ private:
 public:
 	void Initialize();
 
-	MessageId_t Create(json &data);
+	MessageId_t Create(json const &data);
 	bool Delete(MessageId_t id);
 
 	Message_t const &Find(MessageId_t id);

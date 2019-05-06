@@ -12,7 +12,7 @@
 #undef SendMessage // Windows at its finest
 
 
-Channel::Channel(ChannelId_t pawn_id, json &data, GuildId_t guild_id) :
+Channel::Channel(ChannelId_t pawn_id, json const &data, GuildId_t guild_id) :
 	m_PawnId(pawn_id)
 {
 	std::underlying_type<Type>::type type;
@@ -143,7 +143,7 @@ void ChannelManager::Initialize()
 {
 	assert(m_Initialized != m_InitValue);
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::CHANNEL_CREATE, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::CHANNEL_CREATE, [](json const &data)
 	{
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
@@ -157,22 +157,22 @@ void ChannelManager::Initialize()
 		});
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::CHANNEL_UPDATE, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::CHANNEL_UPDATE, [](json const &data)
 	{
 		ChannelManager::Get()->UpdateChannel(data);
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::CHANNEL_DELETE, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::CHANNEL_DELETE, [](json const &data)
 	{
 		ChannelManager::Get()->DeleteChannel(data);
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json const &data)
 	{
 		static const char *PRIVATE_CHANNEL_KEY = "private_channels";
 		if (utils::IsValidJson(data, PRIVATE_CHANNEL_KEY, json::value_t::array))
 		{
-			for (json &c : data.at(PRIVATE_CHANNEL_KEY))
+			for (auto const &c : data.at(PRIVATE_CHANNEL_KEY))
 				AddChannel(c);
 		}
 		else
@@ -231,7 +231,7 @@ bool ChannelManager::CreateGuildChannel(Guild_t const &guild,
 	return true;
 }
 
-ChannelId_t ChannelManager::AddChannel(json &data, GuildId_t guild_id/* = 0*/)
+ChannelId_t ChannelManager::AddChannel(json const &data, GuildId_t guild_id/* = 0*/)
 {
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
@@ -260,7 +260,7 @@ ChannelId_t ChannelManager::AddChannel(json &data, GuildId_t guild_id/* = 0*/)
 	return id;
 }
 
-void ChannelManager::UpdateChannel(json &data)
+void ChannelManager::UpdateChannel(json const &data)
 {
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
@@ -304,7 +304,7 @@ void ChannelManager::UpdateChannel(json &data)
 	});
 }
 
-void ChannelManager::DeleteChannel(json &data)
+void ChannelManager::DeleteChannel(json const &data)
 {
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))

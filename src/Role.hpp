@@ -15,7 +15,7 @@ using json = nlohmann::json;
 class Role
 {
 public:
-	Role(RoleId_t pawn_id, json &data);
+	Role(RoleId_t pawn_id, json const &data);
 	~Role() = default;
 
 private:
@@ -75,7 +75,7 @@ public:
 		return IsValid();
 	}
 
-	void Update(json &data);
+	void Update(json const &data);
 };
 
 
@@ -93,7 +93,7 @@ private:
 	std::map<RoleId_t, Role_t> m_Roles; //PAWN role-id to actual channel map
 
 public:
-	RoleId_t AddRole(json &data);
+	RoleId_t AddRole(json const &data);
 	void RemoveRole(Role_t const &role);
 
 	Role_t const &FindRole(RoleId_t id);

@@ -59,7 +59,7 @@ public:
 		VOICE_SERVER_UPDATE,
 		WEBHOOKS_UPDATE,
 	};
-	using EventCallback_t = std::function<void(json &)>;
+	using EventCallback_t = std::function<void(json const &)>;
 
 private:
 	WebSocket();

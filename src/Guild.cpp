@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 
-Guild::Guild(GuildId_t pawn_id, json &data) :
+Guild::Guild(GuildId_t pawn_id, json const &data) :
 	m_PawnId(pawn_id)
 {
 	if (!utils::TryGetJsonValue(data, m_Id, "id"))
@@ -98,7 +98,7 @@ Guild::Guild(GuildId_t pawn_id, json &data) :
 	}
 }
 
-void Guild::Member::Update(json &data)
+void Guild::Member::Update(json const &data)
 {
 	// we don't care about the user object, there's an extra event for users
 	if (utils::IsValidJson(data, "roles", json::value_t::array))
@@ -153,7 +153,7 @@ void Guild::Member::UpdatePresence(std::string const &status)
 	Status = status_map.at(status);
 }
 
-void Guild::UpdateMember(UserId_t userid, json &data)
+void Guild::UpdateMember(UserId_t userid, json const &data)
 {
 	for (auto &m : m_Members)
 	{
@@ -177,7 +177,7 @@ void Guild::UpdateMemberPresence(UserId_t userid, std::string const &status)
 	}
 }
 
-void Guild::Update(json &data)
+void Guild::Update(json const &data)
 {
 	utils::TryGetJsonValue(data, m_Name, "name");
 
@@ -347,7 +347,7 @@ void GuildManager::Initialize()
 {
 	assert(m_Initialized != m_InitValue);
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json const &data)
 	{
 		if (!utils::IsValidJson(data, "guilds", json::value_t::array))
 		{
@@ -360,7 +360,7 @@ void GuildManager::Initialize()
 		m_Initialized++;
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_CREATE, [this](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_CREATE, [this](json const &data)
 	{
 		if (!m_IsInitialized)
 		{
@@ -382,7 +382,7 @@ void GuildManager::Initialize()
 		}
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_DELETE, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_DELETE, [](json const &data)
 	{
 		Snowflake_t sfid;
 		if (!utils::TryGetJsonValue(data, sfid, "id"))
@@ -410,7 +410,7 @@ void GuildManager::Initialize()
 		});
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_UPDATE, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_UPDATE, [](json const &data)
 	{
 		Snowflake_t sfid;
 		if (!utils::TryGetJsonValue(data, sfid, "id"))
@@ -438,7 +438,7 @@ void GuildManager::Initialize()
 		});
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_ADD, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_ADD, [](json const &data)
 	{
 		if (!utils::IsValidJson(data, 
 			"guild_id", json::value_t::string,
@@ -476,7 +476,7 @@ void GuildManager::Initialize()
 		});
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_REMOVE, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_REMOVE, [](json const &data)
 	{
 		if (!utils::IsValidJson(data, 
 			"guild_id", json::value_t::string,
@@ -515,7 +515,7 @@ void GuildManager::Initialize()
 		});
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_UPDATE, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_UPDATE, [](json const &data)
 	{
 		if (!utils::IsValidJson(data,
 			"guild_id", json::value_t::string,
@@ -554,7 +554,7 @@ void GuildManager::Initialize()
 		});
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_ROLE_CREATE, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_ROLE_CREATE, [](json const &data)
 	{
 		if (!utils::IsValidJson(data,
 			"guild_id", json::value_t::string,
@@ -585,7 +585,7 @@ void GuildManager::Initialize()
 		});
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_ROLE_DELETE, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_ROLE_DELETE, [](json const &data)
 	{
 		if (!utils::IsValidJson(data,
 			"guild_id", json::value_t::string,
@@ -625,7 +625,7 @@ void GuildManager::Initialize()
 		});
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_ROLE_UPDATE, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_ROLE_UPDATE, [](json const &data)
 	{
 		if (!utils::IsValidJson(data,
 			"guild_id", json::value_t::string,
@@ -664,7 +664,7 @@ void GuildManager::Initialize()
 		});
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::PRESENCE_UPDATE, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::PRESENCE_UPDATE, [](json const &data)
 	{
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
@@ -716,7 +716,7 @@ void GuildManager::Initialize()
 		});
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBERS_CHUNK, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBERS_CHUNK, [](json const &data)
 	{
 		Snowflake_t guild_id;
 		if (!utils::TryGetJsonValue(data, guild_id, "guild_id"))
@@ -823,7 +823,7 @@ bool GuildManager::CreateGuildRole(Guild_t const &guild,
 	return true;
 }
 
-GuildId_t GuildManager::AddGuild(json &data)
+GuildId_t GuildManager::AddGuild(json const &data)
 {
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))

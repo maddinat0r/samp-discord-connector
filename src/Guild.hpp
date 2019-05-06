@@ -34,12 +34,12 @@ public:
 		std::vector<RoleId_t> Roles;
 		PresenceStatus Status;
 
-		void Update(json &data);
+		void Update(json const &data);
 		void UpdatePresence(std::string const &status);
 	};
 
 public:
-	Guild(GuildId_t pawn_id, json &data);
+	Guild(GuildId_t pawn_id, json const &data);
 	~Guild() = default;
 
 private:
@@ -124,7 +124,7 @@ public:
 			}
 		}
 	}
-	void UpdateMember(UserId_t userid, json &data);
+	void UpdateMember(UserId_t userid, json const &data);
 	void UpdateMemberPresence(UserId_t userid, std::string const &status);
 
 	inline void AddRole(RoleId_t id)
@@ -143,7 +143,7 @@ public:
 		}
 	}
 
-	void Update(json &data);
+	void Update(json const &data);
 
 	void SetGuildName(std::string const &name);
 
@@ -181,7 +181,7 @@ private:
 	RoleId_t m_CreatedRoleId = INVALID_ROLE_ID;
 
 private:
-	GuildId_t AddGuild(json &data);
+	GuildId_t AddGuild(json const &data);
 	void DeleteGuild(Guild_t const &guild);
 
 public:

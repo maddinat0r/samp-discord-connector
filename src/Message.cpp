@@ -9,7 +9,7 @@
 #include "utils.hpp"
 
 
-Message::Message(MessageId_t pawn_id, json &data) : m_PawnId(pawn_id)
+Message::Message(MessageId_t pawn_id, json const &data) : m_PawnId(pawn_id)
 {
 	std::string author_id, channel_id;
 	_valid =
@@ -74,7 +74,7 @@ void Message::DeleteMessage()
 void MessageManager::Initialize()
 {
 	// PAWN callbacks
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_CREATE, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_CREATE, [](json const &data)
 	{
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
@@ -90,7 +90,7 @@ void MessageManager::Initialize()
 		});
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_DELETE, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_DELETE, [](json const &data)
 	{
 		Snowflake_t sfid;
 		if (!utils::TryGetJsonValue(data, sfid, "id"))
@@ -111,7 +111,7 @@ void MessageManager::Initialize()
 	});
 }
 
-MessageId_t MessageManager::Create(json &data)
+MessageId_t MessageManager::Create(json const &data)
 {
 	MessageId_t id = 1;
 	while (m_Messages.find(id) != m_Messages.end())

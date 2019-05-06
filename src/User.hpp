@@ -15,7 +15,7 @@ using json = nlohmann::json;
 class User
 {
 public:
-	User(UserId_t pawn_id, json &data);
+	User(UserId_t pawn_id, json const &data);
 	~User() = default;
 
 private:
@@ -68,7 +68,7 @@ public:
 		return IsValid();
 	}
 
-	void Update(json &data);
+	void Update(json const &data);
 };
 
 
@@ -90,7 +90,7 @@ public:
 	void Initialize();
 	bool IsInitialized();
 
-	UserId_t AddUser(json &data);
+	UserId_t AddUser(json const &data);
 
 	User_t const &FindUser(UserId_t id);
 	User_t const &FindUserByName(std::string const &name, std::string const &discriminator);

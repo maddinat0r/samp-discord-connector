@@ -6,7 +6,7 @@
 #include "utils.hpp"
 
 
-User::User(UserId_t pawn_id, json &data) :
+User::User(UserId_t pawn_id, json const &data) :
 	m_PawnId(pawn_id)
 {
 	if (!utils::TryGetJsonValue(data, m_Id, "id"))
@@ -19,7 +19,7 @@ User::User(UserId_t pawn_id, json &data) :
 	Update(data);
 }
 
-void User::Update(json &data)
+void User::Update(json const &data)
 {
 	_valid =
 		utils::TryGetJsonValue(data, m_Username, "username") &&
@@ -41,7 +41,7 @@ void UserManager::Initialize()
 {
 	assert(m_Initialized != m_InitValue);
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json const &data)
 	{
 		if (!utils::IsValidJson(data, "user", json::value_t::object))
 		{
@@ -53,7 +53,7 @@ void UserManager::Initialize()
 		m_Initialized++;
 	});
 
-	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::USER_UPDATE, [](json &data)
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::USER_UPDATE, [](json const &data)
 	{
 		Snowflake_t user_id;
 		if (!utils::TryGetJsonValue(data, user_id, "id"))
@@ -86,7 +86,7 @@ bool UserManager::IsInitialized()
 	return m_Initialized == m_InitValue;
 }
 
-UserId_t UserManager::AddUser(json &data)
+UserId_t UserManager::AddUser(json const &data)
 {
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))

@@ -3,7 +3,7 @@
 #include "utils.hpp"
 
 
-Role::Role(RoleId_t pawn_id, json &data) :
+Role::Role(RoleId_t pawn_id, json const &data) :
 	m_PawnId(pawn_id)
 {
 	if (!utils::TryGetJsonValue(data, m_Id, "id"))
@@ -16,7 +16,7 @@ Role::Role(RoleId_t pawn_id, json &data) :
 	Update(data);
 }
 
-void Role::Update(json &data)
+void Role::Update(json const &data)
 {
 	_valid =
 		utils::TryGetJsonValue(data, m_Name, "name") &&
@@ -34,7 +34,7 @@ void Role::Update(json &data)
 }
 
 
-RoleId_t RoleManager::AddRole(json &data)
+RoleId_t RoleManager::AddRole(json const &data)
 {
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
