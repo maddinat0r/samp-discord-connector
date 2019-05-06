@@ -225,23 +225,9 @@ void Http::Disconnect()
 
 	boost::system::error_code error;
 	m_SslStream->shutdown(error);
-	if (error && error != boost::asio::error::eof)
+	if (error && error != boost::asio::error::eof && error != boost::asio::ssl::error::stream_truncated)
 	{
 		Logger::Get()->Log(LogLevel::WARNING, "Error while shutting down SSL on HTTP connection: {} ({})",
-			error.message(), error.value());
-	}
-	
-	m_SslStream->lowest_layer().shutdown(asio::ip::tcp::socket::shutdown_both, error);
-	if (error && error != boost::asio::error::eof)
-	{
-		Logger::Get()->Log(LogLevel::WARNING, "Error while shutting down HTTP connection: {} ({})",
-			error.message(), error.value());
-	}
-
-	m_SslStream->lowest_layer().close(error);
-	if (error)
-	{
-		Logger::Get()->Log(LogLevel::WARNING, "Error while closing HTTP connection: {} ({})",
 			error.message(), error.value());
 	}
 }
