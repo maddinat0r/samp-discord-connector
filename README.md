@@ -1,8 +1,8 @@
 # Discord connector plugin for San Andreas Multiplayer (SA:MP)
 
-| Travis CI | AppVeyor | Total downloads | Latest release |
-| :---: | :---: | :---: | :---: |
-|  [![Build Status](https://travis-ci.org/maddinat0r/samp-discord-connector.svg?branch=master)](https://travis-ci.org/maddinat0r/samp-discord-connector)   |  [![Build status](https://ci.appveyor.com/api/projects/status/hr53e3q8etb06xta/branch/master?svg=true)](https://ci.appveyor.com/project/maddinat0r/samp-discord-connector/branch/master)  |  [![All Releases](https://img.shields.io/github/downloads/maddinat0r/samp-discord-connector/total.svg?maxAge=86400)](https://github.com/maddinat0r/samp-discord-connector/releases)  |  [![latest release](https://img.shields.io/github/release/maddinat0r/samp-discord-connector.svg?maxAge=86400)](https://github.com/maddinat0r/samp-discord-connector/releases) <br> [![Github Releases](https://img.shields.io/github/downloads/maddinat0r/samp-discord-connector/latest/total.svg?maxAge=86400)](https://github.com/maddinat0r/samp-discord-connector/releases)  |  
+| AppVeyor CI | Total downloads | Latest release |
+| :---: | :---: | :---: |
+|  [![Build status](https://ci.appveyor.com/api/projects/status/hr53e3q8etb06xta/branch/master?svg=true)](https://ci.appveyor.com/project/maddinat0r/samp-discord-connector/branch/master)  |  [![All Releases](https://img.shields.io/github/downloads/maddinat0r/samp-discord-connector/total.svg?maxAge=86400)](https://github.com/maddinat0r/samp-discord-connector/releases)  |  [![latest release](https://img.shields.io/github/release/maddinat0r/samp-discord-connector.svg?maxAge=86400)](https://github.com/maddinat0r/samp-discord-connector/releases) <br> [![Github Releases](https://img.shields.io/github/downloads/maddinat0r/samp-discord-connector/latest/total.svg?maxAge=86400)](https://github.com/maddinat0r/samp-discord-connector/releases)  |  
 -------------------------------------------------
 **This plugin allows you to control a Discord bot from within your PAWN script.**
 
