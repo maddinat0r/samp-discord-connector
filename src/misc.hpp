@@ -3,19 +3,22 @@
 #include <string>
 #include <type_traits>
 
-#pragma warning (push)
-#pragma warning (disable: 4244 4018 4348)
+#include <boost/spirit/include/qi_parse.hpp>
+#include <boost/spirit/include/qi_int.hpp>
+#include <boost/spirit/include/qi_real.hpp>
+#include <boost/spirit/include/qi_bool.hpp>
+#include <boost/spirit/include/karma_generate.hpp>
+#include <boost/spirit/include/karma_int.hpp>
+#include <boost/spirit/include/karma_uint.hpp>
+#include <boost/spirit/include/karma_real.hpp>
+#include <boost/spirit/include/karma_bool.hpp>
 
-#include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/karma.hpp>
-
-using std::string;
 namespace qi = boost::spirit::qi;
 namespace karma = boost::spirit::karma;
 
 
 template<typename T>
-bool ConvertStrToData(const string &src, T &dest)
+bool ConvertStrToData(const std::string &src, T &dest)
 {
 	return qi::parse(src.begin(), src.end(),
 		typename std::conditional<
@@ -40,7 +43,7 @@ bool ConvertStrToData(const char *src, T &dest)
 
 
 template<typename T, unsigned int B = 10U>
-bool ConvertDataToStr(T src, string &dest)
+bool ConvertDataToStr(T src, std::string &dest)
 {
 	return karma::generate(std::back_inserter(dest), 
 		typename std::conditional<
@@ -56,16 +59,13 @@ bool ConvertDataToStr(T src, string &dest)
 }
 
 template<> //bool specialization
-inline bool ConvertStrToData(const string &src, bool &dest)
+inline bool ConvertStrToData(const std::string &src, bool &dest)
 {
 	return qi::parse(src.begin(), src.end(), qi::bool_, dest);
 }
 
 template<> //bool specialization
-inline bool ConvertDataToStr(bool src, string &dest)
+inline bool ConvertDataToStr(bool src, std::string &dest)
 {
 	return karma::generate(std::back_inserter(dest), karma::bool_, src);
 }
-
-
-#pragma warning (pop)
