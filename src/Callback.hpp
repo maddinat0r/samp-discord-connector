@@ -6,6 +6,8 @@
 #include <unordered_set>
 #include <algorithm>
 #include <memory>
+#include <vector>
+#include <cstring>
 
 
 namespace pawn_cb

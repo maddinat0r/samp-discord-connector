@@ -4,6 +4,7 @@
 
 #include <queue>
 #include <mutex>
+#include <functional>
 
 #include "types.hpp"
 
