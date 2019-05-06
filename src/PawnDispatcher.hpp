@@ -9,11 +9,11 @@
 #include "types.hpp"
 
 
-class PawnDispatcher : public CSingleton <PawnDispatcher>
+class PawnDispatcher : public CSingleton<PawnDispatcher>
 {
-	friend class CSingleton <PawnDispatcher>;
+	friend class CSingleton<PawnDispatcher>;
 public: //type definitions
-	using Function_t = std::function <void()>;
+	using Function_t = std::function<void()>;
 
 private: //constructor / destructor
 	PawnDispatcher() = default;
