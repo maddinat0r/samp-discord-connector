@@ -181,7 +181,7 @@ bool Http::Connect()
 	// connect to REST API
 	asio::ip::tcp::resolver r{ m_IoService };
 	boost::system::error_code error;
-	auto target = r.resolve({ "discordapp.com", "https" }, error);
+	auto target = r.resolve("discordapp.com", "443", error);
 	if (error)
 	{
 		Logger::Get()->Log(LogLevel::ERROR, "Can't resolve Discord API URL: {} ({})",
