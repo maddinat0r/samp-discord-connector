@@ -63,7 +63,8 @@ bool WaitForInitialization()
 
 std::string GetEnvironmentVar(const char *key)
 {
-	return std::string(getenv(key));
+	const char *value = getenv(key);
+	return value != nullptr ? std::string(value) : std::string();
 }
 
 PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()
