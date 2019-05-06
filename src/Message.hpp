@@ -1,7 +1,7 @@
 #pragma once
 
 #include "types.hpp"
-#include "CSingleton.hpp"
+#include "Singleton.hpp"
 
 #include <string>
 #include <vector>
@@ -88,9 +88,9 @@ public:
 };
 
 
-class MessageManager : public CSingleton<MessageManager>
+class MessageManager : public Singleton<MessageManager>
 {
-	friend class CSingleton<MessageManager>;
+	friend class Singleton<MessageManager>;
 private:
 	MessageManager() = default;
 	~MessageManager() = default;

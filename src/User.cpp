@@ -2,7 +2,7 @@
 #include "Network.hpp"
 #include "PawnDispatcher.hpp"
 #include "Callback.hpp"
-#include "CLog.hpp"
+#include "Logger.hpp"
 #include "utils.hpp"
 
 
@@ -11,7 +11,7 @@ User::User(UserId_t pawn_id, json const &data) :
 {
 	if (!utils::TryGetJsonValue(data, m_Id, "id"))
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(LogLevel::ERROR,
 			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
 		return;
 	}
@@ -27,7 +27,7 @@ void User::Update(json const &data)
 
 	if (!_valid)
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(LogLevel::ERROR,
 			"can't update user: invalid JSON: \"{}\"", data.dump());
 		return;
 	}
@@ -45,7 +45,7 @@ void UserManager::Initialize()
 	{
 		if (!utils::IsValidJson(data, "user", json::value_t::object))
 		{
-			CLog::Get()->Log(LogLevel::FATAL,
+			Logger::Get()->Log(LogLevel::FATAL,
 				"invalid JSON: expected \"user\" in \"{}\"", data.dump());
 			return;
 		}
@@ -58,7 +58,7 @@ void UserManager::Initialize()
 		Snowflake_t user_id;
 		if (!utils::TryGetJsonValue(data, user_id, "id"))
 		{
-			CLog::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(LogLevel::ERROR,
 				"invalid JSON: expected \"id\" in \"{}\"", data.dump());
 		}
 
@@ -67,7 +67,7 @@ void UserManager::Initialize()
 			auto const &user = UserManager::Get()->FindUserById(user_id);
 			if (!user)
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"can't update user: user id \"{}\" not cached", user_id);
 				return;
 			}
@@ -91,7 +91,7 @@ UserId_t UserManager::AddUser(json const &data)
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(LogLevel::ERROR,
 			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
 		return INVALID_USER_ID;
 	}
@@ -106,12 +106,12 @@ UserId_t UserManager::AddUser(json const &data)
 
 	if (!m_Users.emplace(id, User_t(new User(id, data))).first->second)
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(LogLevel::ERROR,
 			"can't create user: duplicate key '{}'", id);
 		return INVALID_USER_ID;
 	}
 
-	CLog::Get()->Log(LogLevel::INFO, "successfully created user with id '{}'", id);
+	Logger::Get()->Log(LogLevel::INFO, "successfully created user with id '{}'", id);
 	return id;
 }
 

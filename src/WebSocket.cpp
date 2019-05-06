@@ -1,5 +1,5 @@
 #include "WebSocket.hpp"
-#include "CLog.hpp"
+#include "Logger.hpp"
 
 #include <unordered_map>
 
@@ -41,14 +41,14 @@ void WebSocket::Initialize(std::string token, std::string gateway_url)
 
 bool WebSocket::Connect()
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::Connect");
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::Connect");
 
 	boost::system::error_code error;
 	asio::ip::tcp::resolver r{ m_IoService };
 	auto target = r.resolve({ m_GatewayUrl, "https" }, error);
 	if (error)
 	{
-		CLog::Get()->Log(LogLevel::ERROR, "Can't resolve Discord gateway URL '{}': {} ({})",
+		Logger::Get()->Log(LogLevel::ERROR, "Can't resolve Discord gateway URL '{}': {} ({})",
 			m_GatewayUrl, error.message(), error.value());
 		return false;
 	}
@@ -57,7 +57,7 @@ bool WebSocket::Connect()
 	asio::connect(m_WebSocket->lowest_layer(), target, error);
 	if (error)
 	{
-		CLog::Get()->Log(LogLevel::ERROR, "Can't connect to Discord gateway: {} ({})",
+		Logger::Get()->Log(LogLevel::ERROR, "Can't connect to Discord gateway: {} ({})",
 			error.message(), error.value());
 		return false;
 	}
@@ -65,7 +65,7 @@ bool WebSocket::Connect()
 	m_WebSocket->next_layer().set_verify_mode(asio::ssl::verify_none, error);
 	if (error)
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(LogLevel::ERROR,
 			"Can't configure SSL stream peer verification mode for Discord gateway: {} ({})",
 			error.message(), error.value());
 		return false;
@@ -74,7 +74,7 @@ bool WebSocket::Connect()
 	m_WebSocket->next_layer().handshake(asio::ssl::stream_base::client, error);
 	if (error)
 	{
-		CLog::Get()->Log(LogLevel::ERROR, "Can't establish secured connection to Discord gateway: {} ({})",
+		Logger::Get()->Log(LogLevel::ERROR, "Can't establish secured connection to Discord gateway: {} ({})",
 			error.message(), error.value());
 		return false;
 	}
@@ -82,7 +82,7 @@ bool WebSocket::Connect()
 	m_WebSocket->handshake(m_GatewayUrl, "/?encoding=json&v=6", error);
 	if (error)
 	{
-		CLog::Get()->Log(LogLevel::ERROR, "Can't upgrade to WSS protocol: {} ({})",
+		Logger::Get()->Log(LogLevel::ERROR, "Can't upgrade to WSS protocol: {} ({})",
 			error.message(), error.value());
 		return false;
 	}
@@ -92,7 +92,7 @@ bool WebSocket::Connect()
 
 void WebSocket::Disconnect(bool reconnect /*= false*/)
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::Disconnect");
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::Disconnect");
 
 	if (m_WebSocket)
 	{
@@ -103,7 +103,7 @@ void WebSocket::Disconnect(bool reconnect /*= false*/)
 
 void WebSocket::OnClose(boost::system::error_code ec, bool reconnect)
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::OnClose");
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnClose");
 
 	m_HeartbeatTimer.cancel();
 
@@ -125,7 +125,7 @@ void WebSocket::OnClose(boost::system::error_code ec, bool reconnect)
 
 void WebSocket::Identify()
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::WsIdentify");
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::WsIdentify");
 
 #ifdef WIN32
 	std::string os_name = "Windows";
@@ -154,7 +154,7 @@ void WebSocket::Identify()
 
 void WebSocket::SendResumePayload()
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::WsSendResumePayload");
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::WsSendResumePayload");
 
 	json resume_payload = {
 		{ "op", 6 },
@@ -169,7 +169,7 @@ void WebSocket::SendResumePayload()
 
 void WebSocket::RequestGuildMembers(std::string guild_id)
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::RequestGuildMembers");
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::RequestGuildMembers");
 	
 	json resume_payload = {
 		{ "op", 8 },
@@ -184,7 +184,7 @@ void WebSocket::RequestGuildMembers(std::string guild_id)
 
 void WebSocket::Read()
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::WsRead");
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::WsRead");
 
 	m_WebSocket->async_read(m_WebSocketBuffer,
 		std::bind(&WebSocket::OnRead, this, std::placeholders::_1));
@@ -192,7 +192,7 @@ void WebSocket::Read()
 
 void WebSocket::OnRead(boost::system::error_code ec)
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::OnWsRead");
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnWsRead");
 
 	if (ec)
 	{
@@ -200,7 +200,7 @@ void WebSocket::OnRead(boost::system::error_code ec)
 		switch (ec.value())
 		{
 		case boost::asio::ssl::error::stream_errors::stream_truncated:
-			CLog::Get()->Log(LogLevel::ERROR, "Discord terminated websocket connection; reason: {} ({})",
+			Logger::Get()->Log(LogLevel::ERROR, "Discord terminated websocket connection; reason: {} ({})",
 				m_WebSocket->reason().reason.c_str(), m_WebSocket->reason().code);
 			reconnect = true;
 			break;
@@ -208,7 +208,7 @@ void WebSocket::OnRead(boost::system::error_code ec)
 			// connection was closed, do nothing
 			break;
 		default:
-			CLog::Get()->Log(LogLevel::ERROR, "Can't read from Discord websocket gateway: {} ({})",
+			Logger::Get()->Log(LogLevel::ERROR, "Can't read from Discord websocket gateway: {} ({})",
 				ec.message(), ec.value());
 			reconnect = true;
 			break;
@@ -216,7 +216,7 @@ void WebSocket::OnRead(boost::system::error_code ec)
 
 		if (reconnect)
 		{
-			CLog::Get()->Log(LogLevel::INFO,
+			Logger::Get()->Log(LogLevel::INFO,
 				"websocket gateway connection terminated, attempting reconnect...");
 			Disconnect(true);
 		}
@@ -290,8 +290,8 @@ void WebSocket::OnRead(boost::system::error_code ec)
 		}
 		else
 		{
-			CLog::Get()->Log(LogLevel::WARNING, "Unknown gateway event '{}'", result["t"].get<std::string>());
-			CLog::Get()->Log(LogLevel::DEBUG, "UGE res: {}", result.dump(4));
+			Logger::Get()->Log(LogLevel::WARNING, "Unknown gateway event '{}'", result["t"].get<std::string>());
+			Logger::Get()->Log(LogLevel::DEBUG, "UGE res: {}", result.dump(4));
 		}
 	} break;
 	case 7: // reconnect
@@ -306,11 +306,11 @@ void WebSocket::OnRead(boost::system::error_code ec)
 		DoHeartbeat({});
 		break;
 	case 11: // heartbeat ACK
-		CLog::Get()->Log(LogLevel::DEBUG, "heartbeat ACK");
+		Logger::Get()->Log(LogLevel::DEBUG, "heartbeat ACK");
 		break;
 	default:
-		CLog::Get()->Log(LogLevel::WARNING, "Unhandled payload opcode '{}'", payload_opcode);
-		CLog::Get()->Log(LogLevel::DEBUG, "UPO res: {}", result.dump(4));
+		Logger::Get()->Log(LogLevel::WARNING, "Unhandled payload opcode '{}'", payload_opcode);
+		Logger::Get()->Log(LogLevel::DEBUG, "UPO res: {}", result.dump(4));
 	}
 
 	Read();
@@ -318,7 +318,7 @@ void WebSocket::OnRead(boost::system::error_code ec)
 
 void WebSocket::DoHeartbeat(boost::system::error_code ec)
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "WebSocket::DoHeartbeat");
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::DoHeartbeat");
 
 	if (ec)
 	{
@@ -326,10 +326,10 @@ void WebSocket::DoHeartbeat(boost::system::error_code ec)
 		{
 		case boost::asio::error::operation_aborted:
 			// timer was chancelled, do nothing
-			CLog::Get()->Log(LogLevel::DEBUG, "heartbeat timer chancelled");
+			Logger::Get()->Log(LogLevel::DEBUG, "heartbeat timer chancelled");
 			break;
 		default:
-			CLog::Get()->Log(LogLevel::ERROR, "Heartbeat error: {} ({})",
+			Logger::Get()->Log(LogLevel::ERROR, "Heartbeat error: {} ({})",
 				ec.message(), ec.value());
 			break;
 		}
@@ -345,12 +345,12 @@ void WebSocket::DoHeartbeat(boost::system::error_code ec)
 	m_WebSocket->write(asio::buffer(heartbeat_payload.dump()), error_code);
 	if (error_code)
 	{
-		CLog::Get()->Log(LogLevel::ERROR, "Heartbeat write error: {} ({})",
+		Logger::Get()->Log(LogLevel::ERROR, "Heartbeat write error: {} ({})",
 			ec.message(), ec.value());
 		return;
 	}
 
-	CLog::Get()->Log(LogLevel::DEBUG, "sending heartbeat");
+	Logger::Get()->Log(LogLevel::DEBUG, "sending heartbeat");
 
 	m_HeartbeatTimer.expires_from_now(m_HeartbeatInterval);
 	m_HeartbeatTimer.async_wait(std::bind(&WebSocket::DoHeartbeat, this, std::placeholders::_1));

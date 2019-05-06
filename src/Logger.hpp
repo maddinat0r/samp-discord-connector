@@ -1,7 +1,7 @@
 #pragma once
 
 #include <samplog/samplog.hpp>
-#include "CSingleton.hpp"
+#include "Singleton.hpp"
 #include "Error.hpp"
 
 #include <fmt/format.h>
@@ -11,13 +11,13 @@ using samplog::LogLevel;
 using samplog::AmxFuncCallInfo;
 
 
-class CDebugInfoManager : public CSingleton<CDebugInfoManager>
+class DebugInfoManager : public Singleton<DebugInfoManager>
 {
-	friend class CSingleton<CDebugInfoManager>;
-	friend class CScopedDebugInfo;
+	friend class Singleton<DebugInfoManager>;
+	friend class ScopedDebugInfo;
 private:
-	CDebugInfoManager() = default;
-	~CDebugInfoManager() = default;
+	DebugInfoManager() = default;
+	~DebugInfoManager() = default;
 
 private:
 	bool m_Available = false;
@@ -50,15 +50,15 @@ public:
 };
 
 
-class CLog : public CSingleton<CLog>
+class Logger : public Singleton<Logger>
 {
-	friend class CSingleton<CLog>;
-	friend class CScopedDebugInfo;
+	friend class Singleton<Logger>;
+	friend class ScopedDebugInfo;
 private:
-	CLog() :
+	Logger() :
 		m_Logger("discord-connector")
 	{ }
-	~CLog() = default;
+	~Logger() = default;
 
 public:
 	inline bool IsLogLevel(LogLevel level)
@@ -100,15 +100,15 @@ public:
 		if (!IsLogLevel(level))
 			return;
 
-		if (CDebugInfoManager::Get()->GetCurrentAmx() == nullptr)
+		if (DebugInfoManager::Get()->GetCurrentAmx() == nullptr)
 			return; //do nothing, since we're not called from within a native func
 
 		string msg = fmt::format("{}: {}",
-			CDebugInfoManager::Get()->GetCurrentNativeName(),
+			DebugInfoManager::Get()->GetCurrentNativeName(),
 			fmt::format(fmt, std::forward<Args>(args)...));
 
-		if (CDebugInfoManager::Get()->IsInfoAvailable())
-			Log(level, CDebugInfoManager::Get()->GetCurrentInfo(), msg.c_str());
+		if (DebugInfoManager::Get()->IsInfoAvailable())
+			Log(level, DebugInfoManager::Get()->GetCurrentInfo(), msg.c_str());
 		else
 			Log(level, msg.c_str());
 	}
@@ -126,14 +126,14 @@ private:
 };
 
 
-class CScopedDebugInfo
+class ScopedDebugInfo
 {
 public:
-	CScopedDebugInfo(AMX * const amx, const char *func, 
+	ScopedDebugInfo(AMX * const amx, const char *func, 
 		cell * const params, const char *params_format = "");
-	~CScopedDebugInfo()
+	~ScopedDebugInfo()
 	{
-		CDebugInfoManager::Get()->Clear();
+		DebugInfoManager::Get()->Clear();
 	}
-	CScopedDebugInfo(const CScopedDebugInfo &rhs) = delete;
+	ScopedDebugInfo(const ScopedDebugInfo &rhs) = delete;
 };

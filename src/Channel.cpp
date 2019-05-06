@@ -2,7 +2,7 @@
 #include "Message.hpp"
 #include "Network.hpp"
 #include "PawnDispatcher.hpp"
-#include "CLog.hpp"
+#include "Logger.hpp"
 #include "Guild.hpp"
 #include "utils.hpp"
 
@@ -19,7 +19,7 @@ Channel::Channel(ChannelId_t pawn_id, json const &data, GuildId_t guild_id) :
 	if (!utils::TryGetJsonValue(data, type, "type")
 		|| !utils::TryGetJsonValue(data, m_Id, "id"))
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(LogLevel::ERROR,
 			"invalid JSON: expected \"type\" and \"id\" in \"{}\"", data.dump());
 		return;
 	}
@@ -41,7 +41,7 @@ Channel::Channel(ChannelId_t pawn_id, json const &data, GuildId_t guild_id) :
 		}
 		else
 		{
-			CLog::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(LogLevel::ERROR,
 				"invalid JSON: expected \"guild_id\" in \"{}\"", data.dump());
 		}
 	}
@@ -60,7 +60,7 @@ void Channel::SendMessage(std::string &&msg)
 	
 	std::string json_str;
 	if(!utils::TryDumpJson(data, json_str))
-		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Post(fmt::format("/channels/{:s}/messages", GetId()), json_str);
 }
@@ -73,7 +73,7 @@ void Channel::SetChannelName(std::string const &name)
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
 }
@@ -86,7 +86,7 @@ void Channel::SetChannelTopic(std::string const &topic)
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
 }
@@ -99,7 +99,7 @@ void Channel::SetChannelPosition(int const position)
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
 }
@@ -112,7 +112,7 @@ void Channel::SetChannelNsfw(bool const is_nsfw)
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
 }
@@ -128,7 +128,7 @@ void Channel::SetChannelParentCategory(Channel_t const &parent)
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
 }
@@ -177,7 +177,7 @@ void ChannelManager::Initialize()
 		}
 		else
 		{
-			CLog::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(LogLevel::ERROR,
 				"invalid JSON: expected \"{}\" in \"{}\"", PRIVATE_CHANNEL_KEY, data.dump());
 		}
 		m_Initialized++;
@@ -200,14 +200,14 @@ bool ChannelManager::CreateGuildChannel(Guild_t const &guild,
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
 	{
-		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 		return false;
 	}
 
 	Network::Get()->Http().Post(fmt::format("/guilds/{:s}/channels", guild->GetId()), json_str,
 		[this, cb](Http::Response r)
 	{
-		CLog::Get()->Log(LogLevel::DEBUG,
+		Logger::Get()->Log(LogLevel::DEBUG,
 			"channel create response: status {}; body: {}; add: {}",
 			r.status, r.body, r.additional_data);
 		if (r.status / 100 == 2) // success
@@ -236,7 +236,7 @@ ChannelId_t ChannelManager::AddChannel(json const &data, GuildId_t guild_id/* = 
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(LogLevel::ERROR,
 			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
 		return INVALID_CHANNEL_ID;
 	}
@@ -251,12 +251,12 @@ ChannelId_t ChannelManager::AddChannel(json const &data, GuildId_t guild_id/* = 
 
 	if (!m_Channels.emplace(id, Channel_t(new Channel(id, data, guild_id))).second)
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(LogLevel::ERROR,
 			"can't create channel: duplicate key '{}'", id);
 		return INVALID_CHANNEL_ID;
 	}
 
-	CLog::Get()->Log(LogLevel::INFO, "successfully added channel with id '{}'", id);
+	Logger::Get()->Log(LogLevel::INFO, "successfully added channel with id '{}'", id);
 	return id;
 }
 
@@ -265,7 +265,7 @@ void ChannelManager::UpdateChannel(json const &data)
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(LogLevel::ERROR,
 			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
 		return;
 	}
@@ -284,7 +284,7 @@ void ChannelManager::UpdateChannel(json const &data)
 		Channel_t const &channel = FindChannelById(sfid);
 		if (!channel)
 		{
-			CLog::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(LogLevel::ERROR,
 				"can't update channel: channel id \"{}\" not cached", sfid);
 			return;
 		}
@@ -309,7 +309,7 @@ void ChannelManager::DeleteChannel(json const &data)
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(LogLevel::ERROR,
 			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
 		return;
 	}
@@ -319,7 +319,7 @@ void ChannelManager::DeleteChannel(json const &data)
 		Channel_t const &channel = FindChannelById(sfid);
 		if (!channel)
 		{
-			CLog::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(LogLevel::ERROR,
 				"can't delete channel: channel id \"{}\" not cached", sfid);
 			return;
 		}

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CSingleton.hpp"
+#include "Singleton.hpp"
 #include "types.hpp"
 #include "Callback.hpp"
 
@@ -164,9 +164,9 @@ public:
 };
 
 
-class GuildManager : public CSingleton<GuildManager>
+class GuildManager : public Singleton<GuildManager>
 {
-	friend class CSingleton<GuildManager>;
+	friend class Singleton<GuildManager>;
 private:
 	GuildManager() = default;
 	~GuildManager() = default;

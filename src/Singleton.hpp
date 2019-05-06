@@ -4,16 +4,16 @@
 #include <mutex>
 
 template<class T>
-class CSingleton
+class Singleton
 {
 protected:
 	static std::mutex m_Mutex;
 	static std::atomic<T*> m_Instance;
 
 public:
-	CSingleton()
+	Singleton()
 	{ }
-	virtual ~CSingleton()
+	virtual ~Singleton()
 	{ }
 
 	inline static T *Get()
@@ -39,6 +39,6 @@ public:
 };
 
 template <class T>
-std::mutex CSingleton<T>::m_Mutex;
+std::mutex Singleton<T>::m_Mutex;
 template <class T>
-std::atomic<T*> CSingleton<T>::m_Instance{ nullptr };
+std::atomic<T*> Singleton<T>::m_Instance{ nullptr };

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CSingleton.hpp"
+#include "Singleton.hpp"
 #include "types.hpp"
 #include "Callback.hpp"
 
@@ -92,9 +92,9 @@ public:
 };
 
 
-class ChannelManager : public CSingleton<ChannelManager>
+class ChannelManager : public Singleton<ChannelManager>
 {
-	friend class CSingleton<ChannelManager>;
+	friend class Singleton<ChannelManager>;
 private:
 	ChannelManager() = default;
 	~ChannelManager() = default;

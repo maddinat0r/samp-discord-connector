@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CSingleton.hpp"
+#include "Singleton.hpp"
 
 #include <string>
 #include <memory>
@@ -9,9 +9,9 @@
 #include "WebSocket.hpp"
 
 
-class Network : public CSingleton<Network>
+class Network : public Singleton<Network>
 {
-	friend class CSingleton<Network>;
+	friend class Singleton<Network>;
 private:
 	Network()
 	{

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CSingleton.hpp"
+#include "Singleton.hpp"
 #include "types.hpp"
 
 #include <string>
@@ -79,9 +79,9 @@ public:
 };
 
 
-class RoleManager : public CSingleton<RoleManager>
+class RoleManager : public Singleton<RoleManager>
 {
-	friend class CSingleton<RoleManager>;
+	friend class Singleton<RoleManager>;
 private:
 	RoleManager() = default;
 	~RoleManager() = default;

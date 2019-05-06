@@ -1,5 +1,5 @@
 #include "Http.hpp"
-#include "CLog.hpp"
+#include "Logger.hpp"
 #include "version.hpp"
 
 #include <boost/asio/system_timer.hpp>
@@ -59,7 +59,7 @@ void Http::NetworkThreadFunc()
 
 				// no, delete rate-limit and go on
 				path_ratelimit.erase(pr_it);
-				CLog::Get()->Log(LogLevel::DEBUG, "rate-limit on path '{}' lifted",
+				Logger::Get()->Log(LogLevel::DEBUG, "rate-limit on path '{}' lifted",
 					entry->Request->target().to_string());
 			}
 
@@ -74,7 +74,7 @@ void Http::NetworkThreadFunc()
 				beast::http::write(*m_SslStream, *entry->Request, error_code);
 				if (error_code)
 				{
-					CLog::Get()->Log(LogLevel::ERROR, "Error while sending HTTP {} request to '{}': {}",
+					Logger::Get()->Log(LogLevel::ERROR, "Error while sending HTTP {} request to '{}': {}",
 						entry->Request->method_string().to_string(),
 						entry->Request->target().to_string(),
 						error_code.message());
@@ -86,7 +86,7 @@ void Http::NetworkThreadFunc()
 					beast::http::read(*m_SslStream, sb, response, error_code);
 					if (error_code)
 					{
-						CLog::Get()->Log(LogLevel::ERROR, "Error while retrieving HTTP {} response from '{}': {}",
+						Logger::Get()->Log(LogLevel::ERROR, "Error while retrieving HTTP {} response from '{}': {}",
 							entry->Request->method_string().to_string(),
 							entry->Request->target().to_string(),
 							error_code.message());
@@ -100,7 +100,7 @@ void Http::NetworkThreadFunc()
 					if (retry_counter++ >= MaxRetries || !ReconnectRetry())
 					{
 						// we failed to reconnect, discard this request
-						CLog::Get()->Log(LogLevel::WARNING, "Failed to send request, discarding");
+						Logger::Get()->Log(LogLevel::WARNING, "Failed to send request, discarding");
 						skip_entry = true;
 						break; // break out of do-while loop
 					}
@@ -121,7 +121,7 @@ void Http::NetworkThreadFunc()
 					auto lit = path_ratelimit.find(limited_url);
 					if (lit != path_ratelimit.end())
 					{
-						CLog::Get()->Log(LogLevel::ERROR, 
+						Logger::Get()->Log(LogLevel::ERROR, 
 							"Error while processing rate-limit: already rate-limited path '{}'",
 							limited_url);
 
@@ -139,7 +139,7 @@ void Http::NetworkThreadFunc()
 						date_ss >> date::parse("%a, %d %b %Y %T %Z", date_utc); // RFC2616 HTTP header date format
 
 						std::chrono::seconds timepoint_now = date_utc.time_since_epoch();
-						CLog::Get()->Log(LogLevel::DEBUG, "rate-limiting path {} until {} (current time: {})",
+						Logger::Get()->Log(LogLevel::DEBUG, "rate-limiting path {} until {} (current time: {})",
 							limited_url,
 							it_r->value().to_string(),
 							timepoint_now.count());
@@ -176,7 +176,7 @@ void Http::NetworkThreadFunc()
 
 bool Http::Connect()
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "Http::Connect");
+	Logger::Get()->Log(LogLevel::DEBUG, "Http::Connect");
 
 	// connect to REST API
 	asio::ip::tcp::resolver r{ m_IoService };
@@ -184,7 +184,7 @@ bool Http::Connect()
 	auto target = r.resolve({ "discordapp.com", "https" }, error);
 	if (error)
 	{
-		CLog::Get()->Log(LogLevel::ERROR, "Can't resolve Discord API URL: {} ({})",
+		Logger::Get()->Log(LogLevel::ERROR, "Can't resolve Discord API URL: {} ({})",
 			error.message(), error.value());
 		return false;
 	}
@@ -193,7 +193,7 @@ bool Http::Connect()
 	asio::connect(m_SslStream->lowest_layer(), target, error);
 	if (error)
 	{
-		CLog::Get()->Log(LogLevel::ERROR, "Can't connect to Discord API: {} ({})",
+		Logger::Get()->Log(LogLevel::ERROR, "Can't connect to Discord API: {} ({})",
 			error.message(), error.value());
 		return false;
 	}
@@ -202,7 +202,7 @@ bool Http::Connect()
 	m_SslStream->set_verify_mode(asio::ssl::verify_none, error);
 	if (error)
 	{
-		CLog::Get()->Log(LogLevel::ERROR, 
+		Logger::Get()->Log(LogLevel::ERROR, 
 			"Can't configure SSL stream peer verification mode for Discord API: {} ({})",
 			error.message(), error.value());
 		return false;
@@ -211,7 +211,7 @@ bool Http::Connect()
 	m_SslStream->handshake(asio::ssl::stream_base::client, error);
 	if (error)
 	{
-		CLog::Get()->Log(LogLevel::ERROR, "Can't establish secured connection to Discord API: {} ({})",
+		Logger::Get()->Log(LogLevel::ERROR, "Can't establish secured connection to Discord API: {} ({})",
 			error.message(), error.value());
 		return false;
 	}
@@ -221,62 +221,62 @@ bool Http::Connect()
 
 void Http::Disconnect()
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "Http::Disconnect");
+	Logger::Get()->Log(LogLevel::DEBUG, "Http::Disconnect");
 
 	boost::system::error_code error;
 	m_SslStream->shutdown(error);
 	if (error && error != boost::asio::error::eof)
 	{
-		CLog::Get()->Log(LogLevel::WARNING, "Error while shutting down SSL on HTTP connection: {} ({})",
+		Logger::Get()->Log(LogLevel::WARNING, "Error while shutting down SSL on HTTP connection: {} ({})",
 			error.message(), error.value());
 	}
 	
 	m_SslStream->lowest_layer().shutdown(asio::ip::tcp::socket::shutdown_both, error);
 	if (error && error != boost::asio::error::eof)
 	{
-		CLog::Get()->Log(LogLevel::WARNING, "Error while shutting down HTTP connection: {} ({})",
+		Logger::Get()->Log(LogLevel::WARNING, "Error while shutting down HTTP connection: {} ({})",
 			error.message(), error.value());
 	}
 
 	m_SslStream->lowest_layer().close(error);
 	if (error)
 	{
-		CLog::Get()->Log(LogLevel::WARNING, "Error while closing HTTP connection: {} ({})",
+		Logger::Get()->Log(LogLevel::WARNING, "Error while closing HTTP connection: {} ({})",
 			error.message(), error.value());
 	}
 }
 
 bool Http::ReconnectRetry()
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "Http::ReconnectRetry");
+	Logger::Get()->Log(LogLevel::DEBUG, "Http::ReconnectRetry");
 
 	unsigned int reconnect_counter = 0;
 	do
 	{
-		CLog::Get()->Log(LogLevel::INFO, "trying reconnect #{}...", reconnect_counter + 1);
+		Logger::Get()->Log(LogLevel::INFO, "trying reconnect #{}...", reconnect_counter + 1);
 
 		Disconnect();
 		if (Connect())
 		{
-			CLog::Get()->Log(LogLevel::INFO, "reconnect succeeded, resending request");
+			Logger::Get()->Log(LogLevel::INFO, "reconnect succeeded, resending request");
 			return true;
 		}
 		else
 		{
 			unsigned int seconds_to_wait = static_cast<unsigned int>(std::pow(2U, reconnect_counter));
-			CLog::Get()->Log(LogLevel::WARNING, "reconnect failed, waiting {} seconds...", seconds_to_wait);
+			Logger::Get()->Log(LogLevel::WARNING, "reconnect failed, waiting {} seconds...", seconds_to_wait);
 			std::this_thread::sleep_for(std::chrono::seconds(seconds_to_wait));
 		}
 	} while (++reconnect_counter < 3);
 	
-	CLog::Get()->Log(LogLevel::ERROR, "Could not reconnect to Discord");
+	Logger::Get()->Log(LogLevel::ERROR, "Could not reconnect to Discord");
 	return false;
 }
 
 Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 	std::string const &url, std::string const &content)
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "Http::PrepareRequest");
+	Logger::Get()->Log(LogLevel::DEBUG, "Http::PrepareRequest");
 
 	auto req = std::make_shared<Request_t>();
 	req->method(method);
@@ -299,7 +299,7 @@ Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 void Http::SendRequest(beast::http::verb const method, std::string const &url, 
 	std::string const &content, ResponseCallback_t &&callback)
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "Http::SendRequest");
+	Logger::Get()->Log(LogLevel::DEBUG, "Http::SendRequest");
 
 	SharedRequest_t req = PrepareRequest(method, url, content);
 
@@ -321,7 +321,7 @@ Http::ResponseCallback_t Http::CreateResponseCallback(ResponseCb_t &&callback)
 
 void Http::Get(std::string const &url, ResponseCb_t &&callback)
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "Http::Get");
+	Logger::Get()->Log(LogLevel::DEBUG, "Http::Get");
 
 	SendRequest(beast::http::verb::get, url, "", 
 		CreateResponseCallback(std::move(callback)));
@@ -330,7 +330,7 @@ void Http::Get(std::string const &url, ResponseCb_t &&callback)
 void Http::Post(std::string const &url, std::string const &content,
 	ResponseCb_t &&callback /*= nullptr*/)
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "Http::Post");
+	Logger::Get()->Log(LogLevel::DEBUG, "Http::Post");
 
 	SendRequest(beast::http::verb::post, url, content, 
 		CreateResponseCallback(std::move(callback)));
@@ -338,21 +338,21 @@ void Http::Post(std::string const &url, std::string const &content,
 
 void Http::Delete(std::string const &url)
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "Http::Delete");
+	Logger::Get()->Log(LogLevel::DEBUG, "Http::Delete");
 
 	SendRequest(beast::http::verb::delete_, url, "", nullptr);
 }
 
 void Http::Put(std::string const &url)
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "Http::Put");
+	Logger::Get()->Log(LogLevel::DEBUG, "Http::Put");
 
 	SendRequest(beast::http::verb::put, url, "", nullptr);
 }
 
 void Http::Patch(std::string const &url, std::string const &content)
 {
-	CLog::Get()->Log(LogLevel::DEBUG, "Http::Patch");
+	Logger::Get()->Log(LogLevel::DEBUG, "Http::Patch");
 
 	SendRequest(beast::http::verb::patch, url, content, nullptr);
 }

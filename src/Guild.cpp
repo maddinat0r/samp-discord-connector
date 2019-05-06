@@ -4,7 +4,7 @@
 #include "User.hpp"
 #include "Role.hpp"
 #include "PawnDispatcher.hpp"
-#include "CLog.hpp"
+#include "Logger.hpp"
 #include "utils.hpp"
 
 #include <unordered_map>
@@ -15,7 +15,7 @@ Guild::Guild(GuildId_t pawn_id, json const &data) :
 {
 	if (!utils::TryGetJsonValue(data, m_Id, "id"))
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(LogLevel::ERROR,
 			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
 		return;
 	}
@@ -43,7 +43,7 @@ Guild::Guild(GuildId_t pawn_id, json const &data) :
 				// we break here because all other array entries are likely
 				// to be invalid too, and we don't want to spam an error message
 				// for every single element in this array
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"invalid JSON: expected \"user\" in \"{}\"", m.dump());
 				break;
 			}
@@ -70,7 +70,7 @@ Guild::Guild(GuildId_t pawn_id, json const &data) :
 			if (!utils::TryGetJsonValue(p, userid, "user", "id"))
 			{
 				// see above on why we break here
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"invalid JSON: expected \"user.id\" in \"{}\"", p.dump());
 				break;
 			}
@@ -79,7 +79,7 @@ Guild::Guild(GuildId_t pawn_id, json const &data) :
 			if (!utils::TryGetJsonValue(p, status, "status"))
 			{
 				// see above on why we break here
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"invalid JSON: expected \"status\" in \"{}\"", p.dump());
 				break;
 			}
@@ -108,7 +108,7 @@ void Guild::Member::Update(json const &data)
 		{
 			if (!mr.is_string())
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"invalid JSON: not a string: \"{}\"", mr.dump());
 				break;
 			}
@@ -121,7 +121,7 @@ void Guild::Member::Update(json const &data)
 			}
 			else
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"can't update member role: role id \"{}\" not cached", sfid);
 			}
 		}
@@ -135,7 +135,7 @@ void Guild::Member::Update(json const &data)
 		else if (nick_json.is_null())
 			Nickname.clear();
 		else
-			CLog::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(LogLevel::ERROR,
 				"invalid JSON: invalid datatype for \"nick\" in \"{}\"", data.dump());
 	}
 }
@@ -190,7 +190,7 @@ void Guild::Update(json const &data)
 			std::string role_id;
 			if (!utils::TryGetJsonValue(r, role_id, "id"))
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"invalid JSON: expected \"id\" in \"{}\"", r.dump());
 				break;
 			}
@@ -212,7 +212,7 @@ void Guild::SetGuildName(std::string const &name)
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format("/guilds/{:s}", GetId()), json_str);
 }
@@ -225,7 +225,7 @@ void Guild::SetMemberNickname(User_t const &user, std::string const &nickname)
 	
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	if (m_MembersSet.count(user->GetPawnId()) == 0)
 		return;
@@ -290,7 +290,7 @@ void Guild::SetRolePosition(Role_t const &role, int position)
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format(
 		"/guilds/{guild.id}/roles", GetId()), json_str);
@@ -305,7 +305,7 @@ void GuildModifyRole(Guild *guild, Role_t const &role, const char *name, T value
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format(
 		"/guilds/{guild.id}/roles/{:s}", guild->GetId(), role->GetId()), json_str);
@@ -351,7 +351,7 @@ void GuildManager::Initialize()
 	{
 		if (!utils::IsValidJson(data, "guilds", json::value_t::array))
 		{
-			CLog::Get()->Log(LogLevel::FATAL,
+			Logger::Get()->Log(LogLevel::FATAL,
 				"invalid JSON: expected \"guilds\" in \"{}\"", data.dump());
 			return;
 		}
@@ -387,7 +387,7 @@ void GuildManager::Initialize()
 		Snowflake_t sfid;
 		if (!utils::TryGetJsonValue(data, sfid, "id"))
 		{
-			CLog::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(LogLevel::ERROR,
 				"invalid JSON: expected \"id\" in \"{}\"", data.dump());
 			return;
 		}
@@ -397,7 +397,7 @@ void GuildManager::Initialize()
 			Guild_t const &guild = GuildManager::Get()->FindGuildById(sfid);
 			if (!guild)
 			{
-				CLog::Get()->Log(LogLevel::WARNING,
+				Logger::Get()->Log(LogLevel::WARNING,
 					"can't delete guild: guild id \"{}\" not cached", sfid);
 				return;
 			}
@@ -415,7 +415,7 @@ void GuildManager::Initialize()
 		Snowflake_t sfid;
 		if (!utils::TryGetJsonValue(data, sfid, "id"))
 		{
-			CLog::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(LogLevel::ERROR,
 				"invalid JSON: expected \"id\" in \"{}\"", data.dump());
 			return;
 		}
@@ -425,7 +425,7 @@ void GuildManager::Initialize()
 			Guild_t const &guild = GuildManager::Get()->FindGuildById(sfid);
 			if (!guild)
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"can't update guild: guild id \"{}\" not cached", sfid);
 				return;
 			}
@@ -445,7 +445,7 @@ void GuildManager::Initialize()
 			"user", json::value_t::object,
 			"roles", json::value_t::array))
 		{
-			CLog::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(LogLevel::ERROR,
 				"invalid JSON: expected \"guild_id\", \"user\" and \"roles\" " \
 				"in \"{}\"", data.dump());
 			return;
@@ -457,7 +457,7 @@ void GuildManager::Initialize()
 			auto const &guild = GuildManager::Get()->FindGuildById(sfid);
 			if (!guild)
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"can't add guild member: guild id \"{}\" not cached", sfid);
 				return;
 			}
@@ -482,7 +482,7 @@ void GuildManager::Initialize()
 			"guild_id", json::value_t::string,
 			"user", "id", json::value_t::string))
 		{
-			CLog::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(LogLevel::ERROR,
 				"invalid JSON: expected \"guild_id\" and \"user.id\" in \"{}\"", data.dump());
 			return;
 		}
@@ -493,7 +493,7 @@ void GuildManager::Initialize()
 			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
 			if (!guild)
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"can't remove guild member: guild id \"{}\" not cached", guild_id);
 				return;
 			}
@@ -502,7 +502,7 @@ void GuildManager::Initialize()
 			auto const &user = UserManager::Get()->FindUserById(user_id);
 			if (!user)
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"can't remove guild member: user id \"{}\" not cached", user_id);
 				return;
 			}
@@ -521,7 +521,7 @@ void GuildManager::Initialize()
 			"guild_id", json::value_t::string,
 			"user", "id", json::value_t::string))
 		{
-			CLog::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(LogLevel::ERROR,
 				"invalid JSON: expected \"guild_id\" and \"user.id\" in \"{}\"", data.dump());
 			return;
 		}
@@ -532,7 +532,7 @@ void GuildManager::Initialize()
 			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
 			if (!guild)
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"can't update guild member: guild id \"{}\" not cached", guild_id);
 				return;
 			}
@@ -541,7 +541,7 @@ void GuildManager::Initialize()
 			auto const &user = UserManager::Get()->FindUserById(user_id);
 			if (!user)
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"can't update guild member: user id \"{}\" not cached", user_id);
 				return;
 			}
@@ -560,7 +560,7 @@ void GuildManager::Initialize()
 			"guild_id", json::value_t::string,
 			"role", json::value_t::object))
 		{
-			CLog::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(LogLevel::ERROR,
 				"invalid JSON: expected \"guild_id\" and \"role\" in \"{}\"", data.dump());
 			return;
 		}
@@ -571,7 +571,7 @@ void GuildManager::Initialize()
 			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
 			if (!guild)
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"can't add guild role: guild id \"{}\" not cached", guild_id);
 				return;
 			}
@@ -591,7 +591,7 @@ void GuildManager::Initialize()
 			"guild_id", json::value_t::string,
 			"role_id", json::value_t::string))
 		{
-			CLog::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(LogLevel::ERROR,
 				"invalid JSON: expected \"guild_id\" and \"role_id\" in \"{}\"", data.dump());
 			return;
 		}
@@ -602,7 +602,7 @@ void GuildManager::Initialize()
 			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
 			if (!guild)
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"can't delete guild role: guild id \"{}\" not cached", guild_id);
 				return;
 			}
@@ -611,7 +611,7 @@ void GuildManager::Initialize()
 			auto const &role = RoleManager::Get()->FindRoleById(role_id);
 			if (!role)
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"can't delete guild role: role id \"{}\" not cached", role_id);
 				return;
 			}
@@ -631,7 +631,7 @@ void GuildManager::Initialize()
 			"guild_id", json::value_t::string,
 			"role", "id", json::value_t::string))
 		{
-			CLog::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(LogLevel::ERROR,
 				"invalid JSON: expected \"guild_id\" and \"role.id\" in \"{}\"", data.dump());
 			return;
 		}
@@ -642,7 +642,7 @@ void GuildManager::Initialize()
 			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
 			if (!guild)
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"can't update guild role: guild id \"{}\" not cached", guild_id);
 				return;
 			}
@@ -651,7 +651,7 @@ void GuildManager::Initialize()
 			auto const &role = RoleManager::Get()->FindRoleById(role_id);
 			if (!role)
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"can't update guild role: role id \"{}\" not cached", role_id);
 				return;
 			}
@@ -671,7 +671,7 @@ void GuildManager::Initialize()
 			std::string guild_id;
 			if (!utils::TryGetJsonValue(data, guild_id, "guild_id"))
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"invalid JSON: expected \"guild_id\" in \"{}\"", data.dump());
 				return;
 			}
@@ -679,7 +679,7 @@ void GuildManager::Initialize()
 			std::string user_id;
 			if (!utils::TryGetJsonValue(data, user_id, "user", "id"))
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"invalid JSON: expected \"user.id\" in \"{}\"", data.dump());
 				return;
 			}
@@ -687,7 +687,7 @@ void GuildManager::Initialize()
 			std::string status;
 			if (!utils::TryGetJsonValue(data, status, "status"))
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"invalid JSON: expected \"status\" in \"{}\"", data.dump());
 				return;
 			}
@@ -695,7 +695,7 @@ void GuildManager::Initialize()
 			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
 			if (!guild)
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"can't update guild member presence: guild id \"{}\" not cached", guild_id);
 				return;
 			}
@@ -703,7 +703,7 @@ void GuildManager::Initialize()
 			auto const &user = UserManager::Get()->FindUserById(user_id);
 			if (!user)
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"can't update guild member presence: user id \"{}\" not cached", user_id);
 				return;
 			}
@@ -721,14 +721,14 @@ void GuildManager::Initialize()
 		Snowflake_t guild_id;
 		if (!utils::TryGetJsonValue(data, guild_id, "guild_id"))
 		{
-			CLog::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(LogLevel::ERROR,
 				"invalid JSON: expected \"guild_id\" in \"{}\"", data.dump());
 			return;
 		}
 
 		if (!utils::IsValidJson(data, "members", json::value_t::array))
 		{
-			CLog::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(LogLevel::ERROR,
 				"invalid JSON: expected array \"members\" in \"{}\"", data.dump());
 		}
 
@@ -737,7 +737,7 @@ void GuildManager::Initialize()
 			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
 			if (!guild)
 			{
-				CLog::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(LogLevel::ERROR,
 					"can't sync offline guild members: guild id \"{}\" not cached", guild_id);
 				return;
 			}
@@ -749,7 +749,7 @@ void GuildManager::Initialize()
 					// we break here because all other array entries are likely
 					// to be invalid too, and we don't want to spam an error message
 					// for every single element in this array
-					CLog::Get()->Log(LogLevel::ERROR,
+					Logger::Get()->Log(LogLevel::ERROR,
 						"invalid JSON: expected \"user\" in \"{}\"", m.dump());
 					break;
 				}
@@ -785,7 +785,7 @@ bool GuildManager::CreateGuildRole(Guild_t const &guild,
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
 	{
-		CLog::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 		return false;
 	}
 
@@ -793,7 +793,7 @@ bool GuildManager::CreateGuildRole(Guild_t const &guild,
 	Network::Get()->Http().Post(fmt::format("/guilds/{:s}/roles", guild->GetId()), json_str,
 		[this, cb, guild_id](Http::Response r)
 	{
-		CLog::Get()->Log(LogLevel::DEBUG,
+		Logger::Get()->Log(LogLevel::DEBUG,
 			"role create response: status {}; body: {}; add: {}",
 			r.status, r.body, r.additional_data);
 		if (r.status / 100 == 2) // success
@@ -801,7 +801,7 @@ bool GuildManager::CreateGuildRole(Guild_t const &guild,
 			auto const &guild = GuildManager::Get()->FindGuild(guild_id);
 			if (!guild)
 			{
-				CLog::Get()->Log(LogLevel::ERROR, "lost cached guild between network calls");
+				Logger::Get()->Log(LogLevel::ERROR, "lost cached guild between network calls");
 				return;
 			}
 
@@ -828,7 +828,7 @@ GuildId_t GuildManager::AddGuild(json const &data)
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(LogLevel::ERROR,
 			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
 		return INVALID_GUILD_ID;
 	}
@@ -836,7 +836,7 @@ GuildId_t GuildManager::AddGuild(json const &data)
 	auto const &guild = FindGuildById(sfid);
 	if (guild)
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(LogLevel::ERROR,
 			"can't add guild: guild id \"{}\" already exists (PAWN id '{}')", 
 			sfid, guild->GetPawnId());
 		return INVALID_GUILD_ID;
@@ -848,12 +848,12 @@ GuildId_t GuildManager::AddGuild(json const &data)
 
 	if (!m_Guilds.emplace(id, Guild_t(new Guild(id, data))).second)
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(LogLevel::ERROR,
 			"can't create guild: duplicate key '{}'", id);
 		return INVALID_GUILD_ID;
 	}
 
-	CLog::Get()->Log(LogLevel::INFO, "successfully created guild with id '{}'", id);
+	Logger::Get()->Log(LogLevel::INFO, "successfully created guild with id '{}'", id);
 	return id;
 }
 

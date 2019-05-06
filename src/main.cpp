@@ -7,7 +7,7 @@
 #include "Channel.hpp"
 #include "Message.hpp"
 #include "SampConfigReader.hpp"
-#include "CLog.hpp"
+#include "Logger.hpp"
 #include "version.hpp"
 
 #include <samplog/samplog.hpp>
@@ -30,11 +30,11 @@ void InitializeEverything(std::string const &bot_token)
 
 void DestroyEverything()
 {
-	MessageManager::CSingleton::Destroy();
-	ChannelManager::CSingleton::Destroy();
-	UserManager::CSingleton::Destroy();
-	GuildManager::CSingleton::Destroy();
-	Network::CSingleton::Destroy();
+	MessageManager::Singleton::Destroy();
+	ChannelManager::Singleton::Destroy();
+	UserManager::Singleton::Destroy();
+	GuildManager::Singleton::Destroy();
+	Network::Singleton::Destroy();
 }
 
 bool WaitForInitialization()
@@ -114,7 +114,7 @@ PLUGIN_EXPORT void PLUGIN_CALL Unload()
 	logprintf("plugin.dc-connector: Unloading plugin...");
 
 	DestroyEverything();
-	CLog::CSingleton::Destroy();
+	Logger::Singleton::Destroy();
 	
 	samplog::Api::Destroy();
 	

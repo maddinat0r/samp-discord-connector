@@ -5,7 +5,7 @@
 #include "Network.hpp"
 #include "PawnDispatcher.hpp"
 #include "Callback.hpp"
-#include "CLog.hpp"
+#include "Logger.hpp"
 #include "utils.hpp"
 
 
@@ -21,7 +21,7 @@ Message::Message(MessageId_t pawn_id, json const &data) : m_PawnId(pawn_id)
 
 	if (!_valid)
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(LogLevel::ERROR,
 			"can't construct message object: invalid JSON: \"{}\"", data.dump());
 		return;
 	}
@@ -119,12 +119,12 @@ MessageId_t MessageManager::Create(json const &data)
 
 	if (!m_Messages.emplace(id, Message_t(new Message(id, data))).first->second)
 	{
-		CLog::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(LogLevel::ERROR,
 			"can't create message: duplicate key '{}'", id);
 		return INVALID_USER_ID;
 	}
 
-	CLog::Get()->Log(LogLevel::INFO, "successfully created message with id '{}'", id);
+	Logger::Get()->Log(LogLevel::INFO, "successfully created message with id '{}'", id);
 	return id;
 }
 
@@ -135,7 +135,7 @@ bool MessageManager::Delete(MessageId_t id)
 		return false;
 
 	m_Messages.erase(it);
-	CLog::Get()->Log(LogLevel::DEBUG, "deleted message with id '{}'", id);
+	Logger::Get()->Log(LogLevel::DEBUG, "deleted message with id '{}'", id);
 	return true;
 }
 

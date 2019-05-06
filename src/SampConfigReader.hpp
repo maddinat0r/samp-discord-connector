@@ -3,15 +3,15 @@
 #include <string>
 #include <vector>
 
-#include "CSingleton.hpp"
+#include "Singleton.hpp"
 
 using std::string;
 using std::vector;
 
 
-class SampConfigReader : public CSingleton<SampConfigReader>
+class SampConfigReader : public Singleton<SampConfigReader>
 {
-	friend class CSingleton<SampConfigReader>;
+	friend class Singleton<SampConfigReader>;
 private:
 	SampConfigReader();
 	~SampConfigReader() = default;

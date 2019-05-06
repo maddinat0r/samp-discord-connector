@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CSingleton.hpp"
+#include "Singleton.hpp"
 
 #include <queue>
 #include <mutex>
@@ -9,9 +9,9 @@
 #include "types.hpp"
 
 
-class PawnDispatcher : public CSingleton<PawnDispatcher>
+class PawnDispatcher : public Singleton<PawnDispatcher>
 {
-	friend class CSingleton<PawnDispatcher>;
+	friend class Singleton<PawnDispatcher>;
 public: //type definitions
 	using Function_t = std::function<void()>;
 

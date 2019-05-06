@@ -29,13 +29,13 @@ add_samp_plugin(discord-connector
 	Error.hpp
 	Guild.cpp
 	Guild.hpp
-	CLog.cpp
-	CLog.hpp
+	Logger.cpp
+	Logger.hpp
 	Message.cpp
 	Message.hpp
 	Network.cpp
 	Network.hpp
-	CSingleton.hpp
+	Singleton.hpp
 	Http.cpp
 	Http.hpp
 	Callback.hpp
