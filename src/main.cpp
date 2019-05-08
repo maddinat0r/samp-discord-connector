@@ -99,7 +99,7 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 			{
 				while (true)
 				{
-					std::this_thread::sleep_for(std::chrono::minutes(2));
+					std::this_thread::sleep_for(std::chrono::minutes(1));
 
 					DestroyEverything();
 					InitializeEverything(bot_token);
