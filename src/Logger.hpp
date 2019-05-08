@@ -67,29 +67,30 @@ public:
 	}
 
 	template<typename... Args>
+	inline void Log(LogLevel level, const char *msg)
+	{
+		m_Logger.Log(level, msg);
+	}
+
+	template<typename... Args>
 	inline void Log(LogLevel level, const char *format, Args &&...args)
 	{
-		if (!IsLogLevel(level))
-			return;
-
-		string str = format;
-		if (sizeof...(args) != 0)
-			str = fmt::format(format, std::forward<Args>(args)...);
-
+		auto str = fmt::format(format, std::forward<Args>(args)...);
 		m_Logger.Log(level, str.c_str());
 	}
 
 	template<typename... Args>
 	inline void Log(LogLevel level, std::vector<AmxFuncCallInfo> const &callinfo,
-					const char *format, Args &&...args)
+		const char *msg)
 	{
-		if (!IsLogLevel(level))
-			return;
+		m_Logger.Log(level, msg, callinfo);
+	}
 
-		string str = format;
-		if (sizeof...(args) != 0)
-			str = fmt::format(format, std::forward<Args>(args)...);
-
+	template<typename... Args>
+	inline void Log(LogLevel level, std::vector<AmxFuncCallInfo> const &callinfo,
+		const char *format, Args &&...args)
+	{
+		auto str = fmt::format(format, std::forward<Args>(args)...);
 		m_Logger.Log(level, str.c_str(), callinfo);
 	}
 
@@ -103,7 +104,7 @@ public:
 		if (DebugInfoManager::Get()->GetCurrentAmx() == nullptr)
 			return; //do nothing, since we're not called from within a native func
 
-		string msg = fmt::format("{}: {}",
+		auto msg = fmt::format("{:s}: {:s}",
 			DebugInfoManager::Get()->GetCurrentNativeName(),
 			fmt::format(fmt, std::forward<Args>(args)...));
 
@@ -116,8 +117,7 @@ public:
 	template<typename T>
 	inline void LogNative(const Error<T> &error)
 	{
-		LogNative(LogLevel::ERROR, "{} error: {}",
-				  error.module(), error.msg());
+		LogNative(LogLevel::ERROR, "{} error: {}", error.module(), error.msg());
 	}
 
 private:
