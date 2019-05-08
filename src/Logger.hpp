@@ -31,7 +31,7 @@ private:
 	void Clear();
 
 public:
-	inline AMX * const GetCurrentAmx()
+	inline AMX * GetCurrentAmx()
 	{
 		return m_Amx;
 	}

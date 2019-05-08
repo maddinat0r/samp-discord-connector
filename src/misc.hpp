@@ -3,6 +3,11 @@
 #include <string>
 #include <type_traits>
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4459)
+#endif
+
 #include <boost/spirit/include/qi_parse.hpp>
 #include <boost/spirit/include/qi_int.hpp>
 #include <boost/spirit/include/qi_real.hpp>
@@ -12,6 +17,10 @@
 #include <boost/spirit/include/karma_uint.hpp>
 #include <boost/spirit/include/karma_real.hpp>
 #include <boost/spirit/include/karma_bool.hpp>
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 namespace qi = boost::spirit::qi;
 namespace karma = boost::spirit::karma;

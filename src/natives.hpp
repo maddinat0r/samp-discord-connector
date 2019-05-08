@@ -94,4 +94,4 @@ namespace Native
 	AMX_DECLARE_NATIVE(DCC_CreateGuildRole);
 	AMX_DECLARE_NATIVE(DCC_GetCreatedGuildRole);
 	AMX_DECLARE_NATIVE(DCC_DeleteGuildRole);
-};
+}

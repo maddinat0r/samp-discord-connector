@@ -24,6 +24,7 @@ namespace utils
 
 	inline bool IsValidJson(nlohmann::json const &data)
 	{
+		(void)data; // unused
 		return true;
 	}
 

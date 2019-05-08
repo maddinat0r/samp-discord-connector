@@ -200,6 +200,9 @@ namespace pawn_cb
 				case Type::REFERENCE:
 					Reference = rhs.Reference;
 					break;
+				case Type::INVALID:
+					// initialize nothing
+					break;
 				}
 			}
 			Param &operator=(Param &&rhs)
@@ -218,6 +221,9 @@ namespace pawn_cb
 					break;
 				case Type::REFERENCE:
 					Reference = rhs.Reference;
+					break;
+				case Type::INVALID:
+					// initialize nothing
 					break;
 				}
 				return *this;
@@ -243,6 +249,9 @@ namespace pawn_cb
 					break;
 				case Type::REFERENCE:
 					amx_PushAddress(amx, Reference);
+					break;
+				case Type::INVALID:
+					// initialize nothing
 					break;
 				}
 			}
@@ -306,7 +315,9 @@ namespace pawn_cb
 		}
 
 		static void AddArgs(ParamList_t &list)
-		{ }
+		{
+			(void)list; // unused
+		}
 
 		static bool DoBasicInit(Error &error, AMX *amx, const char *name, int &cb_idx)
 		{
