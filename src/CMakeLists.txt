@@ -23,7 +23,6 @@ configure_file(
 add_samp_plugin(discord-connector 
 	${SAMPSDK_DIR}/amxplugin.cpp
 	${SAMPSDK_DIR}/amxplugin2.cpp
-	${SAMPSDK_DIR}/amx/getch.c
 	Channel.cpp
 	Channel.hpp
 	Error.hpp
@@ -58,6 +57,10 @@ add_samp_plugin(discord-connector
 	utils.hpp
 	plugin.def
 )
+
+if (UNIX)
+	target_sources(discord-connector PUBLIC ${SAMPSDK_DIR}/amx/getch.c)
+endif()
 
 set_property(TARGET discord-connector PROPERTY CXX_STANDARD 11)
 set_property(TARGET discord-connector PROPERTY CXX_STANDARD_REQUIRED ON)
