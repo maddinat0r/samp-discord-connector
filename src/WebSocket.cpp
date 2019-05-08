@@ -103,6 +103,8 @@ void WebSocket::Disconnect(bool reconnect /*= false*/)
 
 void WebSocket::OnClose(boost::system::error_code ec, bool reconnect)
 {
+	boost::ignore_unused(ec);
+
 	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnClose");
 
 	m_HeartbeatTimer.cancel();
