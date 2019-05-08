@@ -280,12 +280,9 @@ void WebSocket::OnRead(boost::system::error_code ec)
 		{
 			json &data = result["d"];
 			Event event = it->second;
-			switch (event)
-			{
-			case Event::READY:
+
+			if (event == Event::READY)
 				m_SessionId = data["session_id"].get<std::string>();
-				break;
-			}
 
 			auto event_range = m_EventMap.equal_range(event);
 			for (auto ev_it = event_range.first; ev_it != event_range.second; ++ev_it)
