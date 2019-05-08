@@ -32,10 +32,10 @@ Channel::Channel(ChannelId_t pawn_id, json const &data, GuildId_t guild_id) :
 	}
 	else
 	{
-		std::string guild_id;
-		if (utils::TryGetJsonValue(data, guild_id, "guild_id"))
+		std::string guild_id_str;
+		if (utils::TryGetJsonValue(data, guild_id_str, "guild_id"))
 		{
-			Guild_t const &guild = GuildManager::Get()->FindGuildById(guild_id);
+			Guild_t const &guild = GuildManager::Get()->FindGuildById(guild_id_str);
 			m_GuildId = guild->GetPawnId();
 			guild->AddChannel(pawn_id);
 		}
