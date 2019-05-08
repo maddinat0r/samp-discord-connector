@@ -99,6 +99,22 @@ if(UNIX)
 		INSTALL_RPATH "$ORIGIN/..:$ORIGIN/")
 endif()
 
+# increase warning levels
+if (MSVC)
+	target_compile_options(discord-connector PRIVATE
+		/W4
+		/WX
+		/permissive-
+	)
+elseif(UNIX)
+	target_compile_options(discord-connector PRIVATE
+		-Wall
+		-Wextra
+		-pedantic
+		-Werror
+	)
+endif()
+
 
 install(TARGETS discord-connector DESTINATION "plugins/")
 get_target_property(LOGCORE_LOCATION log-core LOCATION)
