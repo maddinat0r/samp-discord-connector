@@ -1,9 +1,9 @@
 #include "Http.hpp"
 #include "Logger.hpp"
+#include "misc.hpp"
 #include "version.hpp"
 
 #include <boost/asio/system_timer.hpp>
-#include <boost/spirit/include/qi.hpp>
 #include <date/date.h>
 
 
@@ -146,9 +146,7 @@ void Http::NetworkThreadFunc()
 
 						string const &reset_time_str = it_r->value().to_string();
 						long long reset_time_secs = 0;
-						boost::spirit::qi::parse(reset_time_str.begin(), reset_time_str.end(),
-							boost::spirit::qi::any_int_parser<long long>(),
-							reset_time_secs);
+						ConvertStrToData(reset_time_str, reset_time_secs);
 						TimePoint_t reset_time = std::chrono::steady_clock::now() 
 							+ std::chrono::seconds(reset_time_secs - timepoint_now.count() + 1); // add a buffer of 1 second
 
