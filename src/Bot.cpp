@@ -13,7 +13,7 @@
 #include <json.hpp>
 #include <fmt/format.h>
 
-#include <unordered_map>
+#include <map>
 
 
 void ThisBot::TriggerTypingIndicator(Channel_t const &channel)
@@ -80,7 +80,7 @@ bool ThisBot::CreatePrivateChannel(User_t const &user, pawn_cb::Callback_t &&cal
 
 std::string const &GetPresenceStatusString(ThisBot::PresenceStatus status)
 {
-	static std::unordered_map<ThisBot::PresenceStatus, std::string> mapping{
+	static const std::map<ThisBot::PresenceStatus, std::string> mapping{
 		{ ThisBot::PresenceStatus::ONLINE, "online" },
 		{ ThisBot::PresenceStatus::DO_NOT_DISTURB, "dnd" },
 		{ ThisBot::PresenceStatus::IDLE, "idle" },
