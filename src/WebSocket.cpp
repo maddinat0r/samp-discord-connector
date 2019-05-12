@@ -173,7 +173,7 @@ void WebSocket::RequestGuildMembers(std::string guild_id)
 {
 	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::RequestGuildMembers");
 	
-	json resume_payload = {
+	json payload = {
 		{ "op", 8 },
 		{ "d",{
 			{ "guild_id", guild_id },
@@ -181,7 +181,7 @@ void WebSocket::RequestGuildMembers(std::string guild_id)
 			{ "limit", 0 }
 		} }
 	};
-	m_WebSocket->write(asio::buffer(resume_payload.dump()));
+	m_WebSocket->write(asio::buffer(payload.dump()));
 }
 
 void WebSocket::Read()
