@@ -26,30 +26,33 @@ Channel::Channel(ChannelId_t pawn_id, json const &data, GuildId_t guild_id) :
 
 	m_Type = static_cast<Type>(type);
 
-	if (guild_id != 0)
+	if (m_Type != Type::DM && m_Type != Type::GROUP_DM)
 	{
-		m_GuildId = guild_id;
-	}
-	else
-	{
-		std::string guild_id_str;
-		if (utils::TryGetJsonValue(data, guild_id_str, "guild_id"))
+		if (guild_id != 0)
 		{
-			Guild_t const &guild = GuildManager::Get()->FindGuildById(guild_id_str);
-			m_GuildId = guild->GetPawnId();
-			guild->AddChannel(pawn_id);
+			m_GuildId = guild_id;
 		}
 		else
 		{
-			Logger::Get()->Log(LogLevel::ERROR,
-				"invalid JSON: expected \"guild_id\" in \"{}\"", data.dump());
+			std::string guild_id_str;
+			if (utils::TryGetJsonValue(data, guild_id_str, "guild_id"))
+			{
+				Guild_t const &guild = GuildManager::Get()->FindGuildById(guild_id_str);
+				m_GuildId = guild->GetPawnId();
+				guild->AddChannel(pawn_id);
+			}
+			else
+			{
+				Logger::Get()->Log(LogLevel::ERROR,
+					"invalid JSON: expected \"guild_id\" in \"{}\"", data.dump());
+			}
 		}
-	}
 
-	utils::TryGetJsonValue(data, m_Name, "name");
-	utils::TryGetJsonValue(data, m_Topic, "topic");
-	utils::TryGetJsonValue(data, m_Position, "position");
-	utils::TryGetJsonValue(data, m_IsNsfw, "nsfw");
+		utils::TryGetJsonValue(data, m_Name, "name");
+		utils::TryGetJsonValue(data, m_Topic, "topic");
+		utils::TryGetJsonValue(data, m_Position, "position");
+		utils::TryGetJsonValue(data, m_IsNsfw, "nsfw");
+	}
 }
 
 void Channel::SendMessage(std::string &&msg)

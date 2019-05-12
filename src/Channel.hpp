@@ -37,7 +37,7 @@ private:
 
 	Snowflake_t m_Id;
 
-	GuildId_t m_GuildId = 0;
+	GuildId_t m_GuildId = INVALID_GUILD_ID;
 
 	Type m_Type;
 
