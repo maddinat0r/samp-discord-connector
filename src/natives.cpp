@@ -21,9 +21,9 @@
 AMX_DECLARE_NATIVE(Native::native_name)
 {
 	ScopedDebugInfo dbg_info(amx, "native_name", params, "sd");
-	
-	
-	
+
+
+
 	cell ret_val = ;
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
@@ -208,7 +208,7 @@ AMX_DECLARE_NATIVE(Native::DCC_IsChannelNsfw)
 
 	if (channel->GetType() != Channel::Type::GUILD_TEXT)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, 
+		Logger::Get()->LogNative(LogLevel::ERROR,
 			"invalid channel type; must be guild text channel");
 		return 0;
 	}
@@ -269,7 +269,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetChannelName)
 	auto name = amx_GetCppString(amx, params[2]);
 	if (name.length() < 2 || name.length() > 100)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, 
+		Logger::Get()->LogNative(LogLevel::ERROR,
 			"name must be between 2 and 100 characters in length");
 		return 0;
 	}
@@ -369,7 +369,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetChannelParentCategory)
 	Channel_t const &parent_channel = ChannelManager::Get()->FindChannel(parent_channelid);
 	if (!parent_channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid parent channel id '{}'", 
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid parent channel id '{}'",
 			parent_channelid);
 		return 0;
 	}
@@ -1157,7 +1157,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildRole)
 	auto const &roles = guild->GetRoles();
 	if (offset >= roles.size())
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, 
+		Logger::Get()->LogNative(LogLevel::ERROR,
 			"invalid offset '{}', max size is '{}'",
 			offset, roles.size());
 		return 0;
@@ -1653,7 +1653,7 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateGuildChannel)
 
 	pawn_cb::Error cb_error;
 	auto cb = pawn_cb::Callback::Prepare(
-		amx, cb_name.c_str(), cb_format.c_str(),params, 6, cb_error);
+		amx, cb_name.c_str(), cb_format.c_str(), params, 6, cb_error);
 	if (cb_error && cb_error.get() != pawn_cb::Error::Type::EMPTY_NAME)
 	{
 		Logger::Get()->LogNative(LogLevel::ERROR, "could not prepare callback");

@@ -114,8 +114,8 @@ namespace pawn_cb
 	};
 
 	using Callback_t = std::shared_ptr<class Callback>;
-    class Callback
-    {
+	class Callback
+	{
 	private:
 		class Param
 		{
@@ -266,26 +266,26 @@ namespace pawn_cb
 			}
 		};
 
-    private: //type definitions
-        using ParamList_t = std::list<Param>;
+	private: //type definitions
+		using ParamList_t = std::list<Param>;
 
-    private: //constructor / destructor
-        Callback(AMX *amx, int cb_idx, ParamList_t &&params) :
-            _amx(amx),
-            _amx_index(cb_idx),
-            _params(std::move(params))
-        { }
+	private: //constructor / destructor
+		Callback(AMX *amx, int cb_idx, ParamList_t &&params) :
+			_amx(amx),
+			_amx_index(cb_idx),
+			_params(std::move(params))
+		{ }
 
-    public:
-        ~Callback() = default;
+	public:
+		~Callback() = default;
 
-    private: //variables
-        AMX *_amx = nullptr;
-        int _amx_index = -1;
+	private: //variables
+		AMX *_amx = nullptr;
+		int _amx_index = -1;
 
-        ParamList_t _params;
+		ParamList_t _params;
 
-    public: //functions
+	public: //functions
 		bool Execute(cell &ret_val)
 		{
 			cell amx_address = -1;
@@ -306,7 +306,7 @@ namespace pawn_cb
 			return Execute(unused);
 		}
 
-    private:
+	private:
 		template<typename T, typename... Tv>
 		static void AddArgs(ParamList_t &list, T value, Tv&&... tail)
 		{
@@ -351,7 +351,7 @@ namespace pawn_cb
 			return true;
 		}
 
-    public: //factory functions
+	public: //factory functions
 		template<typename... Tv>
 		static Callback_t Prepare(Error &error, AMX *amx, const char *name, Tv&&... params)
 		{
@@ -496,5 +496,5 @@ namespace pawn_cb
 			cell unused;
 			return CallFirst(error, unused, name, std::forward<Tv>(params)...);
 		}
-    };
+	};
 }

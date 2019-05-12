@@ -222,7 +222,7 @@ void Guild::SetMemberNickname(User_t const &user, std::string const &nickname)
 	json data = {
 		{ "nick", nickname }
 	};
-	
+
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
 		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
@@ -440,7 +440,7 @@ void GuildManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_ADD, [](json const &data)
 	{
-		if (!utils::IsValidJson(data, 
+		if (!utils::IsValidJson(data,
 			"guild_id", json::value_t::string,
 			"user", json::value_t::object,
 			"roles", json::value_t::array))
@@ -478,7 +478,7 @@ void GuildManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::GUILD_MEMBER_REMOVE, [](json const &data)
 	{
-		if (!utils::IsValidJson(data, 
+		if (!utils::IsValidJson(data,
 			"guild_id", json::value_t::string,
 			"user", "id", json::value_t::string))
 		{

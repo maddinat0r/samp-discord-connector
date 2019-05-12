@@ -121,7 +121,7 @@ void Http::NetworkThreadFunc()
 					auto lit = path_ratelimit.find(limited_url);
 					if (lit != path_ratelimit.end())
 					{
-						Logger::Get()->Log(LogLevel::ERROR, 
+						Logger::Get()->Log(LogLevel::ERROR,
 							"Error while processing rate-limit: already rate-limited path '{}'",
 							limited_url);
 
@@ -147,7 +147,7 @@ void Http::NetworkThreadFunc()
 						string const &reset_time_str = it_r->value().to_string();
 						long long reset_time_secs = 0;
 						ConvertStrToData(reset_time_str, reset_time_secs);
-						TimePoint_t reset_time = std::chrono::steady_clock::now() 
+						TimePoint_t reset_time = std::chrono::steady_clock::now()
 							+ std::chrono::seconds(reset_time_secs - timepoint_now.count() + 1); // add a buffer of 1 second
 
 						path_ratelimit.insert({ limited_url, reset_time });
@@ -200,7 +200,7 @@ bool Http::Connect()
 	m_SslStream->set_verify_mode(asio::ssl::verify_none, error);
 	if (error)
 	{
-		Logger::Get()->Log(LogLevel::ERROR, 
+		Logger::Get()->Log(LogLevel::ERROR,
 			"Can't configure SSL stream peer verification mode for Discord API: {} ({})",
 			error.message(), error.value());
 		return false;
@@ -252,7 +252,7 @@ bool Http::ReconnectRetry()
 			std::this_thread::sleep_for(std::chrono::seconds(seconds_to_wait));
 		}
 	} while (++reconnect_counter < 3);
-	
+
 	Logger::Get()->Log(LogLevel::ERROR, "Could not reconnect to Discord");
 	return false;
 }
@@ -268,11 +268,11 @@ Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 	req->version(11);
 	req->insert(beast::http::field::connection, "keep-alive");
 	req->insert(beast::http::field::host, "discordapp.com");
-	req->insert(beast::http::field::user_agent, 
+	req->insert(beast::http::field::user_agent,
 		"DiscordBot (github.com/maddinat0r/samp-discord-connector, " PLUGIN_VERSION ")");
 	if (!content.empty())
 		req->insert(beast::http::field::content_type, "application/json");
-	req->insert(beast::http::field::authorization , "Bot " + m_Token);
+	req->insert(beast::http::field::authorization, "Bot " + m_Token);
 	req->body() = content;
 
 	req->prepare_payload();
@@ -280,7 +280,7 @@ Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 	return req;
 }
 
-void Http::SendRequest(beast::http::verb const method, std::string const &url, 
+void Http::SendRequest(beast::http::verb const method, std::string const &url,
 	std::string const &content, ResponseCallback_t &&callback)
 {
 	Logger::Get()->Log(LogLevel::DEBUG, "Http::SendRequest");
@@ -307,7 +307,7 @@ void Http::Get(std::string const &url, ResponseCb_t &&callback)
 {
 	Logger::Get()->Log(LogLevel::DEBUG, "Http::Get");
 
-	SendRequest(beast::http::verb::get, url, "", 
+	SendRequest(beast::http::verb::get, url, "",
 		CreateResponseCallback(std::move(callback)));
 }
 
@@ -316,7 +316,7 @@ void Http::Post(std::string const &url, std::string const &content,
 {
 	Logger::Get()->Log(LogLevel::DEBUG, "Http::Post");
 
-	SendRequest(beast::http::verb::post, url, content, 
+	SendRequest(beast::http::verb::post, url, content,
 		CreateResponseCallback(std::move(callback)));
 }
 

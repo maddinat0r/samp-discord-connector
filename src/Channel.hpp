@@ -110,7 +110,7 @@ public:
 	void Initialize();
 	bool IsInitialized();
 
-	bool CreateGuildChannel(Guild_t const &guild, 
+	bool CreateGuildChannel(Guild_t const &guild,
 		std::string const &name, Channel::Type type, pawn_cb::Callback_t &&callback);
 	ChannelId_t GetCreatedGuildChannelId() const
 	{

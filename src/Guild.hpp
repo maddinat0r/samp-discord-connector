@@ -172,7 +172,7 @@ private:
 	~GuildManager() = default;
 
 private:
-	std::atomic<unsigned int> 
+	std::atomic<unsigned int>
 		m_InitValue{ 1 },
 		m_Initialized{ 0 };
 	std::atomic<bool> m_IsInitialized{ false };

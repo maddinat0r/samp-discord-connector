@@ -129,7 +129,7 @@ private:
 class ScopedDebugInfo
 {
 public:
-	ScopedDebugInfo(AMX * const amx, const char *func, 
+	ScopedDebugInfo(AMX * const amx, const char *func,
 		cell * const params, const char *params_format = "");
 	~ScopedDebugInfo()
 	{

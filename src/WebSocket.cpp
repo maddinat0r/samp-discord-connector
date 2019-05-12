@@ -172,7 +172,7 @@ void WebSocket::SendResumePayload()
 void WebSocket::RequestGuildMembers(std::string guild_id)
 {
 	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::RequestGuildMembers");
-	
+
 	json payload = {
 		{ "op", 8 },
 		{ "d",{

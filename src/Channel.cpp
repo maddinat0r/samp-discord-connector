@@ -57,9 +57,9 @@ void Channel::SendMessage(std::string &&msg)
 	json data = {
 		{ "content", std::move(msg) }
 	};
-	
+
 	std::string json_str;
-	if(!utils::TryDumpJson(data, json_str))
+	if (!utils::TryDumpJson(data, json_str))
 		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Post(fmt::format("/channels/{:s}/messages", GetId()), json_str);
@@ -273,7 +273,7 @@ void ChannelManager::UpdateChannel(json const &data)
 	std::string name, topic;
 	int position;
 	bool is_nsfw;
-	bool 
+	bool
 		update_name = utils::TryGetJsonValue(data, name, "name"),
 		update_topic = utils::TryGetJsonValue(data, topic, "topic"),
 		update_position = utils::TryGetJsonValue(data, position, "position"),

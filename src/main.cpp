@@ -75,12 +75,12 @@ PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()
 PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 {
 	pAMXFunctions = ppData[PLUGIN_DATA_AMX_EXPORTS];
-	logprintf = (logprintf_t) ppData[PLUGIN_DATA_LOGPRINTF];
-	
+	logprintf = (logprintf_t)ppData[PLUGIN_DATA_LOGPRINTF];
+
 	bool ret_val = true;
 	auto bot_token = GetEnvironmentVar("SAMP_DISCORD_BOT_TOKEN");
 
-	if(bot_token.empty())
+	if (bot_token.empty())
 		SampConfigReader::Get()->GetVar("discord_bot_token", bot_token);
 
 	if (!bot_token.empty())
@@ -126,9 +126,9 @@ PLUGIN_EXPORT void PLUGIN_CALL Unload()
 
 	DestroyEverything();
 	Logger::Singleton::Destroy();
-	
+
 	samplog::Api::Destroy();
-	
+
 	logprintf("plugin.dc-connector: Plugin unloaded.");
 }
 
@@ -208,7 +208,7 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_SetGuildName)
 	AMX_DEFINE_NATIVE(DCC_CreateGuildChannel)
 	AMX_DEFINE_NATIVE(DCC_GetCreatedGuildChannel)
-	
+
 	AMX_DEFINE_NATIVE(DCC_GetBotPresenceStatus)
 	AMX_DEFINE_NATIVE(DCC_TriggerBotTypingIndicator)
 	AMX_DEFINE_NATIVE(DCC_SetBotNickname)
