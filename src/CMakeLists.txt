@@ -23,6 +23,8 @@ configure_file(
 add_samp_plugin(discord-connector 
 	${SAMPSDK_DIR}/amxplugin.cpp
 	${SAMPSDK_DIR}/amxplugin2.cpp
+	Bot.cpp
+	Bot.hpp
 	Channel.cpp
 	Channel.hpp
 	Error.hpp

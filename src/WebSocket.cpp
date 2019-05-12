@@ -184,6 +184,31 @@ void WebSocket::RequestGuildMembers(std::string guild_id)
 	m_WebSocket->write(asio::buffer(payload.dump()));
 }
 
+void WebSocket::UpdateStatus(std::string const &status, std::string const &activity_name)
+{
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::UpdateStatus");
+
+	json payload = {
+		{ "op", 3 },
+		{ "d", {
+			{ "since", nullptr },
+			{ "game", nullptr },
+			{ "status", status },
+			{ "afk", false },
+		} }
+	};
+
+	if (!activity_name.empty())
+	{
+		payload.at("d").at("game") = {
+			{ "name", activity_name },
+			{ "type", 0 }
+		};
+	}
+
+	m_WebSocket->write(asio::buffer(payload.dump()));
+}
+
 void WebSocket::Read()
 {
 	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::WsRead");
