@@ -836,9 +836,9 @@ GuildId_t GuildManager::AddGuild(json const &data)
 	auto const &guild = FindGuildById(sfid);
 	if (guild)
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
-			"can't add guild: guild id \"{}\" already exists (PAWN id '{}')", 
-			sfid, guild->GetPawnId());
+		// guild already exists
+		// we don't log an error here because this function can be called on
+		// existing guilds after a gateway reconnect
 		return INVALID_GUILD_ID;
 	}
 
