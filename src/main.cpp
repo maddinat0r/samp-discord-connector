@@ -209,6 +209,13 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_CreateGuildChannel)
 	AMX_DEFINE_NATIVE(DCC_GetCreatedGuildChannel)
 	
+	AMX_DEFINE_NATIVE(DCC_GetBotPresenceStatus)
+	AMX_DEFINE_NATIVE(DCC_TriggerBotTypingIndicator)
+	AMX_DEFINE_NATIVE(DCC_SetBotNickname)
+	AMX_DEFINE_NATIVE(DCC_CreatePrivateChannel)
+	AMX_DEFINE_NATIVE(DCC_GetCreatedPrivateChannel)
+	AMX_DEFINE_NATIVE(DCC_SetBotPresenceStatus)
+	AMX_DEFINE_NATIVE(DCC_SetBotActivity)
 	{ NULL, NULL }
 };
 

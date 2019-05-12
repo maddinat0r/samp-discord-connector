@@ -29,6 +29,16 @@ enum DCC_UserPresenceStatus
 	OFFLINE = 4
 };
 
+enum DCC_BotPresenceStatus
+{
+	INVALID = 0,
+	ONLINE,
+	IDLE,
+	DO_NOT_DISTURB,
+	INVISIBLE,
+	OFFLINE
+};
+
 
 #define DCC_INVALID_CHANNEL DCC_Channel:0
 #define DCC_INVALID_USER DCC_User:0
@@ -139,6 +149,25 @@ native DCC_SetGuildRoleMentionable(DCC_Guild:guild, DCC_Role:role, bool:mentiona
 native DCC_CreateGuildRole(DCC_Guild:guild, const name[], const callback[] = "", const format[] = "", {Float, _}:...);
 native DCC_Role:DCC_GetCreatedGuildRole();
 native DCC_DeleteGuildRole(DCC_Guild:guild, DCC_Role:role);
+
+
+// bot
+native DCC_BotPresenceStatus:DCC_GetBotPresenceStatus();
+
+native DCC_TriggerBotTypingIndicator(DCC_Channel:channel);
+native DCC_SetBotNickname(DCC_Guild:guild, const nickname[]);
+stock DCC_ClearBotNickname(DCC_Guild:guild)
+{
+	return DCC_SetBotNickname(guild, "");
+}
+native DCC_CreatePrivateChannel(DCC_User:user, const callback[] = "", const format[] = "", {Float, _}:...);
+native DCC_Channel:DCC_GetCreatedPrivateChannel();
+native DCC_SetBotPresenceStatus(DCC_BotPresenceStatus:status);
+native DCC_SetBotActivity(const name[]);
+stock DCC_ClearBotActivity()
+{
+	return DCC_SetBotActivity("");
+}
 
 
 

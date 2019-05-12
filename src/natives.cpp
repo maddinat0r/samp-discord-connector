@@ -5,6 +5,7 @@
 #include "User.hpp"
 #include "Role.hpp"
 #include "Guild.hpp"
+#include "Bot.hpp"
 #include "misc.hpp"
 #include "types.hpp"
 #include "Logger.hpp"
@@ -2087,6 +2088,124 @@ AMX_DECLARE_NATIVE(Native::DCC_DeleteGuildRole)
 	}
 
 	guild->DeleteRole(role);
+
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_BotPresenceStatus:DCC_GetBotPresenceStatus();
+AMX_DECLARE_NATIVE(Native::DCC_GetBotPresenceStatus)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_GetBotPresenceStatus", params);
+	return static_cast<cell>(ThisBot::Get()->GetPresenceStatus());
+}
+
+// native DCC_TriggerBotTypingIndicator(DCC_Channel:channel);
+AMX_DECLARE_NATIVE(Native::DCC_TriggerBotTypingIndicator)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_TriggerBotTypingIndicator", params, "d");
+
+	auto channelid = static_cast<ChannelId_t>(params[1]);
+	auto const &channel = ChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
+
+	ThisBot::Get()->TriggerTypingIndicator(channel);
+	return 1;
+}
+
+// native DCC_SetBotNickname(DCC_Guild:guild, const nickname[]);
+AMX_DECLARE_NATIVE(Native::DCC_SetBotNickname)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SetBotNickname", params, "ds");
+
+	auto guildid = static_cast<GuildId_t>(params[1]);
+	auto const &guild = GuildManager::Get()->FindGuild(guildid);
+	if (!guild)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		return 0;
+	}
+
+	auto nickname = amx_GetCppString(amx, params[2]);
+	if (!nickname.empty()) // if nickname is empty it gets resetted/removed
+	{
+		// see https://discordapp.com/developers/docs/resources/user#usernames-and-nicknames
+		if (nickname.length() < 2 || nickname.length() > 32
+			|| nickname == "discordtag" || nickname == "everyone" || nickname == "here"
+			|| nickname.front() == '@' || nickname.front() == '#' || nickname.front() == ':'
+			|| nickname.find("```") == 0)
+		{
+			Logger::Get()->LogNative(LogLevel::ERROR, "invalid nickname '{:s}'", nickname);
+			return 0;
+		}
+	}
+
+	ThisBot::Get()->SetNickname(guild, nickname);
+	return 1;
+}
+
+// native DCC_CreatePrivateChannel(DCC_User:user, const callback[] = "",
+//		const format[] = "", {Float, _}:...);
+AMX_DECLARE_NATIVE(Native::DCC_CreatePrivateChannel)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_CreatePrivateChannel", params, "dss");
+
+	auto userid = static_cast<UserId_t>(params[1]);
+	auto const &user = UserManager::Get()->FindUser(userid);
+	if (!user)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		return 0;
+	}
+
+	auto
+		cb_name = amx_GetCppString(amx, params[2]),
+		cb_format = amx_GetCppString(amx, params[3]);
+
+	pawn_cb::Error cb_error;
+	auto cb = pawn_cb::Callback::Prepare(
+		amx, cb_name.c_str(), cb_format.c_str(), params, 4, cb_error);
+	if (cb_error && cb_error.get() != pawn_cb::Error::Type::EMPTY_NAME)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "could not prepare callback");
+		return 0;
+	}
+
+	ThisBot::Get()->CreatePrivateChannel(user, std::move(cb));
+
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_Channel:DCC_GetCreatedPrivateChannel();
+AMX_DECLARE_NATIVE(Native::DCC_GetCreatedPrivateChannel)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_GetCreatedPrivateChannel", params);
+	return ThisBot::Get()->GetCreatedPrivateChannelId();
+}
+
+// native DCC_SetBotPresenceStatus(DCC_BotPresenceStatus:status);
+AMX_DECLARE_NATIVE(Native::DCC_SetBotPresenceStatus)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SetBotPresenceStatus", params, "d");
+
+	bool ret_val = ThisBot::Get()->SetPresenceStatus(
+		static_cast<ThisBot::PresenceStatus>(params[1]));
+
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	return ret_val;
+}
+
+// native DCC_SetBotActivity(const name[]);
+AMX_DECLARE_NATIVE(Native::DCC_SetBotActivity)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SetBotActivity", params, "s");
+
+	ThisBot::Get()->SetActivity(amx_GetCppString(amx, params[1]));
 
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;

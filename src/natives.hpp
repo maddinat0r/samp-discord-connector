@@ -94,4 +94,12 @@ namespace Native
 	AMX_DECLARE_NATIVE(DCC_CreateGuildRole);
 	AMX_DECLARE_NATIVE(DCC_GetCreatedGuildRole);
 	AMX_DECLARE_NATIVE(DCC_DeleteGuildRole);
+
+	AMX_DECLARE_NATIVE(DCC_GetBotPresenceStatus);
+	AMX_DECLARE_NATIVE(DCC_TriggerBotTypingIndicator);
+	AMX_DECLARE_NATIVE(DCC_SetBotNickname);
+	AMX_DECLARE_NATIVE(DCC_CreatePrivateChannel);
+	AMX_DECLARE_NATIVE(DCC_GetCreatedPrivateChannel);
+	AMX_DECLARE_NATIVE(DCC_SetBotPresenceStatus);
+	AMX_DECLARE_NATIVE(DCC_SetBotActivity);
 }
