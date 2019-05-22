@@ -29,9 +29,9 @@ private:
 	UserId_t m_Author = INVALID_USER_ID;
 
 	std::string m_Content;
-	bool m_IsTts;
+	bool m_IsTts = false;
 
-	bool m_MentionsEveryone;
+	bool m_MentionsEveryone = false;
 	std::vector<UserId_t> m_UserMentions;
 	std::vector<RoleId_t> m_RoleMentions;
 
