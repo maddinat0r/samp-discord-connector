@@ -13,6 +13,7 @@ Message::Message(MessageId_t pawn_id, json const &data) : m_PawnId(pawn_id)
 {
 	std::string author_id, channel_id;
 	_valid =
+		utils::TryGetJsonValue(data, m_Id, "id") &&
 		utils::TryGetJsonValue(data, author_id, "author", "id") &&
 		utils::TryGetJsonValue(data, channel_id, "channel_id") &&
 		utils::TryGetJsonValue(data, m_Content, "content") &&
