@@ -33,7 +33,7 @@ before_build:
 
   # set up OpenSSL
   # Windows: OpenSSL already exsits at predefined path
-  - cmd: set OPENSSL_ROOT="C:\OpenSSL-v111-Win32"
+  - cmd: set OPENSSL_ROOT="C:/OpenSSL-v111-Win32"
   # Linux: install OpenSSL through apt
   - sh: sudo apt-get -y install libssl-dev:i386
   - sh: export OPENSSL_ROOT="/usr"
