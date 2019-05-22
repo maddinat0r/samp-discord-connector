@@ -2210,3 +2210,47 @@ AMX_DECLARE_NATIVE(Native::DCC_SetBotActivity)
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
+
+// native DCC_EscapeMarkdown(const src[], dest[], max_size = sizeof dest);
+AMX_DECLARE_NATIVE(Native::DCC_EscapeMarkdown)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_EscapeMarkdown", params, "drs");
+
+	auto const src = amx_GetCppString(amx, params[1]);
+	std::string dest;
+	dest.reserve(src.length());
+
+	static const std::unordered_set<char> markdown_chars{
+		'_', '*', '~', '`', '|'
+	};
+
+	bool skip = false;
+	for (auto it = src.begin(); it != src.end(); ++it)
+	{
+		auto ch = *it;
+
+		if (ch == '\\')
+		{
+			skip = true; // skip next escape
+		}
+		else if (markdown_chars.find(ch) != markdown_chars.end())
+		{
+			if (skip)
+				skip = false;
+			else
+				dest.push_back('\\');
+		}
+
+		dest.push_back(ch);
+	}
+
+	if (amx_SetCppString(amx, params[2], dest, params[3]) != AMX_ERR_NONE)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "couldn't set destination string");
+		return -1;
+	}
+
+	auto ret_val = static_cast<cell>(dest.length());
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	return ret_val;
+}

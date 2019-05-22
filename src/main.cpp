@@ -216,6 +216,8 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_GetCreatedPrivateChannel)
 	AMX_DEFINE_NATIVE(DCC_SetBotPresenceStatus)
 	AMX_DEFINE_NATIVE(DCC_SetBotActivity)
+
+	AMX_DEFINE_NATIVE(DCC_EscapeMarkdown)
 	{ NULL, NULL }
 };
 
