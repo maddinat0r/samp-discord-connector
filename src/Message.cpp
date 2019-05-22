@@ -125,7 +125,7 @@ MessageId_t MessageManager::Create(json const &data)
 		return INVALID_USER_ID;
 	}
 
-	Logger::Get()->Log(LogLevel::INFO, "successfully created message with id '{}'", id);
+	Logger::Get()->Log(LogLevel::DEBUG, "created message with id '{}'", id);
 	return id;
 }
 
