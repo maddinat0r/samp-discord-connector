@@ -98,8 +98,19 @@ private:
 private:
 	std::map<MessageId_t, Message_t> m_Messages; //PAWN message-id to actual channel map
 
+	MessageId_t m_CreatedMessageId = INVALID_MESSAGE_ID;
+
 public:
 	void Initialize();
+
+	MessageId_t GetCreatedMessageId() const
+	{
+		return m_CreatedMessageId;
+	}
+	void SetCreatedMessageId(MessageId_t id)
+	{
+		m_CreatedMessageId = id;
+	}
 
 	MessageId_t Create(json const &data);
 	bool Delete(MessageId_t id);

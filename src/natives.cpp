@@ -226,7 +226,8 @@ AMX_DECLARE_NATIVE(Native::DCC_IsChannelNsfw)
 	return 1;
 }
 
-// native DCC_SendChannelMessage(DCC_Channel:channel, const message[]);
+// native DCC_SendChannelMessage(DCC_Channel:channel, const message[], 
+//     const callback[] = "", const format[] = "", {Float, _}:...);
 AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
 {
 	ScopedDebugInfo dbg_info(amx, "DCC_SendChannelMessage", params, "ds");
@@ -247,7 +248,21 @@ AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
 		return 0;
 	}
 
-	channel->SendMessage(std::move(message));
+	auto
+		cb_name = amx_GetCppString(amx, params[3]),
+		cb_format = amx_GetCppString(amx, params[4]);
+
+	pawn_cb::Error cb_error;
+	auto cb = pawn_cb::Callback::Prepare(
+		amx, cb_name.c_str(), cb_format.c_str(), params, 5, cb_error);
+	if (cb_error && cb_error.get() != pawn_cb::Error::Type::EMPTY_NAME)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "could not prepare callback");
+		return 0;
+	}
+
+
+	channel->SendMessage(std::move(message), std::move(cb));
 
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;
@@ -690,6 +705,16 @@ AMX_DECLARE_NATIVE(Native::DCC_DeleteMessage)
 
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;
+}
+
+// native DCC_Message:DCC_GetCreatedMessage();
+AMX_DECLARE_NATIVE(Native::DCC_GetCreatedMessage)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_GetCreatedMessage", params);
+
+	auto ret_val = static_cast<cell>(MessageManager::Get()->GetCreatedMessageId());
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{:d}'", ret_val);
+	return ret_val;
 }
 
 // native DCC_User:DCC_FindUserByName(const user_name[], const user_discriminator[]);

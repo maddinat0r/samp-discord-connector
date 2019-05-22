@@ -62,7 +62,7 @@ native DCC_GetChannelTopic(DCC_Channel:channel, dest[], max_size = sizeof dest);
 native DCC_GetChannelPosition(DCC_Channel:channel, &position);
 native DCC_IsChannelNsfw(DCC_Channel:channel, &bool:is_nsfw);
 
-native DCC_SendChannelMessage(DCC_Channel:channel, const message[]);
+native DCC_SendChannelMessage(DCC_Channel:channel, const message[], const callback[] = "", const format[] = "", {Float, _}:...);
 native DCC_SetChannelName(DCC_Channel:channel, const name[]);
 native DCC_SetChannelTopic(DCC_Channel:channel, const topic[]);
 native DCC_SetChannelPosition(DCC_Channel:channel, position);
@@ -84,6 +84,8 @@ native DCC_GetMessageRoleMentionCount(DCC_Message:message, &mentioned_role_count
 native DCC_GetMessageRoleMention(DCC_Message:message, offset, &DCC_Role:mentioned_role);
 
 native DCC_DeleteMessage(DCC_Message:message);
+
+native DCC_Message:DCC_GetCreatedMessage(); // for use in DCC_SendChannelMessage result callback
 
 
 //  users

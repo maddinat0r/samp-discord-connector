@@ -169,6 +169,7 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_GetMessageRoleMentionCount)
 	AMX_DEFINE_NATIVE(DCC_GetMessageRoleMention)
 	AMX_DEFINE_NATIVE(DCC_DeleteMessage)
+	AMX_DEFINE_NATIVE(DCC_GetCreatedMessage)
 
 	AMX_DEFINE_NATIVE(DCC_FindUserByName)
 	AMX_DEFINE_NATIVE(DCC_FindUserById)

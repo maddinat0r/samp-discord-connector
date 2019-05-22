@@ -82,7 +82,7 @@ public:
 		return m_IsNsfw;
 	}
 
-	void SendMessage(std::string &&msg);
+	void SendMessage(std::string &&msg, pawn_cb::Callback_t &&cb);
 	void SetChannelName(std::string const &name);
 	void SetChannelTopic(std::string const &topic);
 	void SetChannelPosition(int const position);
