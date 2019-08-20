@@ -19,7 +19,9 @@
             "includes": ["discord-connector-.+\\/pawno\\/include"],
             "plugins": ["discord-connector-.+\\/plugins\\/discord-connector\\.dll"],
             "files": {
-                "discord-connector-.+\\/log-core2.dll": "log-core2.dll"
+                "discord-connector-.+\\/log-core2.dll": "log-core2.dll",
+                "discord-connector-.+\\/libcrypto-1_1.dll": "libcrypto-1_1.dll",
+                "discord-connector-.+\\/libssl-1_1.dll": "libssl-1_1.dll"
             }
         }
     ],
