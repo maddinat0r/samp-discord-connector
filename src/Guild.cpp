@@ -293,7 +293,7 @@ void Guild::SetRolePosition(Role_t const &role, int position)
 		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format(
-		"/guilds/{guild.id}/roles", GetId()), json_str);
+		"/guilds/{:s}/roles", GetId()), json_str);
 }
 
 template<typename T>
@@ -308,7 +308,7 @@ void GuildModifyRole(Guild *guild, Role_t const &role, const char *name, T value
 		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format(
-		"/guilds/{guild.id}/roles/{:s}", guild->GetId(), role->GetId()), json_str);
+		"/guilds/{:s}/roles/{:s}", guild->GetId(), role->GetId()), json_str);
 }
 
 void Guild::SetRoleName(Role_t const &role, std::string const &name)
