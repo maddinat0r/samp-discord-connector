@@ -108,6 +108,11 @@ if (MSVC)
 		/WX
 		/permissive-
 	)
+
+	# also enable multi-processor compilation
+	target_compile_options(discord-connector PRIVATE
+		/MP
+	)
 elseif(UNIX)
 	target_compile_options(discord-connector PRIVATE
 		-Wall
