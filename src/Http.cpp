@@ -287,6 +287,15 @@ void Http::SendRequest(beast::http::verb const method, std::string const &url,
 
 	SharedRequest_t req = PrepareRequest(method, url, content);
 
+	if (callback == nullptr && Logger::Get()->IsLogLevel(LogLevel::DEBUG))
+	{
+		callback = CreateResponseCallback([=](Response r)
+		{
+			Logger::Get()->Log(LogLevel::DEBUG, "{:s} {:s} [{:s}] --> {:d} {:s}: {:s}",
+				beast::http::to_string(method).to_string(), url, content, r.status, r.reason, r.body);
+		});
+	}
+
 	m_Queue.push(new QueueEntry(req, std::move(callback)));
 }
 
