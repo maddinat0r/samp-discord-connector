@@ -33,9 +33,17 @@ public:
 		std::string Nickname;
 		std::vector<RoleId_t> Roles;
 		PresenceStatus Status;
+		ChannelId_t VoiceChannel = INVALID_CHANNEL_ID;
+
 
 		void Update(json const &data);
 		void UpdatePresence(std::string const &status);
+		void UpdateVoiceChannel(ChannelId_t const &channel);
+
+		inline ChannelId_t const &GetVoiceChannel() const
+		{
+			return VoiceChannel;
+		}
 	};
 
 public:
@@ -125,7 +133,8 @@ public:
 		}
 	}
 	void UpdateMember(UserId_t userid, json const &data);
-	void UpdateMemberPresence(UserId_t userid, std::string const &status);
+	void UpdateMemberPresence(UserId_t userid, std::string const &status);	
+	void UpdateMemberVoiceChannel(UserId_t user_id, ChannelId_t const &channel);
 
 	inline void AddRole(RoleId_t id)
 	{
@@ -148,6 +157,7 @@ public:
 	void SetGuildName(std::string const &name);
 
 	void SetMemberNickname(User_t const &user, std::string const &nickname);
+	void SetMemberVoiceChannel(User_t const &user, Snowflake_t const &channel_id);
 	void AddMemberRole(User_t const &user, Role_t const &role);
 	void RemoveMemberRole(User_t const &user, Role_t const &role);
 	void KickMember(User_t const &user);

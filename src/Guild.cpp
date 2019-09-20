@@ -62,6 +62,41 @@ Guild::Guild(GuildId_t pawn_id, json const &data) :
 		}
 	}
 
+	if (utils::IsValidJson(data, "voice_states", json::value_t::array))
+	{
+		for (auto &v : data["voice_states"])
+		{
+			Snowflake_t channel_id;
+			if (!utils::TryGetJsonValue(v, channel_id, "channel_id"))
+			{
+				Logger::Get()->Log(LogLevel::ERROR,
+					"invalid JSON: expected \"channel.id\" in \"{}\"", v.dump());
+				break;
+			}
+			
+			Snowflake_t user_id;
+			if (!utils::TryGetJsonValue(v, user_id, "user_id"))
+			{
+				Logger::Get()->Log(LogLevel::ERROR,
+					"invalid JSON: expected \"user.id\" in \"{}\"", v.dump());
+				break;
+			}
+
+			Channel_t const &channel = ChannelManager::Get()->FindChannelById(channel_id);			
+						
+			for (auto &m : m_Members)
+			{
+				User_t const &user = UserManager::Get()->FindUser(m.UserId);
+				assert(user);
+				if (user->GetId() == user_id)
+				{
+					m.UpdateVoiceChannel(channel ? channel->GetPawnId() : INVALID_CHANNEL_ID);
+					break;
+				}
+			}
+		}
+	}
+
 	if (utils::IsValidJson(data, "presences", json::value_t::array))
 	{
 		for (auto &p : data["presences"])
@@ -153,6 +188,11 @@ void Guild::Member::UpdatePresence(std::string const &status)
 	Status = status_map.at(status);
 }
 
+void Guild::Member::UpdateVoiceChannel(ChannelId_t const &Channel)
+{
+	VoiceChannel = Channel;
+}
+
 void Guild::UpdateMember(UserId_t userid, json const &data)
 {
 	for (auto &m : m_Members)
@@ -173,6 +213,18 @@ void Guild::UpdateMemberPresence(UserId_t userid, std::string const &status)
 			continue;
 
 		m.UpdatePresence(status);
+		break;
+	}
+}
+
+void Guild::UpdateMemberVoiceChannel(UserId_t user_id, ChannelId_t const &channel)
+{
+	for (auto &m : m_Members)
+	{
+		if (m.UserId != user_id)
+			continue;
+
+		m.UpdateVoiceChannel(channel);
 		break;
 	}
 }
@@ -229,6 +281,29 @@ void Guild::SetMemberNickname(User_t const &user, std::string const &nickname)
 
 	if (m_MembersSet.count(user->GetPawnId()) == 0)
 		return;
+
+	Network::Get()->Http().Patch(fmt::format(
+		"/guilds/{:s}/members/{:s}", GetId(), user->GetId()), json_str);
+}
+
+void Guild::SetMemberVoiceChannel(User_t const &user, Snowflake_t const &channel_id)
+{
+	json data = {
+		{ "channel_id", channel_id }
+	};
+
+	std::string json_str;
+	if (!utils::TryDumpJson(data, json_str))
+	{
+		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		return;
+	}
+
+	if (m_MembersSet.count(user->GetPawnId()) == 0)
+	{
+		return;
+	}
+	
 
 	Network::Get()->Http().Patch(fmt::format(
 		"/guilds/{:s}/members/{:s}", GetId(), user->GetId()), json_str);
@@ -762,6 +837,60 @@ void GuildManager::Initialize()
 
 				guild->AddMember(std::move(member));
 			}
+		});
+	});
+
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::VOICE_STATE_UPDATE, [](json const &data)
+	{
+		PawnDispatcher::Get()->Dispatch([data]() mutable
+		{
+			Snowflake_t guild_id;
+			if (!utils::TryGetJsonValue(data, guild_id, "guild_id"))
+			{
+				Logger::Get()->Log(LogLevel::ERROR,
+					"invalid JSON: expected \"guild_id\" in \"{}\"", data.dump());
+				return;
+			}
+
+			Snowflake_t user_id;
+			if (!utils::TryGetJsonValue(data, user_id, "user_id"))
+			{
+				Logger::Get()->Log(LogLevel::ERROR,
+					"invalid JSON: expected \"user.id\" in \"{}\"", data.dump());
+				return;
+			}
+
+			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
+			if (!guild)
+			{
+				Logger::Get()->Log(LogLevel::ERROR,
+					"can't update guild member voice channel: guild id \"{}\" not cached", guild_id);
+				return;
+			}
+
+			auto const &user = UserManager::Get()->FindUserById(user_id);
+			if (!user)
+			{
+				Logger::Get()->Log(LogLevel::ERROR,
+					"can't update guild member voice channel: user id \"{}\" not cached", user_id);
+				return;
+			}
+
+			Snowflake_t channel_id;
+			utils::TryGetJsonValue(data, channel_id, "channel_id");
+
+			auto const &channel = ChannelManager::Get()->FindChannelById(channel_id);
+			if (channel_id != Snowflake_t() && !channel)
+			{
+				Logger::Get()->Log(LogLevel::ERROR,
+					"can't update guild member voice channel: channel id \"{}\" not cached", channel_id);
+				return;
+			}
+
+			guild->UpdateMemberVoiceChannel(user->GetPawnId(), channel->GetPawnId());
+
+			pawn_cb::Error error;
+			pawn_cb::Callback::CallFirst(error, "DCC_OnGuildMemberVoiceUpdate", guild->GetPawnId(), user->GetPawnId(), channel ? channel->GetPawnId() : INVALID_CHANNEL_ID);
 		});
 	});
 	// TODO: events

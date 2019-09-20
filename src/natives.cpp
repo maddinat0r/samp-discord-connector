@@ -1289,6 +1289,50 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberCount)
 	return 1;
 }
 
+// native DCC_GetGuildMemberVoiceChannel(DCC_Guild:guild, DCC_User:user, &DCC_Channel:channel);
+AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberVoiceChannel)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_GetGuildMemberVoiceChannel", params, "ddr");
+
+	GuildId_t guild_id = params[1];
+	auto const &guild = GuildManager::Get()->FindGuild(guild_id);
+	if (!guild)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guild_id);
+		return 0;
+	}
+
+	UserId_t user_id = params[2];
+	/*auto const &user = Guild::Get()->FindUser(user_id);
+	if (!user)
+	{
+		
+	}*/
+
+	for (auto &m : guild->GetMembers())
+	{
+		if (m.UserId != user_id)
+			continue;
+
+		cell *dest = nullptr;
+		if (amx_GetAddr(amx, params[3], &dest) != AMX_ERR_NONE || dest == nullptr)
+		{
+			Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+			return 0;
+		}
+		//static_cast<cell>(channels.at(offset));
+
+		
+
+		*dest = static_cast<cell>(m.GetVoiceChannel());
+		Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+		return 1;
+	}
+
+	Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", user_id);
+	return 0;
+}
+
 // native DCC_GetGuildMemberNickname(DCC_Guild:guild, DCC_User:user, dest[], max_size = sizeof dest);
 AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberNickname)
 {
@@ -1720,6 +1764,40 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildMemberNickname)
 	}
 
 	guild->SetMemberNickname(user, amx_GetCppString(amx, params[3]));
+
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetGuildMemberVoiceChannel(DCC_Guild:guild, DCC_User:user, DCC_Channel:channel);
+AMX_DECLARE_NATIVE(Native::DCC_SetGuildMemberVoiceChannel)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SetGuildMemberVoiceChannel", params, "ddd");
+
+	GuildId_t guild_id = params[1];
+	Guild_t const &guild = GuildManager::Get()->FindGuild(guild_id);
+	if (!guild)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guild_id);
+		return 0;
+	}
+
+	UserId_t user_id = params[2];
+	User_t const &user = UserManager::Get()->FindUser(user_id);
+	if (!user)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", user_id);
+		return 0;
+	}
+
+	ChannelId_t channel_id = params[3];
+	Channel_t const &channel = ChannelManager::Get()->FindChannel(channel_id);
+	if (!channel)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channel_id);
+		return 0;
+	}
+	guild->SetMemberVoiceChannel(user, channel->GetId());
 
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;
