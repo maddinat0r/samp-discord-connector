@@ -872,15 +872,15 @@ void GuildManager::Initialize()
 				return;
 			}
 			
-			Snowflake_t const &channel_id = data["channel_id"];
+			auto const &channel_id = data["channel_id"];
 			ChannelId_t channel_PawnId = INVALID_CHANNEL_ID;			
-			if (!channel_id.empty()) // User joined voice channel, thus check if channel is cached and get its pawnId
+			if (!channel_id.is_null()) // User joined voice channel, thus check if channel is cached and get its pawnId
 			{
 				auto const &channel = ChannelManager::Get()->FindChannelById(channel_id);
 				if (!channel)
 				{
 					Logger::Get()->Log(LogLevel::ERROR,
-						"can't update guild member voice channel: channel id \"{}\" not cached", channel_id);
+						"can't update guild member voice channel: channel id \"{}\" not cached", channel_id.get<Snowflake_t>());
 					return;
 				}
 				channel_PawnId = channel->GetPawnId();
