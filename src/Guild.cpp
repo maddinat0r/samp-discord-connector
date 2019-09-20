@@ -880,7 +880,7 @@ void GuildManager::Initialize()
 			utils::TryGetJsonValue(data, channel_id, "channel_id");
 
 			auto const &channel = ChannelManager::Get()->FindChannelById(channel_id);
-			if (channel_id != Snowflake_t() && !channel)
+			if (!channel_id.empty() && !channel)
 			{
 				Logger::Get()->Log(LogLevel::ERROR,
 					"can't update guild member voice channel: channel id \"{}\" not cached", channel_id);
