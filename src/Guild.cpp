@@ -842,24 +842,19 @@ void GuildManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::VOICE_STATE_UPDATE, [](json const &data)
 	{
+		if (!utils::IsValidJson(data,
+			"guild_id", json::value_t::string,
+			"user_id", json::value_t::string,
+			"channel_id", json::value_t::string, json::value_t::null))
+		{
+			Logger::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected \"guild_id\", \"user_id\" and \"channel_id\"in \"{}\"", data.dump());
+			return;
+		}
+
 		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
-			Snowflake_t guild_id;
-			if (!utils::TryGetJsonValue(data, guild_id, "guild_id"))
-			{
-				Logger::Get()->Log(LogLevel::ERROR,
-					"invalid JSON: expected \"guild_id\" in \"{}\"", data.dump());
-				return;
-			}
-
-			Snowflake_t user_id;
-			if (!utils::TryGetJsonValue(data, user_id, "user_id"))
-			{
-				Logger::Get()->Log(LogLevel::ERROR,
-					"invalid JSON: expected \"user.id\" in \"{}\"", data.dump());
-				return;
-			}
-
+			Snowflake_t const &guild_id = data["guild_id"];
 			auto const &guild = GuildManager::Get()->FindGuildById(guild_id);
 			if (!guild)
 			{
@@ -868,6 +863,7 @@ void GuildManager::Initialize()
 				return;
 			}
 
+			Snowflake_t const &user_id = data["user_id"];
 			auto const &user = UserManager::Get()->FindUserById(user_id);
 			if (!user)
 			{
@@ -875,22 +871,24 @@ void GuildManager::Initialize()
 					"can't update guild member voice channel: user id \"{}\" not cached", user_id);
 				return;
 			}
-
-			Snowflake_t channel_id;
-			utils::TryGetJsonValue(data, channel_id, "channel_id");
-
-			auto const &channel = ChannelManager::Get()->FindChannelById(channel_id);
-			if (!channel_id.empty() && !channel)
+			
+			Snowflake_t const &channel_id = data["channel_id"];
+			ChannelId_t channel_PawnId = INVALID_CHANNEL_ID;			
+			if (!channel_id.empty()) // User joined voice channel, thus check if channel is cached and get its pawnId
 			{
-				Logger::Get()->Log(LogLevel::ERROR,
-					"can't update guild member voice channel: channel id \"{}\" not cached", channel_id);
-				return;
+				auto const &channel = ChannelManager::Get()->FindChannelById(channel_id);
+				if (!channel)
+				{
+					Logger::Get()->Log(LogLevel::ERROR,
+						"can't update guild member voice channel: channel id \"{}\" not cached", channel_id);
+					return;
+				}
+				channel_PawnId = channel->GetPawnId();
 			}
-
-			guild->UpdateMemberVoiceChannel(user->GetPawnId(), channel->GetPawnId());
+			guild->UpdateMemberVoiceChannel(user->GetPawnId(), channel_PawnId);
 
 			pawn_cb::Error error;
-			pawn_cb::Callback::CallFirst(error, "DCC_OnGuildMemberVoiceUpdate", guild->GetPawnId(), user->GetPawnId(), channel ? channel->GetPawnId() : INVALID_CHANNEL_ID);
+			pawn_cb::Callback::CallFirst(error, "DCC_OnGuildMemberVoiceUpdate", guild->GetPawnId(), user->GetPawnId(), channel_PawnId);
 		});
 	});
 	// TODO: events
