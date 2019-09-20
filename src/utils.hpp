@@ -32,6 +32,18 @@ namespace utils
 	bool IsValidJson(nlohmann::json const &data, const char *key,
 		const char *subkey, Ty&&... other);
 
+	// useful when the key can be both Snowflake and null (e.g. voice channel on leave)
+	template<typename... Ty>
+	bool IsValidJson(nlohmann::json const &data, const char *key,
+		nlohmann::json::value_t type, nlohmann::json::value_t type2, Ty&&... other)
+	{
+		auto jit = data.find(key);
+		if (jit != data.end() && (jit->type() == type || jit->type() == type2))
+			return IsValidJson(data, std::forward<Ty>(other)...);
+
+		return false;
+	}
+
 	template<typename... Ty>
 	bool IsValidJson(nlohmann::json const &data, const char *key,
 		nlohmann::json::value_t type, Ty&&... other)
