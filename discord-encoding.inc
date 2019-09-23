@@ -137,7 +137,7 @@ DCC_EncodeString(const src[], dest[], max_size = sizeof dest)
 	new
 		index;
 
-	for(new i, j = strlen(src), bool:done; i < j; i++, done = false)
+	for(new i, j = len, bool:done; i < j; i++, done = false)
 	{
 	    for(new k; k < sizeof(s_map); k++)
 	    {
