@@ -1,4 +1,4 @@
-DCC_EncodeString(const src[], dest[], max_size = sizeof dest)
+stock DCC_EncodeString(const src[], dest[], max_size = sizeof dest)
 {
 	static const s_map[][][] =
 	{
@@ -144,7 +144,7 @@ DCC_EncodeString(const src[], dest[], max_size = sizeof dest)
 			if(src[i] == s_map[k][0][0])
 			{
 			    new
-			        mapLen = strlen(s_map[k][1]);
+					mapLen = strlen(s_map[k][1]);
 
 				if(index + mapLen >= max_size) //overflow
 				{
