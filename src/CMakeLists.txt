@@ -44,8 +44,6 @@ add_samp_plugin(discord-connector
 	PawnDispatcher.hpp
 	Role.cpp
 	Role.hpp
-	Overwrite.cpp
-	Overwrite.hpp
 	SampConfigReader.cpp
 	SampConfigReader.hpp
 	User.cpp
