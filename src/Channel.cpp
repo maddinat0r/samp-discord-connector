@@ -48,10 +48,15 @@ Channel::Channel(ChannelId_t pawn_id, json const &data, GuildId_t guild_id) :
 			}
 		}
 
+		Snowflake_t parent_id_str;
 		utils::TryGetJsonValue(data, m_Name, "name");
 		utils::TryGetJsonValue(data, m_Topic, "topic");
 		utils::TryGetJsonValue(data, m_Position, "position");
 		utils::TryGetJsonValue(data, m_IsNsfw, "nsfw");
+		utils::TryGetJsonValue(data, parent_id_str, "parent_id");		
+		
+		Channel_t const &channel = ChannelManager::Get()->FindChannelById(parent_id_str);
+		m_ParentId = channel ? channel->GetPawnId() : INVALID_CHANNEL_ID;		
 	}
 }
 

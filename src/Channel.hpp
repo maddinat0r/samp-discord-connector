@@ -48,6 +48,8 @@ private:
 	int m_Position = -1;
 	bool m_IsNsfw = false;
 
+	ChannelId_t m_ParentId = INVALID_CHANNEL_ID;
+
 public:
 	inline ChannelId_t GetPawnId() const
 	{
@@ -80,6 +82,10 @@ public:
 	inline bool IsNsfw() const
 	{
 		return m_IsNsfw;
+	}
+	inline ChannelId_t GetParentId() const
+	{
+		return m_ParentId;
 	}
 
 	void SendMessage(std::string &&msg, pawn_cb::Callback_t &&cb);
