@@ -44,6 +44,8 @@ add_samp_plugin(discord-connector
 	PawnDispatcher.hpp
 	Role.cpp
 	Role.hpp
+	Overwrite.cpp
+	Overwrite.hpp
 	SampConfigReader.cpp
 	SampConfigReader.hpp
 	User.cpp
@@ -86,6 +88,7 @@ if(MSVC)
 		_SCL_SECURE_NO_WARNINGS
 	)
 	target_link_libraries(discord-connector Crypt32.lib)
+
 endif()
 
 target_compile_definitions(discord-connector PRIVATE ONLY_C_LOCALE) # make the date library use the C locale only
