@@ -25,7 +25,9 @@ public:
 		DM = 1,
 		GUILD_VOICE = 2,
 		GROUP_DM = 3,
-		GUILD_CATEGORY = 4
+		GUILD_CATEGORY = 4,
+		GUILD_NEWS = 5,
+		GUILD_STORE = 6
 	};
 
 public:
@@ -95,6 +97,7 @@ public:
 	void SetChannelNsfw(bool const is_nsfw);
 	void SetChannelParentCategory(Channel_t const &parent);
 	void DeleteChannel();
+	void Update(json const &data);
 };
 
 
@@ -124,7 +127,6 @@ public:
 	}
 
 	ChannelId_t AddChannel(json const &data, GuildId_t guild_id = 0);
-	void UpdateChannel(json const &data);
 	void DeleteChannel(json const &data);
 
 	Channel_t const &FindChannel(ChannelId_t id);
