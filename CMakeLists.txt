@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.15)
+cmake_policy(SET CMP0091 NEW)
 project(discord-connector VERSION 0.2.4)
 
 if (NOT DCC_VERSION) # allow version override
@@ -7,14 +8,25 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/libs/cmake")
 
-if(UNIX)
-	# force 32bit compilation and hide non-exported symbols
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -fvisibility=hidden")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -fvisibility=hidden")
+if (MSVC)
+	add_link_options(/INCREMENTAL:NO /NODEFAULTLIB:MSVCRT)
+	# link runtime statically
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+elseif(UNIX)
+	# hide non-exported symbols
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
 	set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
+
+	# link runtime statically
+	set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+	add_link_options("-static")
 endif()
 
-
+if(NOT DEFINED OPENSSL_USE_STATIC_LIBS)
+	set(OPENSSL_USE_STATIC_LIBS ON)
+	set(OPENSSL_MSVC_STATIC_RT ON)
+endif()
 find_package(OpenSSL)
 if (NOT OPENSSL_FOUND)
 	set(OPENSSL_ROOT_DIR "${OPENSSL_ROOT_DIR}" CACHE PATH "Set the OpenSSL root folder.")

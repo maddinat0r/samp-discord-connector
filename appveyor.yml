@@ -1,15 +1,15 @@
 version: '{branch}-{build}'
 
 image:
-  - Ubuntu1604
-  - Visual Studio 2017
+  - Visual Studio 2019
+  - Ubuntu1804
 
 environment:
   global:
     CMAKE_BUILD_PARALLEL_LEVEL: 2
   matrix:
-    - BUILD_TYPE: Debug
     - BUILD_TYPE: Release
+    - BUILD_TYPE: Debug
 
 install:
   # set version environment variable
@@ -21,39 +21,48 @@ install:
   - sh: sudo apt-get -qq update
   - sh: sudo apt-get -qq -y install g++-multilib gcc-multilib
   - sh: "echo g++ version: $(g++ --version | cut -d$'\n' -f1)"
+  # set platform-specific cmake args
+  - ps: |
+      if ($isWindows) { 
+        $CMAKE_ARGS = "-AWin32", "-Thost=x86"
+      } else {
+        $CMAKE_ARGS = "-DCMAKE_CXX_FLAGS=-m32", "-DCMAKE_C_FLAGS=-m32"
+      }
 
 before_build:
   # set up boost
-  # Windows: boost already exists in a predefined path
-  - cmd: set BOOST_ROOT="C:\Libraries\boost_1_69_0"
-  # Linux: download and set root path
-  - sh: wget -q https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz -O boost.tar.gz
-  - sh: mkdir -p boost && tar xfz boost.tar.gz -C boost --strip-components=1
-  - sh: export BOOST_ROOT="boost"
+  - ps: |
+      Start-FileDownload https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.7z boost.7z
+      7z x -bso0 -bsp0 boost.7z
+      $env:BOOST_ROOT = "boost_1_69_0"
 
   # set up OpenSSL
-  # Windows: OpenSSL already exsits at predefined path
-  - cmd: set OPENSSL_ROOT="C:/OpenSSL-v111-Win32"
+  # Windows: replace AppVeyor-provided OpenSSL
+  - cmd: |
+      set OPENSSL_ROOT="C:/OpenSSL-Win32"
+      rmdir /s /q %OPENSSL_ROOT%
+      choco install --x86 openssl
   # Linux: install OpenSSL through apt
   - sh: sudo apt-get -y install libssl-dev:i386
   - sh: export OPENSSL_ROOT="/usr"
   
   # set up log-core
+  - ps: $env:LOGCORE_VERSION = "0.5.1"
   # Windows
-  - cmd: appveyor DownloadFile "https://github.com/maddinat0r/samp-log-core/releases/download/v0.5/samp-log-core-v0.5-win32.zip" -FileName samp-log-core.zip
+  - cmd: appveyor DownloadFile "https://github.com/maddinat0r/samp-log-core/releases/download/v%LOGCORE_VERSION%/samp-log-core-v%LOGCORE_VERSION%-win32.zip" -FileName samp-log-core.zip
   - cmd: 7z x samp-log-core.zip -y
   - cmd: move samp-log-core-* "C:\samp-log-core"
   - cmd: set LOGCORE_DIR="C:\samp-log-core\cmake"
   # Linux
-  - sh: wget -q "https://github.com/maddinat0r/samp-log-core/releases/download/v0.5/samp-log-core-v0.5-Linux.tar.gz" -O samp-log-core.tar.gz
+  - sh: wget -q "https://github.com/maddinat0r/samp-log-core/releases/download/v${LOGCORE_VERSION}/samp-log-core-v${LOGCORE_VERSION}-Linux.tar.gz" -O samp-log-core.tar.gz
   - sh: mkdir -p samp-log-core && tar zfx samp-log-core.tar.gz -C samp-log-core --strip-components=1
   - sh: export LOGCORE_DIR="samp-log-core/cmake"
 
 build_script:
   # Linux: configure OpenSSL paths and ignore exit code to not fail build
-  - sh: cmake -DOPENSSL_SSL_LIBRARY="/usr/lib/i386-linux-gnu/libssl.so" -DOPENSSL_CRYPTO_LIBRARY="/usr/lib/i386-linux-gnu/libcrypto.so" -S . -B build || true
+  - sh: cmake -DOPENSSL_SSL_LIBRARY="/usr/lib/i386-linux-gnu/libssl.a" -DOPENSSL_CRYPTO_LIBRARY="/usr/lib/i386-linux-gnu/libcrypto.a" -DCMAKE_CXX_FLAGS="-m32" -DCMAKE_C_FLAGS="-m32" -S . -B build || true
 
-  - ps: cmake -DOPENSSL_ROOT_DIR="$env:OPENSSL_ROOT" -DBOOST_ROOT="$env:BOOST_ROOT" -Dlog-core_DIR="$env:LOGCORE_DIR" -DDCC_VERSION="$env:GIT_REPO_VERSION" -DCMAKE_BUILD_TYPE="$env:BUILD_TYPE" -S . -B build
+  - ps: cmake -DOPENSSL_ROOT_DIR="$env:OPENSSL_ROOT" -DBOOST_ROOT="$env:BOOST_ROOT" -Dlog-core_DIR="$env:LOGCORE_DIR" -DDCC_VERSION="$env:GIT_REPO_VERSION" -DCMAKE_BUILD_TYPE="$env:BUILD_TYPE" @CMAKE_ARGS -S . -B build
   - ps: cmake --build build --config $env:BUILD_TYPE --target package
 
 artifacts:
