@@ -98,6 +98,7 @@ public:
 	void SetChannelParentCategory(Channel_t const &parent);
 	void DeleteChannel();
 	void Update(json const &data);
+	void UpdateParentChannel(Snowflake_t const &parent_id);
 };
 
 
