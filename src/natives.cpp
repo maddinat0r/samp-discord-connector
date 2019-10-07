@@ -226,6 +226,40 @@ AMX_DECLARE_NATIVE(Native::DCC_IsChannelNsfw)
 	return 1;
 }
 
+// native DCC_GetChannelParentCategory(DCC_Channel:channel, &DCC_Channel:category);
+AMX_DECLARE_NATIVE(Native::DCC_GetChannelParentCategory)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_GetChannelParentCategory", params, "dr");
+
+	ChannelId_t channelid = params[1];
+	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
+
+	if (channel->GetType() != Channel::Type::GUILD_CATEGORY)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR,
+			"invalid channel type; must be guild category channel");
+		return 0;
+	}
+
+	cell *dest = nullptr;
+	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = channel->GetParentId();
+
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+
 // native DCC_SendChannelMessage(DCC_Channel:channel, const message[], 
 //     const callback[] = "", const format[] = "", {Float, _}:...);
 AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
