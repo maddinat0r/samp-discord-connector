@@ -23,10 +23,9 @@ Channel::Channel(ChannelId_t pawn_id, json const &data, GuildId_t guild_id) :
 			"invalid JSON: expected \"type\" and \"id\" in \"{}\"", data.dump());
 		return;
 	}
-
+	
 	m_Type = static_cast<Type>(type);
-
-	if (m_Type != Type::DM && m_Type != Type::GROUP_DM)
+	if (m_Type < Type::DM)
 	{
 		if (guild_id != 0)
 		{
@@ -47,16 +46,35 @@ Channel::Channel(ChannelId_t pawn_id, json const &data, GuildId_t guild_id) :
 					"invalid JSON: expected \"guild_id\" in \"{}\"", data.dump());
 			}
 		}
+		Update(data);
+	}
+}
 
-		Snowflake_t parent_id_str;
-		utils::TryGetJsonValue(data, m_Name, "name");
-		utils::TryGetJsonValue(data, m_Topic, "topic");
-		utils::TryGetJsonValue(data, m_Position, "position");
-		utils::TryGetJsonValue(data, m_IsNsfw, "nsfw");
-		utils::TryGetJsonValue(data, parent_id_str, "parent_id");		
-		
-		Channel_t const &channel = ChannelManager::Get()->FindChannelById(parent_id_str);
-		m_ParentId = channel ? channel->GetPawnId() : INVALID_CHANNEL_ID;		
+void Channel::Update(json const &data)
+{
+	std::string name, topic;
+	int position;
+	bool is_nsfw;
+	Snowflake_t parent_id;
+	bool
+		update_name = utils::TryGetJsonValue(data, name, "name"),
+		update_topic = utils::TryGetJsonValue(data, topic, "topic"),
+		update_position = utils::TryGetJsonValue(data, position, "position"),
+		update_nsfw = utils::TryGetJsonValue(data, is_nsfw, "nsfw"),
+		update_parent_id = utils::TryGetJsonValue(data, parent_id, "parent_id");
+
+	if (update_name)
+		m_Name = name;
+	if (update_topic)
+		m_Topic = topic;
+	if (update_position)
+		m_Position = position;
+	if (update_nsfw)
+		m_IsNsfw = is_nsfw;
+	if (update_parent_id)
+	{
+		Channel_t const &channel = ChannelManager::Get()->FindChannelById(parent_id);
+		m_ParentId = channel ? channel->GetPawnId() : INVALID_CHANNEL_ID;
 	}
 }
 
@@ -192,10 +210,34 @@ void ChannelManager::Initialize()
 			pawn_cb::Callback::CallFirst(error, "DCC_OnChannelCreate", channel_id);
 		});
 	});
-
+	
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::CHANNEL_UPDATE, [](json const &data)
 	{
-		ChannelManager::Get()->UpdateChannel(data);
+		Snowflake_t sfid;
+		if (!utils::TryGetJsonValue(data, sfid, "id"))
+		{
+			Logger::Get()->Log(LogLevel::ERROR,
+				"invalid JSON: expected \"id\" in \"{}\"", data.dump());
+			return;
+		}
+
+		Channel_t const &channel = ChannelManager::Get()->FindChannelById(sfid);
+		if (!channel)
+		{
+			Logger::Get()->Log(LogLevel::ERROR,
+				"can't update channel: channel id \"{}\" not cached", sfid);
+			return;
+		}
+
+		channel->Update(data);
+		
+		ChannelId_t const &pawnId = channel->GetPawnId();
+		PawnDispatcher::Get()->Dispatch([pawnId]() mutable
+		{
+			// forward DCC_OnChannelUpdate(DCC_Channel:channel);
+			pawn_cb::Error error;
+			pawn_cb::Callback::CallFirst(error, "DCC_OnChannelUpdate", pawnId);
+		});
 	});
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::CHANNEL_DELETE, [](json const &data)
@@ -294,50 +336,6 @@ ChannelId_t ChannelManager::AddChannel(json const &data, GuildId_t guild_id/* = 
 
 	Logger::Get()->Log(LogLevel::INFO, "successfully added channel with id '{}'", id);
 	return id;
-}
-
-void ChannelManager::UpdateChannel(json const &data)
-{
-	Snowflake_t sfid;
-	if (!utils::TryGetJsonValue(data, sfid, "id"))
-	{
-		Logger::Get()->Log(LogLevel::ERROR,
-			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
-		return;
-	}
-
-	std::string name, topic;
-	int position;
-	bool is_nsfw;
-	bool
-		update_name = utils::TryGetJsonValue(data, name, "name"),
-		update_topic = utils::TryGetJsonValue(data, topic, "topic"),
-		update_position = utils::TryGetJsonValue(data, position, "position"),
-		update_nsfw = utils::TryGetJsonValue(data, is_nsfw, "nsfw");
-
-	PawnDispatcher::Get()->Dispatch([=]()
-	{
-		Channel_t const &channel = FindChannelById(sfid);
-		if (!channel)
-		{
-			Logger::Get()->Log(LogLevel::ERROR,
-				"can't update channel: channel id \"{}\" not cached", sfid);
-			return;
-		}
-
-		if (update_name && !name.empty())
-			channel->m_Name = name;
-		if (update_topic && !topic.empty())
-			channel->m_Topic = topic;
-		if (update_position)
-			channel->m_Position = position;
-		if (update_nsfw)
-			channel->m_IsNsfw = is_nsfw;
-
-		// forward DCC_OnChannelUpdate(DCC_Channel:channel);
-		pawn_cb::Error error;
-		pawn_cb::Callback::CallFirst(error, "DCC_OnChannelUpdate", channel->GetPawnId());
-	});
 }
 
 void ChannelManager::DeleteChannel(json const &data)
