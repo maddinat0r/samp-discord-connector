@@ -23,9 +23,9 @@ Channel::Channel(ChannelId_t pawn_id, json const &data, GuildId_t guild_id) :
 			"invalid JSON: expected \"type\" and \"id\" in \"{}\"", data.dump());
 		return;
 	}
-	
+
 	m_Type = static_cast<Type>(type);
-	if (m_Type < Type::DM)
+	if (m_Type != Type::DM && m_Type != Type::GROUP_DM && m_Type < Type::GUILD_NEWS)
 	{
 		if (guild_id != 0)
 		{
@@ -55,13 +55,11 @@ void Channel::Update(json const &data)
 	std::string name, topic;
 	int position;
 	bool is_nsfw;
-	Snowflake_t parent_id;
 	bool
 		update_name = utils::TryGetJsonValue(data, name, "name"),
 		update_topic = utils::TryGetJsonValue(data, topic, "topic"),
 		update_position = utils::TryGetJsonValue(data, position, "position"),
-		update_nsfw = utils::TryGetJsonValue(data, is_nsfw, "nsfw"),
-		update_parent_id = utils::TryGetJsonValue(data, parent_id, "parent_id");
+		update_nsfw = utils::TryGetJsonValue(data, is_nsfw, "nsfw");
 
 	if (update_name)
 		m_Name = name;
@@ -71,11 +69,18 @@ void Channel::Update(json const &data)
 		m_Position = position;
 	if (update_nsfw)
 		m_IsNsfw = is_nsfw;
-	if (update_parent_id)
+}
+
+void Channel::UpdateParentChannel(Snowflake_t const &parent_id)
+{
+	Channel_t const &channel = ChannelManager::Get()->FindChannelById(parent_id);
+	if (!channel)
 	{
-		Channel_t const &channel = ChannelManager::Get()->FindChannelById(parent_id);
-		m_ParentId = channel ? channel->GetPawnId() : INVALID_CHANNEL_ID;
+		Logger::Get()->Log(LogLevel::ERROR,
+			"can't update parent channel \"parent_id\" not cached \"{}\"", parent_id);
+		return;
 	}
+	m_ParentId = channel->GetPawnId();
 }
 
 void Channel::SendMessage(std::string &&msg, pawn_cb::Callback_t &&cb)
@@ -230,6 +235,7 @@ void ChannelManager::Initialize()
 		}
 
 		channel->Update(data);
+		channel->UpdateParentChannel(data["parent_id"]);
 		
 		ChannelId_t const &pawnId = channel->GetPawnId();
 		PawnDispatcher::Get()->Dispatch([pawnId]() mutable
