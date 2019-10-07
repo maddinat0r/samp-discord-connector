@@ -32,6 +32,20 @@ Guild::Guild(GuildId_t pawn_id, json const &data) :
 
 			AddChannel(channel_id);
 		}
+
+		//After caching is done, cache Parent channel accordingly
+		for (auto &pc : data["channels" "parent_id"])
+		{
+			for (auto &c : m_Channels)
+			{
+				auto const &channel = ChannelManager::Get()->FindChannel(c);
+				if(channel->GetId() == pc)
+				{
+					channel->UpdateParentChannel(pc);
+					break;
+				}
+			}
+		}
 	}
 
 	if (utils::IsValidJson(data, "members", json::value_t::array))
