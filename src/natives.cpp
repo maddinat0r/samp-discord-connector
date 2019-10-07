@@ -239,13 +239,6 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelParentCategory)
 		return 0;
 	}
 
-	if (channel->GetType() != Channel::Type::GUILD_CATEGORY)
-	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
-			"invalid channel type; must be guild category channel");
-		return 0;
-	}
-
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
@@ -258,7 +251,6 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelParentCategory)
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
-
 
 // native DCC_SendChannelMessage(DCC_Channel:channel, const message[], 
 //     const callback[] = "", const format[] = "", {Float, _}:...);
