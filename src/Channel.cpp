@@ -235,7 +235,16 @@ void ChannelManager::Initialize()
 		}
 
 		channel->Update(data);
-		channel->UpdateParentChannel(data["parent_id"]);
+		if(channel->GetType() != Channel::Type::GUILD_CATEGORY)
+		{
+			Snowflake_t parent_id;
+			if (!utils::TryGetJsonValue(data, parent_id, "parent_id"))
+			{
+				Logger::Get()->Log(LogLevel::ERROR, "invalid JSON: expected \"parent_id\" in \"{}\"", data.dump());
+				return;
+			}
+			channel->UpdateParentChannel(parent_id);
+		}
 		
 		ChannelId_t const &pawnId = channel->GetPawnId();
 		PawnDispatcher::Get()->Dispatch([pawnId]() mutable
