@@ -98,21 +98,10 @@ namespace utils
 	}
 
 	template<typename Td>
-	typename std::enable_if<std::is_integral<Td>::value && std::is_unsigned<Td>::value, bool>::type
+	typename std::enable_if<std::is_integral<Td>::value, bool>::type
 		TryGetJsonValue(nlohmann::json const &data, Td &dest)
 	{
-		if (data.type() != nlohmann::json::value_t::number_unsigned)
-			return false;
-
-		dest = data.get<Td>();
-		return true;
-	}
-
-	template<typename Td>
-	typename std::enable_if<std::is_integral<Td>::value && std::is_signed<Td>::value, bool>::type
-		TryGetJsonValue(nlohmann::json const &data, Td &dest)
-	{
-		if (data.type() != nlohmann::json::value_t::number_integer)
+		if (data.type() != nlohmann::json::value_t::number_unsigned && data.type() != nlohmann::json::value_t::number_integer)
 			return false;
 
 		dest = data.get<Td>();
