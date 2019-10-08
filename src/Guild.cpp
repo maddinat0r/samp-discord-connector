@@ -34,16 +34,28 @@ Guild::Guild(GuildId_t pawn_id, json const &data) :
 		}
 
 		//After caching is done, cache Parent channel accordingly
-		for (auto &pc : data["channels" "parent_id"])
+		for (auto &c : data["channels"])
 		{
-			for (auto &c : m_Channels)
+			Snowflake_t id;
+			if (!utils::TryGetJsonValue(c, id, "id"))
 			{
-				auto const &channel = ChannelManager::Get()->FindChannel(c);
-				if(channel->GetId() == pc)
+				Logger::Get()->Log(LogLevel::ERROR, "invalid JSON: expected \"id\" in \"{}\"", c.dump());
+				break;
+			}
+
+			auto const &channel = ChannelManager::Get()->FindChannelById(id);
+			if (channel)
+			{
+				if (channel->GetType() == Channel::Type::GUILD_CATEGORY)
+					continue;
+
+				Snowflake_t parent_id;
+				if (!utils::TryGetJsonValue(c, parent_id, "parent_id"))
 				{
-					channel->UpdateParentChannel(pc);
+					Logger::Get()->Log(LogLevel::ERROR, "invalid JSON: expected \"parent_id\" in \"{}\"", c.dump());
 					break;
 				}
+				channel->UpdateParentChannel(parent_id);
 			}
 		}
 	}

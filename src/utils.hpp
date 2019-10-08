@@ -76,7 +76,6 @@ namespace utils
 		}
 		catch (nlohmann::json::type_error &)
 		{
-			//(void)e;
 			return false;
 		}
 		return true;
