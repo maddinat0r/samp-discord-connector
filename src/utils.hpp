@@ -67,49 +67,22 @@ namespace utils
 		return false;
 	}
 
-
-
-
-	inline bool TryGetJsonValue(nlohmann::json const &data, bool &dest)
+	template <typename T>
+	inline bool TryGetJsonValue(nlohmann::json const &data, T &dest)
 	{
-		if (data.type() != nlohmann::json::value_t::boolean)
+		try
+		{
+			dest = data.get<T>();
+		}
+		catch (nlohmann::json::type_error)
+		{
 			return false;
-
-		dest = data.get<bool>();
+		}
 		return true;
 	}
-
-	inline bool TryGetJsonValue(nlohmann::json const &data, std::string &dest)
-	{
-		if (data.type() != nlohmann::json::value_t::string)
-			return false;
-
-		dest = data.get<std::string>();
-		return true;
-	}
-
-	inline bool TryGetJsonValue(nlohmann::json const &data, float &dest)
-	{
-		if (data.type() != nlohmann::json::value_t::number_float)
-			return false;
-
-		dest = data.get<float>();
-		return true;
-	}
-
-	template<typename Td>
-	typename std::enable_if<std::is_integral<Td>::value, bool>::type
-		TryGetJsonValue(nlohmann::json const &data, Td &dest)
-	{
-		if (data.type() != nlohmann::json::value_t::number_unsigned && data.type() != nlohmann::json::value_t::number_integer)
-			return false;
-
-		dest = data.get<Td>();
-		return true;
-	}
-
+	
 	template<typename... Ty, typename Td>
-	bool TryGetJsonValue(nlohmann::json const &data, Td &dest, const char *key)
+	inline bool TryGetJsonValue(nlohmann::json const &data, Td &dest, const char *key)
 	{
 		auto jit = data.find(key);
 		if (jit != data.end())
@@ -117,11 +90,10 @@ namespace utils
 
 		return false;
 	}
-
+	
 	// for json object
 	template<typename... Ty, typename Td>
-	bool TryGetJsonValue(nlohmann::json const &data, Td &dest, const char *key,
-		const char *subkey, Ty&&... other)
+	inline bool TryGetJsonValue(nlohmann::json const &data, Td &dest, const char *key, const char *subkey, Ty&&... other)
 	{
 		auto jit = data.find(key);
 		if (jit != data.end() && jit->type() == nlohmann::json::value_t::object)
@@ -129,7 +101,6 @@ namespace utils
 			return TryGetJsonValue(*jit, dest, subkey,
 				std::forward<Ty>(other)...);
 		}
-
 		return false;
 	}
 }
