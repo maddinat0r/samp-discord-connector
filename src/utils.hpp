@@ -68,7 +68,7 @@ namespace utils
 	}
 
 	template <typename T>
-	inline bool TryGetJsonValue(nlohmann::json const &data, T &dest)
+	bool TryGetJsonValue(nlohmann::json const &data, T &dest)
 	{
 		try
 		{
@@ -82,7 +82,7 @@ namespace utils
 	}
 	
 	template<typename... Ty, typename Td>
-	inline bool TryGetJsonValue(nlohmann::json const &data, Td &dest, const char *key)
+	bool TryGetJsonValue(nlohmann::json const &data, Td &dest, const char *key)
 	{
 		auto jit = data.find(key);
 		if (jit != data.end())
@@ -93,7 +93,7 @@ namespace utils
 	
 	// for json object
 	template<typename... Ty, typename Td>
-	inline bool TryGetJsonValue(nlohmann::json const &data, Td &dest, const char *key, const char *subkey, Ty&&... other)
+	bool TryGetJsonValue(nlohmann::json const &data, Td &dest, const char *key, const char *subkey, Ty&&... other)
 	{
 		auto jit = data.find(key);
 		if (jit != data.end() && jit->type() == nlohmann::json::value_t::object)
