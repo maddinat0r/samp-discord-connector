@@ -74,8 +74,9 @@ namespace utils
 		{
 			dest = data.get<T>();
 		}
-		catch (nlohmann::json::type_error)
+		catch (nlohmann::json::type_error &)
 		{
+			//(void)e;
 			return false;
 		}
 		return true;
