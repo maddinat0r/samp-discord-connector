@@ -218,40 +218,39 @@ void ChannelManager::Initialize()
 	
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::CHANNEL_UPDATE, [](json const &data)
 	{
-		Snowflake_t sfid;
-		if (!utils::TryGetJsonValue(data, sfid, "id"))
+		PawnDispatcher::Get()->Dispatch([data]() mutable
 		{
-			Logger::Get()->Log(LogLevel::ERROR,
-				"invalid JSON: expected \"id\" in \"{}\"", data.dump());
-			return;
-		}
-
-		Channel_t const &channel = ChannelManager::Get()->FindChannelById(sfid);
-		if (!channel)
-		{
-			Logger::Get()->Log(LogLevel::ERROR,
-				"can't update channel: channel id \"{}\" not cached", sfid);
-			return;
-		}
-
-		channel->Update(data);
-		if(channel->GetType() != Channel::Type::GUILD_CATEGORY)
-		{
-			Snowflake_t parent_id;
-			if (!utils::TryGetJsonValue(data, parent_id, "parent_id"))
+			Snowflake_t sfid;
+			if (!utils::TryGetJsonValue(data, sfid, "id"))
 			{
-				Logger::Get()->Log(LogLevel::ERROR, "invalid JSON: expected \"parent_id\" in \"{}\"", data.dump());
+				Logger::Get()->Log(LogLevel::ERROR,
+					"invalid JSON: expected \"id\" in \"{}\"", data.dump());
 				return;
 			}
-			channel->UpdateParentChannel(parent_id);
-		}
-		
-		ChannelId_t const &pawnId = channel->GetPawnId();
-		PawnDispatcher::Get()->Dispatch([pawnId]() mutable
-		{
+
+			Channel_t const &channel = ChannelManager::Get()->FindChannelById(sfid);
+			if (!channel)
+			{
+				Logger::Get()->Log(LogLevel::ERROR,
+					"can't update channel: channel id \"{}\" not cached", sfid);
+				return;
+			}
+
+			channel->Update(data);
+			if (channel->GetType() != Channel::Type::GUILD_CATEGORY)
+			{
+				Snowflake_t parent_id;
+				if (!utils::TryGetJsonValue(data, parent_id, "parent_id"))
+				{
+					Logger::Get()->Log(LogLevel::ERROR, "invalid JSON: expected \"parent_id\" in \"{}\"", data.dump());
+					return;
+				}
+				channel->UpdateParentChannel(parent_id);
+			}
+
 			// forward DCC_OnChannelUpdate(DCC_Channel:channel);
 			pawn_cb::Error error;
-			pawn_cb::Callback::CallFirst(error, "DCC_OnChannelUpdate", pawnId);
+			pawn_cb::Callback::CallFirst(error, "DCC_OnChannelUpdate", channel->GetPawnId());
 		});
 	});
 
