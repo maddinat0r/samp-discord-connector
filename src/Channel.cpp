@@ -52,23 +52,10 @@ Channel::Channel(ChannelId_t pawn_id, json const &data, GuildId_t guild_id) :
 
 void Channel::Update(json const &data)
 {
-	std::string name, topic;
-	int position;
-	bool is_nsfw;
-	bool
-		update_name = utils::TryGetJsonValue(data, name, "name"),
-		update_topic = utils::TryGetJsonValue(data, topic, "topic"),
-		update_position = utils::TryGetJsonValue(data, position, "position"),
-		update_nsfw = utils::TryGetJsonValue(data, is_nsfw, "nsfw");
-
-	if (update_name)
-		m_Name = name;
-	if (update_topic)
-		m_Topic = topic;
-	if (update_position)
-		m_Position = position;
-	if (update_nsfw)
-		m_IsNsfw = is_nsfw;
+	utils::TryGetJsonValue(data, m_Name, "name"),
+	utils::TryGetJsonValue(data, m_Topic, "topic"),
+	utils::TryGetJsonValue(data, m_Position, "position"),
+	utils::TryGetJsonValue(data, m_IsNsfw, "nsfw");
 }
 
 void Channel::UpdateParentChannel(Snowflake_t const &parent_id)
