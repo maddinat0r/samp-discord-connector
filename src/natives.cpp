@@ -1329,11 +1329,6 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberVoiceChannel)
 	}
 
 	UserId_t user_id = params[2];
-	/*auto const &user = Guild::Get()->FindUser(user_id);
-	if (!user)
-	{
-		
-	}*/
 
 	for (auto &m : guild->GetMembers())
 	{
@@ -1346,9 +1341,6 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberVoiceChannel)
 			Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
 			return 0;
 		}
-		//static_cast<cell>(channels.at(offset));
-
-		
 
 		*dest = static_cast<cell>(m.GetVoiceChannel());
 		Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
