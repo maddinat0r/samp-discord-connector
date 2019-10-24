@@ -113,8 +113,7 @@ Guild::Guild(GuildId_t pawn_id, json const &data) :
 			for (auto &m : m_Members)
 			{
 				User_t const &user = UserManager::Get()->FindUser(m.UserId);
-				assert(user);
-				if (user->GetId() == user_id)
+				if (user && user->GetId() == user_id)
 				{
 					m.UpdateVoiceChannel(channel ? channel->GetPawnId() : INVALID_CHANNEL_ID);
 					break;
