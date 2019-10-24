@@ -25,7 +25,7 @@ Channel::Channel(ChannelId_t pawn_id, json const &data, GuildId_t guild_id) :
 	}
 
 	m_Type = static_cast<Type>(type);
-	if (m_Type != Type::DM && m_Type != Type::GROUP_DM && m_Type < Type::GUILD_NEWS)
+	if (m_Type == Type::GUILD_TEXT || m_Type == Type::GUILD_VOICE || m_Type == Type::GUILD_CATEGORY)
 	{
 		if (guild_id != 0)
 		{
