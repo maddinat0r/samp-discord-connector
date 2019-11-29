@@ -13,27 +13,6 @@ How to install
    - Windows: `plugins discord-connector`
    - Linux: `plugins discord-connector.so`
 
-F.A.Q.
-------
-Q: *I get a* `libssl.so.1.1: cannot open shared object file: No such file or directory` *error (or similar) on server startup. How can I solve this?*  
-A: You have to install the OpenSSL 32bit package for your distribution.
-
-Q: *I get a* `version GLIBCXX_3.4.15' not found` *error (or similar). How can I solve this?*  
-A: Update your system. If that still didn't work, you'll need to upgrade your Linux distribution to a version which provides the gcc 4.9 (or higher) compiler.
-
-Q: *The plugin fails to load on Windows, how can I fix this?*  
-A: You have to install these Microsoft C++ redistributables. You'll need the x86/32bit downloads.
-   - [2010 (x86)](http://www.microsoft.com/en-us/download/details.aspx?id=5555)
-   - [2010 SP1 (x86)](http://www.microsoft.com/en-us/download/details.aspx?id=8328)
-   - [2012 (x86)](http://www.microsoft.com/en-us/download/details.aspx?id=30679)
-   - [2015 (x86)](https://www.microsoft.com/en-US/download/details.aspx?id=48145)  
-
-Q: *I'm not on Windows 10 and the plugin still fails to load after installing all the redistributables. Is there a solution for this?*  
-A: Download the [universal Windows CRT](https://www.microsoft.com/en-US/download/details.aspx?id=48234). Requirements for this:
- - Windows 8.1 and Windows Server 2012 R2: [KB2919355](https://support.microsoft.com/en-us/kb/2919355)  
- - Windows 7 and Windows Server 2008 R2: [Service Pack 1](https://support.microsoft.com/en-us/kb/976932)  
- - Windows Vista and Windows Server 2008: [Service Pack 2](https://support.microsoft.com/en-us/kb/948465)  
-
 Build instruction
 ---------------
 *Note*: The plugin has to be a 32-bit library; that means all required libraries have to be compiled in 32-bit and the compiler has to support 32-bit.
