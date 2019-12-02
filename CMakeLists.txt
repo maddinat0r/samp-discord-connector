@@ -20,7 +20,12 @@ elseif(UNIX)
 
 	# link runtime statically
 	set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-	add_link_options("-static")
+	set(CMAKE_LINK_SEARCH_END_STATIC ON)
+	add_link_options(
+		"-static"
+		"-static-libgcc"
+		"-static-libstdc++"
+	)
 endif()
 
 if(NOT DEFINED OPENSSL_USE_STATIC_LIBS)
