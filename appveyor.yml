@@ -47,7 +47,7 @@ before_build:
   - sh: export OPENSSL_ROOT="/usr"
   
   # set up log-core
-  - ps: $env:LOGCORE_VERSION = "0.5.1"
+  - ps: $env:LOGCORE_VERSION = "0.5.2"
   # Windows
   - cmd: appveyor DownloadFile "https://github.com/maddinat0r/samp-log-core/releases/download/v%LOGCORE_VERSION%/samp-log-core-v%LOGCORE_VERSION%-win32.zip" -FileName samp-log-core.zip
   - cmd: 7z x samp-log-core.zip -y
