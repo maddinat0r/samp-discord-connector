@@ -43,7 +43,7 @@ before_build:
       rmdir /s /q %OPENSSL_ROOT%
       choco install --x86 openssl
   # Linux: install OpenSSL through apt
-  - sh: sudo apt-get -y install libssl-dev:i386
+  - sh: sudo apt-get -y install libssl1.0-dev:i386
   - sh: export OPENSSL_ROOT="/usr"
   
   # set up log-core
