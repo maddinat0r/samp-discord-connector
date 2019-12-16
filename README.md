@@ -12,6 +12,7 @@ How to install
 2. Edit the server configuration (*server.cfg*) as follows:
    - Windows: `plugins discord-connector`
    - Linux: `plugins discord-connector.so`
+3. Add `discord_bot_token YOURDISCORDBOTTOKEN` to your *server.cfg* file (__never share your bot token with anyone!__)
 
 Build instruction
 ---------------
