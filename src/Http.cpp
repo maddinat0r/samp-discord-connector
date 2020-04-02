@@ -8,7 +8,7 @@
 
 
 Http::Http(std::string token) :
-	m_SslContext(asio::ssl::context::tlsv12_client),
+	m_SslContext(asio::ssl::context::sslv23),
 	m_Token(token),
 	m_NetworkThreadRunning(true),
 	m_NetworkThread(std::bind(&Http::NetworkThreadFunc, this))
@@ -197,7 +197,7 @@ bool Http::Connect()
 	}
 
 	// SSL handshake
-	m_SslStream->set_verify_mode(asio::ssl::verify_peer, error);
+	m_SslStream->set_verify_mode(asio::ssl::verify_none, error);
 	if (error)
 	{
 		Logger::Get()->Log(LogLevel::ERROR,

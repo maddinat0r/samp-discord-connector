@@ -8,10 +8,10 @@
 #include <memory>
 
 #include <json.hpp>
-#include <boost/asio/strand.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/beast/core.hpp>
-#include <boost/beast/ssl.hpp>
 #include <boost/beast/websocket.hpp>
 #include <boost/beast/websocket/ssl.hpp>
 
@@ -71,18 +71,18 @@ public:
 private: // variables
 	const int LARGE_THRESHOLD_NUMBER = 100;
 
-	asio::io_context _ioContext;
-	std::unique_ptr<std::thread> _netThread;
-	asio::ssl::context _sslContext;
-	using SslStream_t = beast::ssl_stream<beast::tcp_stream>;
+	asio::io_service m_IoService;
+	std::thread *m_IoThread = nullptr;
+	asio::ssl::context m_SslContext;
+	using SslStream_t = asio::ssl::stream<asio::ip::tcp::socket>;
 	using WebSocketStream_t = beast::websocket::stream<SslStream_t>;
-	std::unique_ptr<WebSocketStream_t> _websocket;
+	std::unique_ptr<WebSocketStream_t> m_WebSocket;
 
-	beast::multi_buffer _buffer;
+	beast::multi_buffer m_WebSocketBuffer;
 
-	std::string _apiToken;
-	std::string _gatewayUrl;
-	uint64_t _sequenceNumber = 0;
+	std::string m_Token;
+	std::string m_GatewayUrl;
+	uint64_t m_SequenceNumber = 0;
 	std::string m_SessionId;
 	asio::steady_timer m_HeartbeatTimer;
 	std::chrono::steady_clock::duration m_HeartbeatInterval;
