@@ -32,9 +32,9 @@ install:
 before_build:
   # set up boost
   - ps: |
-      Start-FileDownload https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.7z boost.7z
+      Start-FileDownload https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.7z boost.7z
       7z x -bso0 -bsp0 boost.7z
-      $env:BOOST_ROOT = "boost_1_69_0"
+      $env:BOOST_ROOT = "boost_1_72_0"
 
   # set up OpenSSL
   # Windows: replace AppVeyor-provided OpenSSL
