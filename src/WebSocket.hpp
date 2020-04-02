@@ -97,6 +97,7 @@ private: // functions
 	void SendResumePayload();
 	void Read();
 	void OnRead(boost::system::error_code ec);
+	void OnWrite(boost::system::error_code ec);
 	void DoHeartbeat(boost::system::error_code ec);
 
 public: // functions

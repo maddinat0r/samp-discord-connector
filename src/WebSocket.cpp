@@ -180,7 +180,8 @@ void WebSocket::SendResumePayload()
 			{ "seq", _sequenceNumber }
 		} }
 	};
-	_websocket->write(asio::buffer(resume_payload.dump()));
+	_websocket->async_write(asio::buffer(resume_payload.dump()),
+		std::bind(&WebSocket::OnWrite, this, std::placeholders::_1));
 }
 
 void WebSocket::RequestGuildMembers(std::string guild_id)
@@ -195,7 +196,8 @@ void WebSocket::RequestGuildMembers(std::string guild_id)
 			{ "limit", 0 }
 		} }
 	};
-	_websocket->write(asio::buffer(payload.dump()));
+	_websocket->async_write(asio::buffer(payload.dump()),
+		std::bind(&WebSocket::OnWrite, this, std::placeholders::_1));
 }
 
 void WebSocket::UpdateStatus(std::string const &status, std::string const &activity_name)
@@ -220,7 +222,8 @@ void WebSocket::UpdateStatus(std::string const &status, std::string const &activ
 		};
 	}
 
-	_websocket->write(asio::buffer(payload.dump()));
+	_websocket->async_write(asio::buffer(payload.dump()),
+		std::bind(&WebSocket::OnWrite, this, std::placeholders::_1));
 }
 
 void WebSocket::Read()
@@ -352,6 +355,19 @@ void WebSocket::OnRead(boost::system::error_code ec)
 	}
 
 	Read();
+}
+
+void WebSocket::OnWrite(boost::system::error_code ec)
+{
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnWrite");
+
+	if (ec)
+	{
+		Logger::Get()->Log(LogLevel::ERROR,
+			"Can't write to Discord websocket gateway: {} ({})",
+			ec.message(), ec.value());
+		// we don't handle reconnects here, as the read callback already does this
+	}
 }
 
 void WebSocket::DoHeartbeat(boost::system::error_code ec)
