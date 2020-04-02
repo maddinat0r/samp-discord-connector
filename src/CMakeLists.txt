@@ -123,6 +123,12 @@ elseif(UNIX)
 	)
 endif()
 
+if (MSVC)
+	# WORKAROUND: Boost 1.70.0+ Beast has a bug that prevents using MSVC compiler optimizations
+	# see https://github.com/boostorg/beast/issues/1582
+	target_compile_options(discord-connector PUBLIC "$<$<CONFIG:Release>:/Od>")
+endif()
+
 
 install(TARGETS discord-connector DESTINATION "plugins/")
 get_target_property(LOGCORE_LOCATION log-core LOCATION)
