@@ -46,7 +46,7 @@ enum DCC_BotPresenceStatus
 #define DCC_INVALID_GUILD DCC_Guild:0
 
 #define DCC_ID_SIZE (20 + 1)
-
+#define DCC_NICK_SIZE (32 + 1)
 
 
 // natives
@@ -126,7 +126,7 @@ native DCC_GetGuildRoleCount(DCC_Guild:guild, &count);
 native DCC_GetGuildMember(DCC_Guild:guild, offset, &DCC_User:user);
 native DCC_GetGuildMemberCount(DCC_Guild:guild, &count);
 native DCC_GetGuildMemberVoiceChannel(DCC_Guild:guild, DCC_User:user, &DCC_Channel:channel);
-native DCC_GetGuildMemberNickname(DCC_Guild:guild, DCC_User:user, dest[], max_size = sizeof dest);
+native DCC_GetGuildMemberNickname(DCC_Guild:guild, DCC_User:user, dest[DCC_NICK_SIZE], max_size = sizeof dest);
 native DCC_GetGuildMemberRole(DCC_Guild:guild, DCC_User:user, offset, &DCC_Role:role);
 native DCC_GetGuildMemberRoleCount(DCC_Guild:guild, DCC_User:user, &count);
 native DCC_HasGuildMemberRole(DCC_Guild:guild, DCC_User:user, DCC_Role:role, &bool:has_role);
@@ -138,7 +138,7 @@ native DCC_GetAllGuilds(DCC_Guild:dest[], max_size = sizeof dest);
 native DCC_SetGuildName(DCC_Guild:guild, const name[]);
 native DCC_CreateGuildChannel(DCC_Guild:guild, const name[], DCC_ChannelType:type, const callback[] = "", const format[] = "", {Float, _}:...);
 native DCC_Channel:DCC_GetCreatedGuildChannel();
-native DCC_SetGuildMemberNickname(DCC_Guild:guild, DCC_User:user, const nickname[]);
+native DCC_SetGuildMemberNickname(DCC_Guild:guild, DCC_User:user, const nickname[DCC_NICK_SIZE]);
 native DCC_SetGuildMemberVoiceChannel(DCC_Guild:guild, DCC_User:user, DCC_Channel:channel);
 native DCC_AddGuildMemberRole(DCC_Guild:guild, DCC_User:user, DCC_Role:role);
 native DCC_RemoveGuildMemberRole(DCC_Guild:guild, DCC_User:user, DCC_Role:role);
@@ -160,7 +160,7 @@ native DCC_DeleteGuildRole(DCC_Guild:guild, DCC_Role:role);
 native DCC_BotPresenceStatus:DCC_GetBotPresenceStatus();
 
 native DCC_TriggerBotTypingIndicator(DCC_Channel:channel);
-native DCC_SetBotNickname(DCC_Guild:guild, const nickname[]);
+native DCC_SetBotNickname(DCC_Guild:guild, const nickname[DCC_NICK_SIZE]);
 stock DCC_ClearBotNickname(DCC_Guild:guild)
 {
 	return DCC_SetBotNickname(guild, "");
