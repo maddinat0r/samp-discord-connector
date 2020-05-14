@@ -180,8 +180,7 @@ void WebSocket::SendResumePayload()
 			{ "seq", _sequenceNumber }
 		} }
 	};
-	_websocket->async_write(asio::buffer(resume_payload.dump()),
-		std::bind(&WebSocket::OnWrite, this, std::placeholders::_1));
+	_websocket->write(asio::buffer(resume_payload.dump()));
 }
 
 void WebSocket::RequestGuildMembers(std::string guild_id)
