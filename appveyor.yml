@@ -37,11 +37,7 @@ before_build:
       $env:BOOST_ROOT = "boost_1_73_0"
 
   # set up OpenSSL
-  # Windows: replace AppVeyor-provided OpenSSL
-  - cmd: |
-      set OPENSSL_ROOT="C:/OpenSSL-Win32"
-      rmdir /s /q %OPENSSL_ROOT%
-      choco install --x86 openssl
+  - cmd: set OPENSSL_ROOT="C:/OpenSSL-v111-Win32"
   # Linux: install OpenSSL through apt
   - sh: sudo apt-get -y install libssl1.0-dev:i386
   - sh: export OPENSSL_ROOT="/usr"
