@@ -244,9 +244,9 @@ void WebSocket::Read()
 void WebSocket::OnRead(beast::error_code ec,
 	std::size_t bytes_transferred)
 {
-	boost::ignore_unused(bytes_transferred);
-
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnRead");
+	Logger::Get()->Log(LogLevel::DEBUG, 
+		"WebSocket::OnRead({:d})",
+		bytes_transferred);
 
 	if (ec)
 	{
