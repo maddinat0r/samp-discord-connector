@@ -76,10 +76,15 @@ private: // variables
 
 	asio::io_context _ioContext;
 	std::unique_ptr<std::thread> _netThread;
+	asio::ip::tcp::resolver _resolver;
 	asio::ssl::context _sslContext;
 	using SslStream_t = beast::ssl_stream<beast::tcp_stream>;
 	using WebSocketStream_t = beast::websocket::stream<SslStream_t>;
 	std::unique_ptr<WebSocketStream_t> _websocket;
+
+	bool _reconnect = false;
+	asio::steady_timer _reconnectTimer;
+	unsigned int _reconnectCount = 0;
 
 	beast::multi_buffer _buffer;
 
@@ -93,15 +98,30 @@ private: // variables
 
 private: // functions
 	void Initialize(std::string token, std::string gateway_url);
-	bool Connect();
+
+	void Connect();
+	void OnResolve(beast::error_code ec,
+		asio::ip::tcp::resolver::results_type results);
+	void OnConnect(beast::error_code ec,
+		asio::ip::tcp::resolver::results_type::endpoint_type ep);
+	void OnSslHandshake(beast::error_code ec);
+	void OnHandshake(beast::error_code ec);
+
 	void Disconnect(bool reconnect = false);
-	void OnClose(boost::system::error_code ec, bool reconnect);
+	void OnClose(beast::error_code ec);
+	void OnReconnect(beast::error_code ec);
+
+	void Read();
+	void OnRead(beast::error_code ec,
+		std::size_t bytes_transferred);
+
+	void Write(std::string const &data);
+	void OnWrite(beast::error_code ec,
+		size_t bytes_transferred);
+
 	void Identify();
 	void SendResumePayload();
-	void Read();
-	void OnRead(boost::system::error_code ec);
-	void OnWrite(boost::system::error_code ec);
-	void DoHeartbeat(boost::system::error_code ec);
+	void DoHeartbeat(beast::error_code ec);
 
 public: // functions
 	void RegisterEvent(Event event, EventCallback_t &&callback)

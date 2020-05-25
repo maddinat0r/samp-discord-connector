@@ -5,13 +5,20 @@
 
 
 WebSocket::WebSocket() :
+	_ioContext(),
+	_resolver(asio::make_strand(_ioContext)),
 	_sslContext(asio::ssl::context::tlsv12_client),
-	m_HeartbeatTimer(_ioContext)
+	_reconnectTimer(_ioContext),
+	m_HeartbeatTimer(_ioContext),
+	m_HeartbeatInterval()
 {
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::WebSocket");
 }
 
 WebSocket::~WebSocket()
 {
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::~WebSocket");
+
 	Disconnect();
 
 	if (_netThread)
@@ -20,14 +27,12 @@ WebSocket::~WebSocket()
 
 void WebSocket::Initialize(std::string token, std::string gateway_url)
 {
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::Initialize");
+
 	_gatewayUrl = gateway_url;
 	_apiToken = token;
 
-	if (!Connect())
-		return;
-
-	Read();
-	Identify();
+	Connect();
 
 	_netThread = std::make_unique<std::thread>([this]()
 	{
@@ -35,87 +40,145 @@ void WebSocket::Initialize(std::string token, std::string gateway_url)
 	});
 }
 
-bool WebSocket::Connect()
+void WebSocket::Connect()
 {
 	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::Connect");
 
-	boost::system::error_code error;
-	asio::ip::tcp::resolver r(asio::make_strand(_ioContext));
-	auto target = r.resolve(_gatewayUrl, "443", error);
-	if (error)
-	{
-		Logger::Get()->Log(LogLevel::ERROR, "Can't resolve Discord gateway URL '{}': {} ({})",
-			_gatewayUrl, error.message(), error.value());
-		return false;
-	}
+	_resolver.async_resolve(
+		_gatewayUrl,
+		"443",
+		beast::bind_front_handler(
+			&WebSocket::OnResolve,
+			this));
+}
 
-	_websocket.reset(new WebSocketStream_t(asio::make_strand(_ioContext), _sslContext));
-	beast::get_lowest_layer(*_websocket).expires_after(std::chrono::seconds(30));
-	beast::get_lowest_layer(*_websocket).connect(target, error);
-	if (error)
-	{
-		Logger::Get()->Log(LogLevel::ERROR, "Can't connect to Discord gateway: {} ({})",
-			error.message(), error.value());
-		return false;
-	}
+void WebSocket::OnResolve(beast::error_code ec, 
+	asio::ip::tcp::resolver::results_type results)
+{
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnResolve");
 
-	_websocket->next_layer().set_verify_mode(asio::ssl::verify_peer, error);
-	if (error)
-	{
-		Logger::Get()->Log(LogLevel::ERROR,
-			"Can't configure SSL stream peer verification mode for Discord gateway: {} ({})",
-			error.message(), error.value());
-		return false;
-	}
-
-	beast::get_lowest_layer(*_websocket).expires_after(std::chrono::seconds(30));
-	_websocket->next_layer().handshake(asio::ssl::stream_base::client, error);
-	if (error)
+	if (ec)
 	{
 		Logger::Get()->Log(LogLevel::ERROR, 
+			"Can't resolve Discord gateway URL '{}': {} ({})",
+			_gatewayUrl, ec.message(), ec.value());
+		Disconnect(true);
+		return;
+	}
+
+	_websocket.reset(
+		new WebSocketStream_t(asio::make_strand(_ioContext), _sslContext));
+
+	beast::get_lowest_layer(*_websocket).expires_after(
+		std::chrono::seconds(30));
+	beast::get_lowest_layer(*_websocket).async_connect(
+		results, 
+		beast::bind_front_handler(
+			&WebSocket::OnConnect,
+			this));
+}
+
+void WebSocket::OnConnect(beast::error_code ec,
+	asio::ip::tcp::resolver::results_type::endpoint_type ep)
+{
+	boost::ignore_unused(ep);
+
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnConnect");
+
+	if (ec)
+	{
+		Logger::Get()->Log(LogLevel::ERROR, 
+			"Can't connect to Discord gateway: {} ({})",
+			ec.message(), ec.value());
+		Disconnect(true);
+		return;
+	}
+
+	beast::get_lowest_layer(*_websocket).expires_after(std::chrono::seconds(30));
+	_websocket->next_layer().async_handshake(
+		asio::ssl::stream_base::client, 
+		beast::bind_front_handler(
+			&WebSocket::OnSslHandshake,
+			this));
+}
+
+void WebSocket::OnSslHandshake(beast::error_code ec)
+{
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnSslHandshake");
+
+	if (ec)
+	{
+		Logger::Get()->Log(LogLevel::ERROR,
 			"Can't establish secured connection to Discord gateway: {} ({})",
-			error.message(), error.value());
-		return false;
+			ec.message(), ec.value());
+		Disconnect(true);
+		return;
 	}
 
 	// websocket stream has its own timeout system
 	beast::get_lowest_layer(*_websocket).expires_never();
 
 	_websocket->set_option(
-		beast::websocket::stream_base::timeout::suggested(beast::role_type::client));
+		beast::websocket::stream_base::timeout::suggested(
+			beast::role_type::client));
 
 	// set a decorator to change the User-Agent of the handshake
 	_websocket->set_option(beast::websocket::stream_base::decorator(
 		[](beast::websocket::request_type &req)
-		{
-			req.set(beast::http::field::user_agent,
-				std::string(BOOST_BEAST_VERSION_STRING) +
-				" websocket-client-async-ssl");
-		}));
-
-	_websocket->handshake(_gatewayUrl, "/?encoding=json&v=6", error);
-	if (error)
 	{
-		Logger::Get()->Log(LogLevel::ERROR, "Can't upgrade to WSS protocol: {} ({})",
-			error.message(), error.value());
-		return false;
+		req.set(beast::http::field::user_agent,
+			std::string(BOOST_BEAST_VERSION_STRING) +
+			" samp-discord-connector");
+	}));
+
+	_websocket->async_handshake(
+		_gatewayUrl + ":443", 
+		"/?encoding=json&v=6",
+		beast::bind_front_handler(
+			&WebSocket::OnHandshake,
+			this));
+}
+
+void WebSocket::OnHandshake(beast::error_code ec)
+{
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnHandshake");
+
+	if (ec)
+	{
+		Logger::Get()->Log(LogLevel::ERROR,
+			"Can't upgrade to WSS protocol: {} ({})",
+			ec.message(), ec.value());
+		Disconnect(true);
+		return;
 	}
 
-	return true;
+	_reconnectCount = 0;
+
+	// read before identifying/resuming to make sure we catch the result
+	Read();
+	if (_reconnect)
+		SendResumePayload();
+	else
+		Identify();
 }
 
 void WebSocket::Disconnect(bool reconnect /*= false*/)
 {
 	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::Disconnect");
 
+	_reconnect = reconnect;
+
 	if (_websocket)
 	{
-		_websocket->async_close(beast::websocket::close_code::normal,
-			std::bind(&WebSocket::OnClose, this, std::placeholders::_1, reconnect));
+		_websocket->async_close(
+			beast::websocket::close_code::normal,
+			beast::bind_front_handler(
+				&WebSocket::OnClose,
+				this));
 	}
 }
 
-void WebSocket::OnClose(boost::system::error_code ec, bool reconnect)
+void WebSocket::OnClose(beast::error_code ec)
 {
 	boost::ignore_unused(ec);
 
@@ -123,137 +186,88 @@ void WebSocket::OnClose(boost::system::error_code ec, bool reconnect)
 
 	m_HeartbeatTimer.cancel();
 
-	if (reconnect)
+	if (_reconnect)
 	{
-		if (Connect())
+		auto time = std::chrono::seconds(
+			std::min(_reconnectCount * 5, 60u));
+
+		if (time.count() > 0)
 		{
-			SendResumePayload();
-			Read();
+			Logger::Get()->Log(LogLevel::INFO,
+				"reconnecting in {:d} seconds",
+				time.count());
 		}
-		else
-		{
-			// retry reconnect in 10 seconds
-			std::this_thread::sleep_for(std::chrono::seconds(10));
-			Disconnect(true);
-		}
+
+		_reconnectTimer.expires_from_now(time);
+		_reconnectTimer.async_wait(
+			beast::bind_front_handler(
+				&WebSocket::OnReconnect,
+				this));
 	}
 }
 
-void WebSocket::Identify()
+void WebSocket::OnReconnect(beast::error_code ec)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::WsIdentify");
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnReconnect");
 
-#ifdef WIN32
-	std::string os_name = "Windows";
-#else
-	std::string os_name = "Linux";
-#endif
-
-	json identify_payload = {
-		{ "op", 2 },
-		{ "d",{
-			{ "token", _apiToken },
-			{ "compress", false },
-			{ "large_threshold", LARGE_THRESHOLD_NUMBER },
-			{ "properties",{
-				{ "$os", os_name },
-				{ "$browser", BOOST_BEAST_VERSION_STRING },
-				{ "$device", "SA-MP DCC plugin" },
-				{ "$referrer", "" },
-				{ "$referring_domain", "" }
-			} }
-		} }
-	};
-
-	_websocket->write(asio::buffer(identify_payload.dump()));
-}
-
-void WebSocket::SendResumePayload()
-{
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::WsSendResumePayload");
-
-	json resume_payload = {
-		{ "op", 6 },
-		{ "d",{
-			{ "token", _apiToken },
-			{ "session_id", m_SessionId },
-			{ "seq", _sequenceNumber }
-		} }
-	};
-	_websocket->async_write(asio::buffer(resume_payload.dump()),
-		std::bind(&WebSocket::OnWrite, this, std::placeholders::_1));
-}
-
-void WebSocket::RequestGuildMembers(std::string guild_id)
-{
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::RequestGuildMembers");
-
-	json payload = {
-		{ "op", 8 },
-		{ "d",{
-			{ "guild_id", guild_id },
-			{ "query", "" },
-			{ "limit", 0 }
-		} }
-	};
-	_websocket->async_write(asio::buffer(payload.dump()),
-		std::bind(&WebSocket::OnWrite, this, std::placeholders::_1));
-}
-
-void WebSocket::UpdateStatus(std::string const &status, std::string const &activity_name)
-{
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::UpdateStatus");
-
-	json payload = {
-		{ "op", 3 },
-		{ "d", {
-			{ "since", nullptr },
-			{ "game", nullptr },
-			{ "status", status },
-			{ "afk", false },
-		} }
-	};
-
-	if (!activity_name.empty())
+	if (ec)
 	{
-		payload.at("d").at("game") = {
-			{ "name", activity_name },
-			{ "type", 0 }
-		};
+		switch (ec.value())
+		{
+		case boost::asio::error::operation_aborted:
+			// timer was chancelled, do nothing
+			Logger::Get()->Log(LogLevel::DEBUG, "reconnect timer chancelled");
+			break;
+		default:
+			Logger::Get()->Log(LogLevel::ERROR, "reconnect timer error: {} ({})",
+				ec.message(), ec.value());
+			break;
+		}
+		return;
 	}
 
-	_websocket->async_write(asio::buffer(payload.dump()),
-		std::bind(&WebSocket::OnWrite, this, std::placeholders::_1));
+	++_reconnectCount;
+	Connect();
 }
 
 void WebSocket::Read()
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::WsRead");
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::Read");
 
-	_websocket->async_read(_buffer,
-		std::bind(&WebSocket::OnRead, this, std::placeholders::_1));
+	_websocket->async_read(
+		_buffer,
+		beast::bind_front_handler(
+			&WebSocket::OnRead,
+			this));
 }
 
-void WebSocket::OnRead(boost::system::error_code ec)
+void WebSocket::OnRead(beast::error_code ec,
+	std::size_t bytes_transferred)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnWsRead");
+	boost::ignore_unused(bytes_transferred);
+
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnRead");
 
 	if (ec)
 	{
 		bool reconnect = false;
 		switch (ec.value())
 		{
-		case boost::asio::ssl::error::stream_errors::stream_truncated:
-			Logger::Get()->Log(LogLevel::ERROR, "Discord terminated websocket connection; reason: {} ({})",
-				_websocket->reason().reason.c_str(), _websocket->reason().code);
+		case asio::ssl::error::stream_errors::stream_truncated:
+			Logger::Get()->Log(LogLevel::ERROR,
+				"Discord terminated websocket connection; reason: {} ({})",
+				_websocket->reason().reason.c_str(),
+				_websocket->reason().code);
 			reconnect = true;
 			break;
-		case boost::asio::error::operation_aborted:
+		case asio::error::operation_aborted:
 			// connection was closed, do nothing
 			break;
 		default:
-			Logger::Get()->Log(LogLevel::ERROR, "Can't read from Discord websocket gateway: {} ({})",
-				ec.message(), ec.value());
+			Logger::Get()->Log(LogLevel::ERROR,
+				"Can't read from Discord websocket gateway: {} ({})",
+				ec.message(),
+				ec.value());
 			reconnect = true;
 			break;
 		}
@@ -261,7 +275,7 @@ void WebSocket::OnRead(boost::system::error_code ec)
 		if (reconnect)
 		{
 			Logger::Get()->Log(LogLevel::INFO,
-				"websocket gateway connection terminated, attempting reconnect...");
+				"websocket gateway connection terminated; attempting reconnect...");
 			Disconnect(true);
 		}
 		return;
@@ -339,13 +353,16 @@ void WebSocket::OnRead(boost::system::error_code ec)
 		}
 	} break;
 	case 7: // reconnect
+		Logger::Get()->Log(LogLevel::INFO,
+			"websocket gateway requested reconnect; attempting reconnect...");
 		Disconnect(true);
 		return;
 	case 9: // invalid session
 		Identify();
 		break;
 	case 10: // hello
-			 // start heartbeat
+		// at this point we're connected to the gateway, but not authenticated
+		// start heartbeat
 		m_HeartbeatInterval = std::chrono::milliseconds(result["d"]["heartbeat_interval"]);
 		DoHeartbeat({});
 		break;
@@ -360,20 +377,121 @@ void WebSocket::OnRead(boost::system::error_code ec)
 	Read();
 }
 
-void WebSocket::OnWrite(boost::system::error_code ec)
+void WebSocket::Write(std::string const &data)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnWrite");
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::Write");
+
+	_websocket->async_write(
+		asio::buffer(data),
+		beast::bind_front_handler(
+			&WebSocket::OnWrite,
+			this));
+}
+
+void WebSocket::OnWrite(beast::error_code ec,
+	size_t bytes_transferred)
+{
+	Logger::Get()->Log(LogLevel::DEBUG, 
+		"WebSocket::OnWrite({:d})", 
+		bytes_transferred);
 
 	if (ec)
 	{
 		Logger::Get()->Log(LogLevel::ERROR,
 			"Can't write to Discord websocket gateway: {} ({})",
 			ec.message(), ec.value());
-		// we don't handle reconnects here, as the read callback already does this
+		// we don't handle reconnects here, as the read handler already does this
 	}
 }
 
-void WebSocket::DoHeartbeat(boost::system::error_code ec)
+void WebSocket::Identify()
+{
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::Identify");
+
+	const char *os_name =
+#ifdef WIN32
+		"Windows";
+#else
+		"Linux";
+#endif
+
+	json identify_payload = {
+		{ "op", 2 },
+		{ "d",{
+			{ "token", _apiToken },
+			{ "compress", false },
+			{ "large_threshold", LARGE_THRESHOLD_NUMBER },
+			{ "properties",{
+				{ "$os", os_name },
+				{ "$browser", BOOST_BEAST_VERSION_STRING },
+				{ "$device", "SA-MP DCC plugin" },
+				{ "$referrer", "" },
+				{ "$referring_domain", "" }
+			} }
+		} }
+	};
+
+	Write(identify_payload.dump());
+}
+
+void WebSocket::SendResumePayload()
+{
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::SendResumePayload");
+
+	json resume_payload = {
+		{ "op", 6 },
+		{ "d",{
+			{ "token", _apiToken },
+			{ "session_id", m_SessionId },
+			{ "seq", _sequenceNumber }
+		} }
+	};
+
+	Write(resume_payload.dump());
+}
+
+void WebSocket::RequestGuildMembers(std::string guild_id)
+{
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::RequestGuildMembers");
+
+	json payload = {
+		{ "op", 8 },
+		{ "d",{
+			{ "guild_id", guild_id },
+			{ "query", "" },
+			{ "limit", 0 }
+		} }
+	};
+
+	Write(payload.dump());
+}
+
+void WebSocket::UpdateStatus(std::string const &status, std::string const &activity_name)
+{
+	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::UpdateStatus");
+
+	json payload = {
+		{ "op", 3 },
+		{ "d", {
+			{ "since", nullptr },
+			{ "game", nullptr },
+			{ "status", status },
+			{ "afk", false },
+		} }
+	};
+
+	if (!activity_name.empty())
+	{
+		payload.at("d").at("game") = {
+			{ "name", activity_name },
+			{ "type", 0 }
+		};
+	}
+
+	Write(payload.dump());
+}
+
+void WebSocket::DoHeartbeat(beast::error_code ec)
 {
 	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::DoHeartbeat");
 
@@ -398,17 +516,12 @@ void WebSocket::DoHeartbeat(boost::system::error_code ec)
 		{ "d", _sequenceNumber }
 	};
 
-	boost::system::error_code error_code;
-	_websocket->write(asio::buffer(heartbeat_payload.dump()), error_code);
-	if (error_code)
-	{
-		Logger::Get()->Log(LogLevel::ERROR, "Heartbeat write error: {} ({})",
-			ec.message(), ec.value());
-		return;
-	}
-
 	Logger::Get()->Log(LogLevel::DEBUG, "sending heartbeat");
+	Write(heartbeat_payload.dump());
 
 	m_HeartbeatTimer.expires_from_now(m_HeartbeatInterval);
-	m_HeartbeatTimer.async_wait(std::bind(&WebSocket::DoHeartbeat, this, std::placeholders::_1));
+	m_HeartbeatTimer.async_wait(
+		beast::bind_front_handler(
+			&WebSocket::DoHeartbeat,
+			this));
 }
