@@ -176,10 +176,12 @@ bool Http::Connect()
 {
 	Logger::Get()->Log(LogLevel::DEBUG, "Http::Connect");
 
+	const char *API_HOST = "discord.com";
+
 	// connect to REST API
 	asio::ip::tcp::resolver r{ m_IoService };
 	boost::system::error_code error;
-	auto target = r.resolve("discordapp.com", "443", error);
+	auto target = r.resolve(API_HOST, "443", error);
 	if (error)
 	{
 		Logger::Get()->Log(LogLevel::ERROR, "Can't resolve Discord API URL: {} ({})",
@@ -267,7 +269,7 @@ Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 	req->target("/api/v6" + url);
 	req->version(11);
 	req->insert(beast::http::field::connection, "keep-alive");
-	req->insert(beast::http::field::host, "discordapp.com");
+	req->insert(beast::http::field::host, "discord.com");
 	req->insert(beast::http::field::user_agent,
 		"DiscordBot (github.com/maddinat0r/samp-discord-connector, " PLUGIN_VERSION ")");
 	if (!content.empty())
