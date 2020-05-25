@@ -215,15 +215,6 @@ bool Http::Connect()
 	}
 
 	// SSL handshake
-	m_SslStream->set_verify_mode(asio::ssl::verify_peer, error);
-	if (error)
-	{
-		Logger::Get()->Log(LogLevel::ERROR,
-			"Can't configure SSL stream peer verification mode for Discord API: {} ({})",
-			error.message(), error.value());
-		return false;
-	}
-
 	m_SslStream->handshake(asio::ssl::stream_base::client, error);
 	if (error)
 	{
