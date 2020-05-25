@@ -4,6 +4,7 @@
 #include "version.hpp"
 
 #include <boost/asio/system_timer.hpp>
+#include <boost/beast/version.hpp>
 #include <date/date.h>
 
 
@@ -271,7 +272,7 @@ Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 	req->insert(beast::http::field::connection, "keep-alive");
 	req->insert(beast::http::field::host, "discord.com");
 	req->insert(beast::http::field::user_agent,
-		"DiscordBot (github.com/maddinat0r/samp-discord-connector, " PLUGIN_VERSION ")");
+		"samp-discord-connector (" BOOST_BEAST_VERSION_STRING ")");
 	if (!content.empty())
 		req->insert(beast::http::field::content_type, "application/json");
 	req->insert(beast::http::field::authorization, "Bot " + m_Token);
