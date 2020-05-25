@@ -7,10 +7,10 @@
 #include <thread>
 #include <atomic>
 
-#include <boost/asio.hpp>
-#include <boost/asio/ssl.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
+#include <boost/beast/ssl.hpp>
+#include <boost/asio/strand.hpp>
 #include <boost/lockfree/queue.hpp>
 
 #ifdef DELETE
@@ -59,9 +59,9 @@ private:
 	};
 
 private:
-	asio::io_service m_IoService;
+	asio::io_context m_IoService;
 	asio::ssl::context m_SslContext;
-	using SslStream_t = asio::ssl::stream<asio::ip::tcp::socket>;
+	using SslStream_t = beast::ssl_stream<beast::tcp_stream>;
 	std::unique_ptr<SslStream_t> m_SslStream;
 
 	std::string m_Token;

@@ -14,6 +14,7 @@ Http::Http(std::string token) :
 	m_NetworkThreadRunning(true),
 	m_NetworkThread(std::bind(&Http::NetworkThreadFunc, this))
 {
+
 }
 
 Http::~Http()
@@ -177,7 +178,21 @@ bool Http::Connect()
 {
 	Logger::Get()->Log(LogLevel::DEBUG, "Http::Connect");
 
+	m_SslStream.reset(new SslStream_t(m_IoService, m_SslContext));
+
 	const char *API_HOST = "discord.com";
+
+	// Set SNI Hostname (many hosts need this to handshake successfully)
+	if (!SSL_set_tlsext_host_name(m_SslStream->native_handle(), API_HOST))
+	{
+		beast::error_code ec{ 
+			static_cast<int>(::ERR_get_error()),
+			asio::error::get_ssl_category() };
+		Logger::Get()->Log(LogLevel::ERROR,
+			"Can't set SNI hostname for Discord API URL: {} ({})",
+			ec.message(), ec.value());
+		return false;
+	}
 
 	// connect to REST API
 	asio::ip::tcp::resolver r{ m_IoService };
@@ -190,8 +205,8 @@ bool Http::Connect()
 		return false;
 	}
 
-	m_SslStream.reset(new SslStream_t(m_IoService, m_SslContext));
-	asio::connect(m_SslStream->lowest_layer(), target, error);
+	beast::get_lowest_layer(*m_SslStream).expires_after(std::chrono::seconds(30));
+	beast::get_lowest_layer(*m_SslStream).connect(target, error);
 	if (error)
 	{
 		Logger::Get()->Log(LogLevel::ERROR, "Can't connect to Discord API: {} ({})",
