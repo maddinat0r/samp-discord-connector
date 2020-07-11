@@ -179,7 +179,17 @@ stock DCC_ClearBotActivity()
 // misc
 native DCC_EscapeMarkdown(const src[], dest[], max_size = sizeof dest);
 
-
+// embedded messages
+native DCC_Embed:DCC_CreateEmbedMessage(const title[] = "", const description[] = "", const url[] = "", const timestamp[] = "", color = 0, const footer_text[] = "", const footer_icon_url[] = "", const footer_proxy_icon_url[] = "", const thumbnail_url[] = "", const thumbnail_proxy_url[] = "", thumbnail_height = 0, thumbnail_width = 0);
+native DCC_SendEmbedMessage(DCC_Channel:channel, DCC_Embed:embed, const message[] = "", const callback[] = "", const format[] = "", {Float, _}:...);
+native DCC_AddEmbedField(DCC_Embed:embed, const name[], const value[], bool:inline = false);
+native DCC_SetEmbedTitle(DCC_Embed:embed, const title[]);
+native DCC_SetEmbedDescription(DCC_Embed:embed, const description[] = "");
+native DCC_SetEmbedUrl(DCC_Embed:embed, const url[] = "");
+native DCC_SetEmbedTimestamp(DCC_Embed:embed, const timestamp[] = "");
+native DCC_SetEmbedColor(DCC_Embed:embed, color = 0);
+native DCC_SetEmbedFooter(DCC_Embed:embed, const footer_text[] = "", const footer_icon_url[] = "", const footer_proxy_icon_url[] = "");
+native DCC_SetEmbedThumbnail(DCC_Embed:embed, const thumbnail_url[] = "", const thumbnail_proxy_url[] = "", thumbnail_height = 0, thumbnail_width = 0);
 
 // callbacks
 //  channels
