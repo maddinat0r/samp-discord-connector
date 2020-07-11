@@ -91,6 +91,7 @@ public:
 	}
 
 	void SendMessage(std::string &&msg, pawn_cb::Callback_t &&cb);
+	void SendEmbeddedMessage(const Embed_t & embed, std::string&& msg, pawn_cb::Callback_t&& cb);
 	void SetChannelName(std::string const &name);
 	void SetChannelTopic(std::string const &topic);
 	void SetChannelPosition(int const position);

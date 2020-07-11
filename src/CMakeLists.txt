@@ -50,6 +50,8 @@ add_samp_plugin(discord-connector
 	User.hpp
 	WebSocket.cpp
 	WebSocket.hpp
+	Embed.cpp
+	Embed.hpp
 	main.cpp
 	misc.hpp
 	natives.cpp

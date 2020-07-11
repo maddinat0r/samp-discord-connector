@@ -5,6 +5,7 @@
 #include "Logger.hpp"
 #include "Guild.hpp"
 #include "utils.hpp"
+#include "Embed.hpp"
 
 #include "fmt/format.h"
 
@@ -184,6 +185,78 @@ void Channel::DeleteChannel()
 	Network::Get()->Http().Delete(fmt::format("/channels/{:s}", GetId()));
 }
 
+void Channel::SendEmbeddedMessage(const Embed_t & embed, std::string&& msg, pawn_cb::Callback_t&& cb)
+{
+	json data = {
+		{ "content", std::move(msg) },
+		{ "embed", {
+			{ "title", embed->GetTitle() },
+			{ "description", embed->GetDescription() },
+			{ "url", embed->GetUrl() },
+			{ "timestamp", embed->GetTimestamp() },
+			{ "color", embed->GetColor() },
+			{ "footer", {
+				{"text", embed->GetFooterText()},
+				{"icon_url", embed->GetFooterIconUrl()},
+				{"proxy_icon_url", embed->GetFooterIconProxyUrl()}
+			}},
+			{"thumbnail", {
+				{"url", embed->GetThumbnailUrl()},
+				{"proxy_url", embed->GetThumbnailProxyUrl()},
+				{"height", embed->GetThumbnailHeight()},
+				{"width", embed->GetThumbnailWidth()}
+			}}
+		}}
+	};
+
+	// Add fields (if any).
+	if (embed->GetFields().size())
+	{
+		json field_array = json::array();
+		for (const auto& i : embed->GetFields())
+		{
+			field_array.push_back({ { "name", i._name }, {"value", i._value}, {"inline", i._inline_} });
+		}
+		json field_data = {
+			{"fields", field_array}
+		};
+		data["embed"].insert(field_data.begin(), field_data.end());
+	}
+
+	std::string json_str;
+	if (!utils::TryDumpJson(data, json_str))
+		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+
+	Http::ResponseCb_t response_cb;
+	if (cb)
+	{
+		response_cb = [cb](Http::Response response)
+		{
+			Logger::Get()->Log(LogLevel::DEBUG,
+				"channel message create response: status {}; body: {}; add: {}",
+				response.status, response.body, response.additional_data);
+			if (response.status / 100 == 2) // success
+			{
+				auto msg_json = json::parse(response.body);
+				PawnDispatcher::Get()->Dispatch([cb, msg_json]() mutable
+					{
+						auto msg = MessageManager::Get()->Create(msg_json);
+						if (msg != INVALID_MESSAGE_ID)
+						{
+							MessageManager::Get()->SetCreatedMessageId(msg);
+							cb->Execute();
+							MessageManager::Get()->SetCreatedMessageId(INVALID_MESSAGE_ID);
+
+							MessageManager::Get()->Delete(msg);
+						}
+					});
+			}
+		};
+	}
+
+	Network::Get()->Http().Post(fmt::format("/channels/{:s}/messages", GetId()), json_str,
+		std::move(response_cb));
+}
 
 void ChannelManager::Initialize()
 {

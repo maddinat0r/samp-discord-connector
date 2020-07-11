@@ -197,7 +197,7 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_GetGuildOwnerId)
 	AMX_DEFINE_NATIVE(DCC_GetGuildRole)
 	AMX_DEFINE_NATIVE(DCC_GetGuildRoleCount)
-	AMX_DEFINE_NATIVE(DCC_GetGuildMember)	
+	AMX_DEFINE_NATIVE(DCC_GetGuildMember)
 	AMX_DEFINE_NATIVE(DCC_GetGuildMemberCount)
 	AMX_DEFINE_NATIVE(DCC_GetGuildMemberVoiceChannel)
 	AMX_DEFINE_NATIVE(DCC_GetGuildMemberNickname)
@@ -237,6 +237,10 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_SetBotActivity)
 
 	AMX_DEFINE_NATIVE(DCC_EscapeMarkdown)
+
+	AMX_DEFINE_NATIVE(DCC_CreateEmbedMessage)
+	AMX_DEFINE_NATIVE(DCC_SendEmbedMessage)
+	AMX_DEFINE_NATIVE(DCC_AddEmbedField)
 	{ NULL, NULL }
 };
 

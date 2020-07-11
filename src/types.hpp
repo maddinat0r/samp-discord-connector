@@ -26,3 +26,7 @@ const MessageId_t INVALID_MESSAGE_ID = 0;
 using Role_t = std::unique_ptr<class Role>;
 using RoleId_t = cell;
 const RoleId_t INVALID_ROLE_ID = 0;
+
+using Embed_t = std::unique_ptr<class Embed>;
+using EmbedId_t = cell;
+const EmbedId_t INVALID_EMBED_ID = 0;

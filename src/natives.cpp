@@ -10,6 +10,7 @@
 #include "types.hpp"
 #include "Logger.hpp"
 #include "Callback.hpp"
+#include "Embed.hpp"
 
 #include <fmt/printf.h>
 
@@ -2374,4 +2375,101 @@ AMX_DECLARE_NATIVE(Native::DCC_EscapeMarkdown)
 	auto ret_val = static_cast<cell>(dest.length());
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
+}
+
+// native DCC_CreateEmbedMessage(const title[] = "", const description[] = "", const url[] = "", const timestamp[] = "", int color = 0, const footer_text[] = "", const footer_icon_url[] = "", 
+//		const footer_proxy_icon_url[] = "", const thumbnail_url[] = "", const thumbnail_proxy_url[] = "", thumbnail_height = 0, thumbnail_width = 0);
+AMX_DECLARE_NATIVE(Native::DCC_CreateEmbedMessage)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_CreateEmbedMessage", params, "ssssdsssssdd");
+	auto const title = amx_GetCppString(amx, params[1]);
+	auto const description = amx_GetCppString(amx, params[2]);
+	auto const url = amx_GetCppString(amx, params[3]);
+	auto const timestamp = amx_GetCppString(amx, params[4]);
+	auto const color = static_cast<int>(params[5]);
+	auto const footer_text = amx_GetCppString(amx, params[6]);
+	auto const footer_icon_url = amx_GetCppString(amx, params[7]);
+	auto const footer_proxy_icon_url = amx_GetCppString(amx, params[8]);
+	auto const thumbnail_url = amx_GetCppString(amx, params[9]);
+	auto const thumbnail_proxy_url = amx_GetCppString(amx, params[10]);
+	auto const thumbnail_height = static_cast<int>(params[11]);
+	auto const thumbnail_width = static_cast<int>(params[12]);
+
+
+	EmbedId_t id = EmbedManager::Get()->AddEmbed(title, description, url, timestamp, color, footer_text, footer_icon_url, footer_proxy_icon_url, thumbnail_url, thumbnail_proxy_url,
+		thumbnail_height, thumbnail_width);
+	if (!id)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "failed to create embed");
+		return 0;
+	}
+	return id;
+}
+
+// native DCC_AddEmbedField(DCC_Embed:embed, const name[], const value[], bool:embed = false);
+AMX_DECLARE_NATIVE(Native::DCC_AddEmbedField)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_AddEmbeddedField", params, "dssd");
+	auto embedid = static_cast<EmbedId_t>(params[1]);
+	auto &embed = EmbedManager::Get()->FindEmbed(embedid);
+	if (!embed)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		return 0;
+	}
+
+	auto const name = amx_GetCppString(amx, params[2]);
+	auto const value = amx_GetCppString(amx, params[3]);
+	auto const inline_ = static_cast<bool>(params[4]);
+	embed->AddField(name, value, inline_);
+	return 1;
+}
+
+// native DCC_SendEmbedMessage(DCC_Channel:channel, DCC_Embed:embed, const message[] = "", 
+//     const callback[] = "", const format[] = "", {Float, _}:...);
+AMX_DECLARE_NATIVE(Native::DCC_SendEmbedMessage)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SendEmbedMessage", params, "ddsss");
+
+	ChannelId_t channelid = static_cast<ChannelId_t>(params[1]);
+	Channel_t const& channel = ChannelManager::Get()->FindChannel(channelid);
+	if (!channel)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		return 0;
+	}
+
+	EmbedId_t embedid = static_cast<EmbedId_t>(params[2]);
+	Embed_t const& embed = EmbedManager::Get()->FindEmbed(embedid);
+	if (!embed)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		return 0;
+	}
+
+	auto message = amx_GetCppString(amx, params[3]);
+	if (message.length() > 2000)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR,
+			"message must be shorter than 2000 characters");
+		return 0;
+	}
+
+	auto
+		cb_name = amx_GetCppString(amx, params[4]),
+		cb_format = amx_GetCppString(amx, params[5]);
+
+	pawn_cb::Error cb_error;
+	auto cb = pawn_cb::Callback::Prepare(
+		amx, cb_name.c_str(), cb_format.c_str(), params, 6, cb_error);
+	if (cb_error && cb_error.get() != pawn_cb::Error::Type::EMPTY_NAME)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "could not prepare callback");
+		return 0;
+	}
+
+	channel->SendEmbeddedMessage(embed, std::move(message), std::move(cb));
+	EmbedManager::Get()->DeleteEmbed(embedid);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
 }
