@@ -26,8 +26,8 @@ struct EmbedField
 class Embed
 {
 public:
-	Embed(std::string const& title, std::string const& description, std::string const& url, std::string const & timestamp, int color, std::string const& footer_text, std::string const& footer_icon_url,
-		std::string const& footer_proxy_icon_url, std::string const& thumbnail_url, std::string const& thumbnail_proxy_url, int thumbnail_height, int thumbnail_width);
+	Embed(std::string const& title, std::string const& description, std::string const& url, std::string const & timestamp, std::string const& footer_text, std::string const& footer_icon_url,
+		std::string const& footer_proxy_icon_url, std::string const& thumbnail_url, std::string const& thumbnail_proxy_url, int color, int thumbnail_height, int thumbnail_width);
 	~Embed() = default;
 
 	bool AddField(std::string const& name, std::string const& value, bool inline_ = false)
