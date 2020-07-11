@@ -133,15 +133,15 @@ public:
 		return _timestamp;
 	}
 
-	inline int const GetColor()
+	inline int GetColor()
 	{
 		return _color;
 	}
-	inline int const GetThumbnailHeight()
+	inline int GetThumbnailHeight()
 	{
 		return _thumbnail_height;
 	}
-	inline int const GetThumbnailWidth()
+	inline int GetThumbnailWidth()
 	{
 		return _thumbnail_width;
 	}
