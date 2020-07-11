@@ -241,6 +241,13 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_CreateEmbedMessage)
 	AMX_DEFINE_NATIVE(DCC_SendEmbedMessage)
 	AMX_DEFINE_NATIVE(DCC_AddEmbedField)
+	AMX_DEFINE_NATIVE(DCC_SetEmbedTitle)
+	AMX_DEFINE_NATIVE(DCC_SetEmbedDescription)
+	AMX_DEFINE_NATIVE(DCC_SetEmbedUrl)
+	AMX_DEFINE_NATIVE(DCC_SetEmbedTimestamp)
+	AMX_DEFINE_NATIVE(DCC_SetEmbedColor)
+	AMX_DEFINE_NATIVE(DCC_SetEmbedFooter)
+	AMX_DEFINE_NATIVE(DCC_SetEmbedThumbnail)
 	{ NULL, NULL }
 };
 
