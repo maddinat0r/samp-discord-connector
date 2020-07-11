@@ -12,12 +12,12 @@ Embed::Embed(std::string const& title, std::string const& description, std::stri
 	_description(description),
 	_url(url),
 	_timestamp(timestamp),
-	_color(color),
 	_footer_text(footer_text),
 	_footer_icon_url(footer_icon_url),
 	_footer_proxy_icon_url(footer_proxy_icon_url),
 	_thumbnail_url(thumbnail_url),
 	_thumbnail_proxy_url(thumbnail_proxy_url),
+	_color(color),
 	_thumbnail_height(thumbnail_height),
 	_thumbnail_width(thumbnail_width),
 	_fields({})
