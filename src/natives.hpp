@@ -110,6 +110,13 @@ namespace Native
 	AMX_DECLARE_NATIVE(DCC_EscapeMarkdown);
 
 	AMX_DECLARE_NATIVE(DCC_CreateEmbedMessage);
-	AMX_DECLARE_NATIVE(DCC_AddEmbedField);
 	AMX_DECLARE_NATIVE(DCC_SendEmbedMessage);
+	AMX_DECLARE_NATIVE(DCC_AddEmbedField);
+	AMX_DECLARE_NATIVE(DCC_SetEmbedTitle);
+	AMX_DECLARE_NATIVE(DCC_SetEmbedDescription);
+	AMX_DECLARE_NATIVE(DCC_SetEmbedUrl);
+	AMX_DECLARE_NATIVE(DCC_SetEmbedTimestamp);
+	AMX_DECLARE_NATIVE(DCC_SetEmbedColor);
+	AMX_DECLARE_NATIVE(DCC_SetEmbedFooter);
+	AMX_DECLARE_NATIVE(DCC_SetEmbedThumbnail);
 }

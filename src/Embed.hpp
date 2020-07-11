@@ -36,6 +36,66 @@ public:
 		return true;
 	}
 
+	void SetTitle(std::string const & title)
+	{
+		_title = title;
+	}
+
+	void SetDescription(std::string const & description)
+	{
+		_description = description;
+	}
+
+	void SetUrl(std::string const& url)
+	{
+		_url = url;
+	}
+
+	void SetFooterText(std::string const& footer_text)
+	{
+		_footer_text = footer_text;
+	}
+
+	void SetFooterIconUrl(std::string const& footer_icon_url)
+	{
+		_footer_icon_url = footer_icon_url;
+	}
+
+	void SetFooterIconProxyUrl(std::string const& footer_icon_proxy)
+	{
+		_footer_proxy_icon_url = footer_icon_proxy;
+	}
+
+	void SetThumbnailUrl(std::string const& thumbnail_url)
+	{
+		_thumbnail_url = thumbnail_url;
+	}
+
+	void SetThumbnailProxyUrl(std::string const& thumbnail_proxy_url)
+	{
+		_thumbnail_proxy_url = thumbnail_proxy_url;
+	}
+
+	void SetTimestamp(std::string const& timestamp)
+	{
+		_timestamp = timestamp;
+	}
+
+	void SetColor(int color)
+	{
+		_color = color;
+	}
+
+	void SetThumbnailHeight(int thumbnail_height)
+	{
+		_thumbnail_height = thumbnail_height;
+	}
+
+	void SetThumbnailWidth(int thumbnail_width)
+	{
+		_thumbnail_width = thumbnail_width;
+	}
+
 	inline std::string const& GetTitle()
 	{
 		return _title;

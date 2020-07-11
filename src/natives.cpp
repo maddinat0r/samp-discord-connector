@@ -2406,25 +2406,6 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateEmbedMessage)
 	return id;
 }
 
-// native DCC_AddEmbedField(DCC_Embed:embed, const name[], const value[], bool:embed = false);
-AMX_DECLARE_NATIVE(Native::DCC_AddEmbedField)
-{
-	ScopedDebugInfo dbg_info(amx, "DCC_AddEmbeddedField", params, "dssd");
-	auto embedid = static_cast<EmbedId_t>(params[1]);
-	auto &embed = EmbedManager::Get()->FindEmbed(embedid);
-	if (!embed)
-	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
-		return 0;
-	}
-
-	auto const name = amx_GetCppString(amx, params[2]);
-	auto const value = amx_GetCppString(amx, params[3]);
-	auto const inline_ = static_cast<bool>(params[4]);
-	embed->AddField(name, value, inline_);
-	return 1;
-}
-
 // native DCC_SendEmbedMessage(DCC_Channel:channel, DCC_Embed:embed, const message[] = "", 
 //     const callback[] = "", const format[] = "", {Float, _}:...);
 AMX_DECLARE_NATIVE(Native::DCC_SendEmbedMessage)
@@ -2470,6 +2451,162 @@ AMX_DECLARE_NATIVE(Native::DCC_SendEmbedMessage)
 
 	channel->SendEmbeddedMessage(embed, std::move(message), std::move(cb));
 	EmbedManager::Get()->DeleteEmbed(embedid);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_AddEmbedField(DCC_Embed:embed, const name[], const value[], bool:embed = false);
+AMX_DECLARE_NATIVE(Native::DCC_AddEmbedField)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_AddEmbeddedField", params, "dssd");
+	auto embedid = static_cast<EmbedId_t>(params[1]);
+	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
+	if (!embed)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		return 0;
+	}
+
+	auto const name = amx_GetCppString(amx, params[2]);
+	auto const value = amx_GetCppString(amx, params[3]);
+	auto const inline_ = static_cast<bool>(params[4]);
+	embed->AddField(name, value, inline_);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetEmbedTitle(DCC_Embed:embed, const title[]);
+AMX_DECLARE_NATIVE(Native::DCC_SetEmbedTitle)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedTitle", params, "ds");
+	auto embedid = static_cast<EmbedId_t>(params[1]);
+	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
+	if (!embed)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		return 0;
+	}
+
+	auto const title = amx_GetCppString(amx, params[2]);
+	embed->SetTitle(title);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetEmbedDescription(DCC_Embed:embed, const description[] = "");
+AMX_DECLARE_NATIVE(Native::DCC_SetEmbedDescription)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedDescription", params, "ds");
+	auto embedid = static_cast<EmbedId_t>(params[1]);
+	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
+	if (!embed)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		return 0;
+	}
+
+	auto const description = amx_GetCppString(amx, params[2]);
+	embed->SetDescription(description);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetEmbedUrl(DCC_Embed:embed, const url[] = "");
+AMX_DECLARE_NATIVE(Native::DCC_SetEmbedUrl)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedUrl", params, "ds");
+	auto embedid = static_cast<EmbedId_t>(params[1]);
+	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
+	if (!embed)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		return 0;
+	}
+
+	auto const url = amx_GetCppString(amx, params[2]);
+	embed->SetUrl(url);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetEmbedTimestamp(DCC_Embed:embed, const timestamp[] = "");
+AMX_DECLARE_NATIVE(Native::DCC_SetEmbedTimestamp)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedTimestamp", params, "ds");
+	auto embedid = static_cast<EmbedId_t>(params[1]);
+	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
+	if (!embed)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		return 0;
+	}
+
+	auto const timestamp = amx_GetCppString(amx, params[2]);
+	embed->SetTimestamp(timestamp);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetEmbedColor(DCC_Embed:embed, color = 0);
+AMX_DECLARE_NATIVE(Native::DCC_SetEmbedColor)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedColor", params, "dd");
+	auto embedid = static_cast<EmbedId_t>(params[1]);
+	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
+	if (!embed)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		return 0;
+	}
+
+	auto const color = static_cast<int>(params[2]);
+	embed->SetColor(color);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetEmbedFooter(DCC_Embed:embed, const footer_text[] = "", const footer_icon_url[] = "", const footer_proxy_icon_url[] = "");
+AMX_DECLARE_NATIVE(Native::DCC_SetEmbedFooter)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedFooter", params, "dsss");
+	auto embedid = static_cast<EmbedId_t>(params[1]);
+	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
+	if (!embed)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		return 0;
+	}
+
+	auto const text = amx_GetCppString(amx, params[2]);
+	auto const icon_url = amx_GetCppString(amx, params[3]);
+	auto const proxy_icon_url = amx_GetCppString(amx, params[4]);
+	embed->SetFooterText(text);
+	embed->SetFooterIconUrl(icon_url);
+	embed->SetFooterIconProxyUrl(proxy_icon_url);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SetEmbedThumbnail(DCC_Embed:embed, const thumbnail_url[] = "", const thumbnail_proxy_url[] = "", thumbnail_height = 0, thumbnail_width = 0);
+AMX_DECLARE_NATIVE(Native::DCC_SetEmbedThumbnail)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedThumbnail", params, "dssdd");
+	auto embedid = static_cast<EmbedId_t>(params[1]);
+	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
+	if (!embed)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		return 0;
+	}
+
+	auto const url = amx_GetCppString(amx, params[2]);
+	auto const proxy_url = amx_GetCppString(amx, params[3]);
+	auto const thumbnail_height = static_cast<int>(params[4]);
+	auto const thumbnail_width = static_cast<int>(params[5]);
+	embed->SetThumbnailUrl(url);
+	embed->SetThumbnailProxyUrl(proxy_url);
+	embed->SetThumbnailHeight(thumbnail_height);
+	embed->SetThumbnailWidth(thumbnail_width);
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
