@@ -10,3 +10,6 @@
 [submodule "libs/fmt"]
 	path = libs/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "tools/vcpkg"]
+	path = tools/vcpkg
+	url = https://github.com/Microsoft/vcpkg
