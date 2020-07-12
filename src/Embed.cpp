@@ -7,7 +7,7 @@
 
 
 Embed::Embed(std::string const& title, std::string const& description, std::string const& url, std::string const& timestamp, std::string const& footer_text, std::string const& footer_icon_url,
-	std::string const& thumbnail_url, int color) :
+	std::string const& thumbnail_url, std::string const& image_url, int color) :
 	_title(title),
 	_description(description),
 	_url(url),
@@ -15,19 +15,20 @@ Embed::Embed(std::string const& title, std::string const& description, std::stri
 	_footer_text(footer_text),
 	_footer_icon_url(footer_icon_url),
 	_thumbnail_url(thumbnail_url),
+	_image_url(image_url),
 	_color(color),
 	_fields({})
 {
 }
 
 EmbedId_t EmbedManager::AddEmbed(std::string const& title, std::string const& description, std::string const& url, std::string const& timestamp, int color, std::string const& footer_text, std::string const& footer_icon_url,
-	std::string const& thumbnail_url)
+	std::string const& thumbnail_url, std::string const& image_url)
 {
 	UserId_t id = 1;
 	while (m_Embeds.find(id) != m_Embeds.end())
 		++id;
 
-	if (!m_Embeds.emplace(id, Embed_t(new Embed(title, description, url, timestamp, footer_text, footer_icon_url, thumbnail_url,
+	if (!m_Embeds.emplace(id, Embed_t(new Embed(title, description, url, timestamp, footer_text, footer_icon_url, thumbnail_url, image_url,
 		color))).first->second)
 	{
 		Logger::Get()->Log(LogLevel::ERROR,

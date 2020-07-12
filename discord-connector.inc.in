@@ -192,6 +192,7 @@ native DCC_SetEmbedColor(DCC_Embed:embed, color);
 native DCC_SetEmbedColour(DCC_Embed:embed, colour) = DCC_SetEmbedColor; // oi m8
 native DCC_SetEmbedFooter(DCC_Embed:embed, const footer_text[], const footer_icon_url[] = "");
 native DCC_SetEmbedThumbnail(DCC_Embed:embed, const thumbnail_url[]);
+native DCC_SetEmbedImage(DCC_Embed:embed, const image_url[]);
 
 // callbacks
 //  channels

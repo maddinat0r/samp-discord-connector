@@ -2381,7 +2381,7 @@ AMX_DECLARE_NATIVE(Native::DCC_EscapeMarkdown)
 //		const thumbnail_url[] = "", const image_url[] = "");
 AMX_DECLARE_NATIVE(Native::DCC_CreateEmbed)
 {
-	ScopedDebugInfo dbg_info(amx, "DCC_CreateEmbed", params, "ssssdsss");
+	ScopedDebugInfo dbg_info(amx, "DCC_CreateEmbed", params, "ssssdssss");
 	auto const title = amx_GetCppString(amx, params[1]);
 	auto const description = amx_GetCppString(amx, params[2]);
 	auto const url = amx_GetCppString(amx, params[3]);
@@ -2390,8 +2390,9 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateEmbed)
 	auto const footer_text = amx_GetCppString(amx, params[6]);
 	auto const footer_icon_url = amx_GetCppString(amx, params[7]);
 	auto const thumbnail_url = amx_GetCppString(amx, params[8]);
+	auto const image_url = amx_GetCppString(amx, params[9]);
 
-	EmbedId_t id = EmbedManager::Get()->AddEmbed(title, description, url, timestamp, color, footer_text, footer_icon_url, thumbnail_url);
+	EmbedId_t id = EmbedManager::Get()->AddEmbed(title, description, url, timestamp, color, footer_text, footer_icon_url, thumbnail_url, image_url);
 	if (!id)
 	{
 		Logger::Get()->LogNative(LogLevel::ERROR, "failed to create embed");
@@ -2579,7 +2580,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedColor)
 // native DCC_SetEmbedFooter(DCC_Embed:embed, const footer_text[], const footer_icon_url[] = "");
 AMX_DECLARE_NATIVE(Native::DCC_SetEmbedFooter)
 {
-	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedFooter", params, "dsss");
+	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedFooter", params, "dss");
 	auto embedid = static_cast<EmbedId_t>(params[1]);
 	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
 	if (!embed)
@@ -2599,7 +2600,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedFooter)
 // native DCC_SetEmbedThumbnail(DCC_Embed:embed, const thumbnail_url[]);
 AMX_DECLARE_NATIVE(Native::DCC_SetEmbedThumbnail)
 {
-	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedThumbnail", params, "dssdd");
+	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedThumbnail", params, "ds");
 	auto embedid = static_cast<EmbedId_t>(params[1]);
 	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
 	if (!embed)
@@ -2610,6 +2611,23 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedThumbnail)
 
 	auto const url = amx_GetCppString(amx, params[2]);
 	embed->SetThumbnailUrl(url);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+AMX_DECLARE_NATIVE(Native::DCC_SetEmbedImage)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedImage", params, "ds");
+	auto embedid = static_cast<EmbedId_t>(params[1]);
+	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
+	if (!embed)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		return 0;
+	}
+
+	auto const url = amx_GetCppString(amx, params[2]);
+	embed->SetImageUrl(url);
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }

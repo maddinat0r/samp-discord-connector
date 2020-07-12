@@ -27,7 +27,7 @@ class Embed
 {
 public:
 	Embed(std::string const& title, std::string const& description, std::string const& url, std::string const & timestamp, std::string const& footer_text, std::string const& footer_icon_url,
-		std::string const& thumbnail_url, int color);
+		std::string const& thumbnail_url, std::string const& image_url, int color);
 	~Embed() = default;
 
 	bool AddField(std::string const& name, std::string const& value, bool inline_ = false)
@@ -66,6 +66,11 @@ public:
 		_thumbnail_url = thumbnail_url;
 	}
 
+	void SetImageUrl(std::string const& image_url)
+	{
+		_image_url = image_url;
+	}
+
 	void SetTimestamp(std::string const& timestamp)
 	{
 		_timestamp = timestamp;
@@ -100,6 +105,10 @@ public:
 	{
 		return _thumbnail_url;
 	}
+	inline std::string const& GetImageUrl()
+	{
+		return _image_url;
+	}
 	inline std::string const& GetTimestamp()
 	{
 		return _timestamp;
@@ -114,7 +123,7 @@ public:
 		return _fields;
 	}
 private:
-	std::string _title, _description, _url, _timestamp, _footer_text, _footer_icon_url, _thumbnail_url;
+	std::string _title, _description, _url, _timestamp, _footer_text, _footer_icon_url, _thumbnail_url, _image_url;
 	int _color;
 	std::vector<EmbedField> _fields;
 };
@@ -133,7 +142,7 @@ private:
 	std::map<EmbedId_t, Embed_t> m_Embeds;
 public:
 	EmbedId_t AddEmbed(std::string const & title, std::string const & description, std::string const & url, std::string const& timestamp, int color, std::string const & footer_text, std::string const & footer_icon_url,
-		std::string const & thumbnail_url);
+		std::string const & thumbnail_url, std::string const & image_url);
 	bool DeleteEmbed(EmbedId_t id);
 	Embed_t const & FindEmbed(EmbedId_t id);
 };

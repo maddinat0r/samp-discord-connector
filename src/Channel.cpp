@@ -201,6 +201,9 @@ void Channel::SendEmbeddedMessage(const Embed_t & embed, std::string&& msg, pawn
 			}},
 			{"thumbnail", {
 				{"url", embed->GetThumbnailUrl()}
+			}},
+			{"image", {
+				{"url", embed->GetImageUrl()}
 			}}
 		}}
 	};
