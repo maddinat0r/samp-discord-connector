@@ -215,12 +215,13 @@ void Channel::SendEmbeddedMessage(const Embed_t & embed, std::string&& msg, pawn
 		json field_array = json::array();
 		for (const auto& i : embed->GetFields())
 		{
-			field_array.push_back({ { "name", i._name }, {"value", i._value}, {"inline", i._inline_} });
+			field_array.push_back({
+				{"name", i._name},
+				{"value", i._value},
+				{"inline", i._inline_}
+			});
 		}
-		json field_data = {
-			{"fields", field_array}
-		};
-		data["embed"].insert(field_data.begin(), field_data.end());
+		data["embed"]["fields"] = field_array;
 	}
 
 	std::string json_str;
