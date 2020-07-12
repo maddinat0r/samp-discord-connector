@@ -7,32 +7,28 @@
 
 
 Embed::Embed(std::string const& title, std::string const& description, std::string const& url, std::string const& timestamp, std::string const& footer_text, std::string const& footer_icon_url,
-	std::string const& footer_proxy_icon_url, std::string const& thumbnail_url, std::string const& thumbnail_proxy_url, int color, int thumbnail_height, int thumbnail_width) :
+	std::string const& thumbnail_url, int color) :
 	_title(title),
 	_description(description),
 	_url(url),
 	_timestamp(timestamp),
 	_footer_text(footer_text),
 	_footer_icon_url(footer_icon_url),
-	_footer_proxy_icon_url(footer_proxy_icon_url),
 	_thumbnail_url(thumbnail_url),
-	_thumbnail_proxy_url(thumbnail_proxy_url),
 	_color(color),
-	_thumbnail_height(thumbnail_height),
-	_thumbnail_width(thumbnail_width),
 	_fields({})
 {
 }
 
 EmbedId_t EmbedManager::AddEmbed(std::string const& title, std::string const& description, std::string const& url, std::string const& timestamp, int color, std::string const& footer_text, std::string const& footer_icon_url,
-	std::string const& footer_proxy_icon_url, std::string const& thumbnail_url, std::string const& thumbnail_proxy_url, int thumbnail_height, int thumbnail_width)
+	std::string const& thumbnail_url)
 {
 	UserId_t id = 1;
 	while (m_Embeds.find(id) != m_Embeds.end())
 		++id;
 
-	if (!m_Embeds.emplace(id, Embed_t(new Embed(title, description, url, timestamp, footer_text, footer_icon_url, footer_proxy_icon_url, thumbnail_url,
-		thumbnail_proxy_url, color, thumbnail_height, thumbnail_width))).first->second)
+	if (!m_Embeds.emplace(id, Embed_t(new Embed(title, description, url, timestamp, footer_text, footer_icon_url, thumbnail_url,
+		color))).first->second)
 	{
 		Logger::Get()->Log(LogLevel::ERROR,
 			"can't create embed: duplicate key '{}'", id);

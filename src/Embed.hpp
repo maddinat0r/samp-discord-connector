@@ -27,7 +27,7 @@ class Embed
 {
 public:
 	Embed(std::string const& title, std::string const& description, std::string const& url, std::string const & timestamp, std::string const& footer_text, std::string const& footer_icon_url,
-		std::string const& footer_proxy_icon_url, std::string const& thumbnail_url, std::string const& thumbnail_proxy_url, int color, int thumbnail_height, int thumbnail_width);
+		std::string const& thumbnail_url, int color);
 	~Embed() = default;
 
 	bool AddField(std::string const& name, std::string const& value, bool inline_ = false)
@@ -61,19 +61,9 @@ public:
 		_footer_icon_url = footer_icon_url;
 	}
 
-	void SetFooterIconProxyUrl(std::string const& footer_icon_proxy)
-	{
-		_footer_proxy_icon_url = footer_icon_proxy;
-	}
-
 	void SetThumbnailUrl(std::string const& thumbnail_url)
 	{
 		_thumbnail_url = thumbnail_url;
-	}
-
-	void SetThumbnailProxyUrl(std::string const& thumbnail_proxy_url)
-	{
-		_thumbnail_proxy_url = thumbnail_proxy_url;
 	}
 
 	void SetTimestamp(std::string const& timestamp)
@@ -84,16 +74,6 @@ public:
 	void SetColor(int color)
 	{
 		_color = color;
-	}
-
-	void SetThumbnailHeight(int thumbnail_height)
-	{
-		_thumbnail_height = thumbnail_height;
-	}
-
-	void SetThumbnailWidth(int thumbnail_width)
-	{
-		_thumbnail_width = thumbnail_width;
 	}
 
 	inline std::string const& GetTitle()
@@ -116,17 +96,9 @@ public:
 	{
 		return _footer_icon_url;
 	}
-	inline std::string const& GetFooterIconProxyUrl()
-	{
-		return _footer_proxy_icon_url;
-	}
 	inline std::string const& GetThumbnailUrl()
 	{
 		return _thumbnail_url;
-	}
-	inline std::string const& GetThumbnailProxyUrl()
-	{
-		return _thumbnail_proxy_url;
 	}
 	inline std::string const& GetTimestamp()
 	{
@@ -137,22 +109,13 @@ public:
 	{
 		return _color;
 	}
-	inline int GetThumbnailHeight()
-	{
-		return _thumbnail_height;
-	}
-	inline int GetThumbnailWidth()
-	{
-		return _thumbnail_width;
-	}
-
 	inline std::vector<EmbedField>& GetFields()
 	{
 		return _fields;
 	}
 private:
-	std::string _title, _description, _url, _timestamp, _footer_text, _footer_icon_url, _footer_proxy_icon_url, _thumbnail_url, _thumbnail_proxy_url;
-	int _color, _thumbnail_height, _thumbnail_width;
+	std::string _title, _description, _url, _timestamp, _footer_text, _footer_icon_url, _thumbnail_url;
+	int _color;
 	std::vector<EmbedField> _fields;
 };
 
@@ -170,7 +133,7 @@ private:
 	std::map<EmbedId_t, Embed_t> m_Embeds;
 public:
 	EmbedId_t AddEmbed(std::string const & title, std::string const & description, std::string const & url, std::string const& timestamp, int color, std::string const & footer_text, std::string const & footer_icon_url,
-		std::string const & footer_proxy_icon_url, std::string const & thumbnail_url, std::string const & thumbnail_proxy_url, int thumbnail_height, int thumbnail_width);
+		std::string const & thumbnail_url);
 	bool DeleteEmbed(EmbedId_t id);
 	Embed_t const & FindEmbed(EmbedId_t id);
 };

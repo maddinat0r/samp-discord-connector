@@ -238,9 +238,9 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 
 	AMX_DEFINE_NATIVE(DCC_EscapeMarkdown)
 
-	AMX_DEFINE_NATIVE(DCC_CreateEmbedMessage)
-	AMX_DEFINE_NATIVE(DCC_DeleteEmbedMessage)
-	AMX_DEFINE_NATIVE(DCC_SendEmbedMessage)
+	AMX_DEFINE_NATIVE(DCC_CreateEmbed)
+	AMX_DEFINE_NATIVE(DCC_DeleteEmbed)
+	AMX_DEFINE_NATIVE(DCC_SendChannelEmbedMessage)
 	AMX_DEFINE_NATIVE(DCC_AddEmbedField)
 	AMX_DEFINE_NATIVE(DCC_SetEmbedTitle)
 	AMX_DEFINE_NATIVE(DCC_SetEmbedDescription)

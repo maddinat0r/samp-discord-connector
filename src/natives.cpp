@@ -2378,10 +2378,10 @@ AMX_DECLARE_NATIVE(Native::DCC_EscapeMarkdown)
 }
 
 // native DCC_CreateEmbedMessage(const title[] = "", const description[] = "", const url[] = "", const timestamp[] = "", int color = 0, const footer_text[] = "", const footer_icon_url[] = "", 
-//		const footer_proxy_icon_url[] = "", const thumbnail_url[] = "", const thumbnail_proxy_url[] = "", thumbnail_height = 0, thumbnail_width = 0);
-AMX_DECLARE_NATIVE(Native::DCC_CreateEmbedMessage)
+//		const thumbnail_url[] = "", const image_url[] = "");
+AMX_DECLARE_NATIVE(Native::DCC_CreateEmbed)
 {
-	ScopedDebugInfo dbg_info(amx, "DCC_CreateEmbedMessage", params, "ssssdsssssdd");
+	ScopedDebugInfo dbg_info(amx, "DCC_CreateEmbed", params, "ssssdsss");
 	auto const title = amx_GetCppString(amx, params[1]);
 	auto const description = amx_GetCppString(amx, params[2]);
 	auto const url = amx_GetCppString(amx, params[3]);
@@ -2389,15 +2389,9 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateEmbedMessage)
 	auto const color = static_cast<int>(params[5]);
 	auto const footer_text = amx_GetCppString(amx, params[6]);
 	auto const footer_icon_url = amx_GetCppString(amx, params[7]);
-	auto const footer_proxy_icon_url = amx_GetCppString(amx, params[8]);
-	auto const thumbnail_url = amx_GetCppString(amx, params[9]);
-	auto const thumbnail_proxy_url = amx_GetCppString(amx, params[10]);
-	auto const thumbnail_height = static_cast<int>(params[11]);
-	auto const thumbnail_width = static_cast<int>(params[12]);
+	auto const thumbnail_url = amx_GetCppString(amx, params[8]);
 
-
-	EmbedId_t id = EmbedManager::Get()->AddEmbed(title, description, url, timestamp, color, footer_text, footer_icon_url, footer_proxy_icon_url, thumbnail_url, thumbnail_proxy_url,
-		thumbnail_height, thumbnail_width);
+	EmbedId_t id = EmbedManager::Get()->AddEmbed(title, description, url, timestamp, color, footer_text, footer_icon_url, thumbnail_url);
 	if (!id)
 	{
 		Logger::Get()->LogNative(LogLevel::ERROR, "failed to create embed");
@@ -2406,10 +2400,10 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateEmbedMessage)
 	return id;
 }
 
-// native DCC_DeleteEmbedMessage(DCC_Embed:embed);
-AMX_DECLARE_NATIVE(Native::DCC_DeleteEmbedMessage)
+// native DCC_DeleteEmbed(DCC_Embed:embed);
+AMX_DECLARE_NATIVE(Native::DCC_DeleteEmbed)
 {
-	ScopedDebugInfo dbg_info(amx, "DCC_DeleteEmbedMessage", params, "d");
+	ScopedDebugInfo dbg_info(amx, "DCC_DeleteEmbed", params, "d");
 	EmbedId_t embedid = static_cast<EmbedId_t>(params[1]);
 	Embed_t const& embed = EmbedManager::Get()->FindEmbed(embedid);
 	if (!embed)
@@ -2423,11 +2417,11 @@ AMX_DECLARE_NATIVE(Native::DCC_DeleteEmbedMessage)
 	return 1;
 }
 
-// native DCC_SendEmbedMessage(DCC_Channel:channel, DCC_Embed:embed, const message[] = "", 
+// native DCC_SendChannelEmbedMessage(DCC_Channel:channel, DCC_Embed:embed, const message[] = "", 
 //     const callback[] = "", const format[] = "", {Float, _}:...);
-AMX_DECLARE_NATIVE(Native::DCC_SendEmbedMessage)
+AMX_DECLARE_NATIVE(Native::DCC_SendChannelEmbedMessage)
 {
-	ScopedDebugInfo dbg_info(amx, "DCC_SendEmbedMessage", params, "ddsss");
+	ScopedDebugInfo dbg_info(amx, "DCC_SendChannelEmbedMessage", params, "ddsss");
 
 	ChannelId_t channelid = static_cast<ChannelId_t>(params[1]);
 	Channel_t const& channel = ChannelManager::Get()->FindChannel(channelid);
@@ -2510,7 +2504,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedTitle)
 	return 1;
 }
 
-// native DCC_SetEmbedDescription(DCC_Embed:embed, const description[] = "");
+// native DCC_SetEmbedDescription(DCC_Embed:embed, const description[]);
 AMX_DECLARE_NATIVE(Native::DCC_SetEmbedDescription)
 {
 	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedDescription", params, "ds");
@@ -2528,7 +2522,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedDescription)
 	return 1;
 }
 
-// native DCC_SetEmbedUrl(DCC_Embed:embed, const url[] = "");
+// native DCC_SetEmbedUrl(DCC_Embed:embed, const url[]);
 AMX_DECLARE_NATIVE(Native::DCC_SetEmbedUrl)
 {
 	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedUrl", params, "ds");
@@ -2546,7 +2540,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedUrl)
 	return 1;
 }
 
-// native DCC_SetEmbedTimestamp(DCC_Embed:embed, const timestamp[] = "");
+// native DCC_SetEmbedTimestamp(DCC_Embed:embed, const timestamp[]);
 AMX_DECLARE_NATIVE(Native::DCC_SetEmbedTimestamp)
 {
 	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedTimestamp", params, "ds");
@@ -2564,7 +2558,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedTimestamp)
 	return 1;
 }
 
-// native DCC_SetEmbedColor(DCC_Embed:embed, color = 0);
+// native DCC_SetEmbedColor(DCC_Embed:embed, color);
 AMX_DECLARE_NATIVE(Native::DCC_SetEmbedColor)
 {
 	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedColor", params, "dd");
@@ -2582,7 +2576,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedColor)
 	return 1;
 }
 
-// native DCC_SetEmbedFooter(DCC_Embed:embed, const footer_text[] = "", const footer_icon_url[] = "", const footer_proxy_icon_url[] = "");
+// native DCC_SetEmbedFooter(DCC_Embed:embed, const footer_text[], const footer_icon_url[] = "");
 AMX_DECLARE_NATIVE(Native::DCC_SetEmbedFooter)
 {
 	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedFooter", params, "dsss");
@@ -2596,15 +2590,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedFooter)
 
 	auto const text = amx_GetCppString(amx, params[2]);
 	auto const icon_url = amx_GetCppString(amx, params[3]);
-	auto const proxy_icon_url = amx_GetCppString(amx, params[4]);
 	embed->SetFooterText(text);
 	embed->SetFooterIconUrl(icon_url);
-	embed->SetFooterIconProxyUrl(proxy_icon_url);
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
-// native DCC_SetEmbedThumbnail(DCC_Embed:embed, const thumbnail_url[] = "", const thumbnail_proxy_url[] = "", thumbnail_height = 0, thumbnail_width = 0);
+// native DCC_SetEmbedThumbnail(DCC_Embed:embed, const thumbnail_url[]);
 AMX_DECLARE_NATIVE(Native::DCC_SetEmbedThumbnail)
 {
 	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedThumbnail", params, "dssdd");
@@ -2617,13 +2609,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedThumbnail)
 	}
 
 	auto const url = amx_GetCppString(amx, params[2]);
-	auto const proxy_url = amx_GetCppString(amx, params[3]);
-	auto const thumbnail_height = static_cast<int>(params[4]);
-	auto const thumbnail_width = static_cast<int>(params[5]);
 	embed->SetThumbnailUrl(url);
-	embed->SetThumbnailProxyUrl(proxy_url);
-	embed->SetThumbnailHeight(thumbnail_height);
-	embed->SetThumbnailWidth(thumbnail_width);
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
