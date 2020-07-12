@@ -2406,6 +2406,23 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateEmbedMessage)
 	return id;
 }
 
+// native DCC_DeleteEmbedMessage(DCC_Embed:embed);
+AMX_DECLARE_NATIVE(Native::DCC_DeleteEmbedMessage)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_DeleteEmbedMessage", params, "d");
+	EmbedId_t embedid = static_cast<EmbedId_t>(params[1]);
+	Embed_t const& embed = EmbedManager::Get()->FindEmbed(embedid);
+	if (!embed)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		return 0;
+	}
+
+	EmbedManager::Get()->DeleteEmbed(embedid);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
 // native DCC_SendEmbedMessage(DCC_Channel:channel, DCC_Embed:embed, const message[] = "", 
 //     const callback[] = "", const format[] = "", {Float, _}:...);
 AMX_DECLARE_NATIVE(Native::DCC_SendEmbedMessage)

@@ -110,6 +110,7 @@ namespace Native
 	AMX_DECLARE_NATIVE(DCC_EscapeMarkdown);
 
 	AMX_DECLARE_NATIVE(DCC_CreateEmbedMessage);
+	AMX_DECLARE_NATIVE(DCC_DeleteEmbedMessage);
 	AMX_DECLARE_NATIVE(DCC_SendEmbedMessage);
 	AMX_DECLARE_NATIVE(DCC_AddEmbedField);
 	AMX_DECLARE_NATIVE(DCC_SetEmbedTitle);
