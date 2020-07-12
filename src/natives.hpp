@@ -109,9 +109,9 @@ namespace Native
 
 	AMX_DECLARE_NATIVE(DCC_EscapeMarkdown);
 
-	AMX_DECLARE_NATIVE(DCC_CreateEmbedMessage);
-	AMX_DECLARE_NATIVE(DCC_DeleteEmbedMessage);
-	AMX_DECLARE_NATIVE(DCC_SendEmbedMessage);
+	AMX_DECLARE_NATIVE(DCC_CreateEmbed);
+	AMX_DECLARE_NATIVE(DCC_DeleteEmbed);
+	AMX_DECLARE_NATIVE(DCC_SendChannelEmbedMessage);
 	AMX_DECLARE_NATIVE(DCC_AddEmbedField);
 	AMX_DECLARE_NATIVE(DCC_SetEmbedTitle);
 	AMX_DECLARE_NATIVE(DCC_SetEmbedDescription);

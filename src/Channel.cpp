@@ -198,13 +198,9 @@ void Channel::SendEmbeddedMessage(const Embed_t & embed, std::string&& msg, pawn
 			{ "footer", {
 				{"text", embed->GetFooterText()},
 				{"icon_url", embed->GetFooterIconUrl()},
-				{"proxy_icon_url", embed->GetFooterIconProxyUrl()}
 			}},
 			{"thumbnail", {
-				{"url", embed->GetThumbnailUrl()},
-				{"proxy_url", embed->GetThumbnailProxyUrl()},
-				{"height", embed->GetThumbnailHeight()},
-				{"width", embed->GetThumbnailWidth()}
+				{"url", embed->GetThumbnailUrl()}
 			}}
 		}}
 	};
