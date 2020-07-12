@@ -185,9 +185,9 @@ native DCC_DeleteEmbed(DCC_Embed:embed);
 native DCC_SendChannelEmbedMessage(DCC_Channel:channel, DCC_Embed:embed, const message[] = "", const callback[] = "", const format[] = "", {Float, _}:...);
 native DCC_AddEmbedField(DCC_Embed:embed, const name[], const value[], bool:inline = false);
 native DCC_SetEmbedTitle(DCC_Embed:embed, const title[]);
-native DCC_SetEmbedDescription(DCC_Embed:embed);
-native DCC_SetEmbedUrl(DCC_Embed:embed);
-native DCC_SetEmbedTimestamp(DCC_Embed:embed);
+native DCC_SetEmbedDescription(DCC_Embed:embed, const description[]);
+native DCC_SetEmbedUrl(DCC_Embed:embed, const url[]);
+native DCC_SetEmbedTimestamp(DCC_Embed:embed, const timestamp[]);
 native DCC_SetEmbedColor(DCC_Embed:embed, color);
 native DCC_SetEmbedColour(DCC_Embed:embed, colour) = DCC_SetEmbedColor; // oi m8
 native DCC_SetEmbedFooter(DCC_Embed:embed, const footer_text[], const footer_icon_url[] = "");
