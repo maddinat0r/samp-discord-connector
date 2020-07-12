@@ -120,4 +120,5 @@ namespace Native
 	AMX_DECLARE_NATIVE(DCC_SetEmbedColor);
 	AMX_DECLARE_NATIVE(DCC_SetEmbedFooter);
 	AMX_DECLARE_NATIVE(DCC_SetEmbedThumbnail);
+	AMX_DECLARE_NATIVE(DCC_SetEmbedImage);
 }

@@ -249,6 +249,7 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_SetEmbedColor)
 	AMX_DEFINE_NATIVE(DCC_SetEmbedFooter)
 	AMX_DEFINE_NATIVE(DCC_SetEmbedThumbnail)
+	AMX_DEFINE_NATIVE(DCC_SetEmbedImage)
 	{ NULL, NULL }
 };
 
