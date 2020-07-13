@@ -180,7 +180,7 @@ stock DCC_ClearBotActivity()
 native DCC_EscapeMarkdown(const src[], dest[], max_size = sizeof dest);
 
 // embedded messages
-native DCC_Embed:DCC_CreateEmbed(const title[] = "", const description[] = "", const url[] = "", const timestamp[] = "", color = 0, const footer_text[] = "", const footer_icon_url[] = "", const thumbnail_url[] = "");
+native DCC_Embed:DCC_CreateEmbed(const title[] = "", const description[] = "", const url[] = "", const timestamp[] = "", color = 0, const footer_text[] = "", const footer_icon_url[] = "", const thumbnail_url[] = "", const image_url[] = "");
 native DCC_DeleteEmbed(DCC_Embed:embed);
 native DCC_SendChannelEmbedMessage(DCC_Channel:channel, DCC_Embed:embed, const message[] = "", const callback[] = "", const format[] = "", {Float, _}:...);
 native DCC_AddEmbedField(DCC_Embed:embed, const name[], const value[], bool:inline = false);
