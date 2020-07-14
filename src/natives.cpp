@@ -2615,6 +2615,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedThumbnail)
 	return 1;
 }
 
+// native DCC_SetEmbedImage(DCC_Embed:embed, const image_url[]);
 AMX_DECLARE_NATIVE(Native::DCC_SetEmbedImage)
 {
 	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedImage", params, "ds");
@@ -2628,6 +2629,22 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedImage)
 
 	auto const url = amx_GetCppString(amx, params[2]);
 	embed->SetImageUrl(url);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_DeleteInternalMessage(DCC_Message:message);
+AMX_DECLARE_NATIVE(Native::DCC_DeleteInternalMessage)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_DeleteInternalMessage", params, "d");
+	auto messageid = static_cast<MessageId_t>(params[1]);
+	auto& message = MessageManager::Get()->Find(messageid);
+	if (!message)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", messageid);
+		return 0;
+	}
+	MessageManager::Get()->Delete(messageid);
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }

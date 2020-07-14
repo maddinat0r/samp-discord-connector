@@ -250,6 +250,8 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_SetEmbedFooter)
 	AMX_DEFINE_NATIVE(DCC_SetEmbedThumbnail)
 	AMX_DEFINE_NATIVE(DCC_SetEmbedImage)
+
+	AMX_DEFINE_NATIVE(DCC_DeleteInternalMessage)
 	{ NULL, NULL }
 };
 

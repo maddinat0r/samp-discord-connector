@@ -9,7 +9,6 @@
 #include <vector>
 #include <cstring>
 
-
 namespace pawn_cb
 {
 	namespace _internal
@@ -297,13 +296,17 @@ namespace pawn_cb
 
 			if (amx_address >= 0)
 				amx_Release(_amx, amx_address);
-
 			return error == AMX_ERR_NONE;
 		}
 		bool Execute()
 		{
-			cell unused;
-			return Execute(unused);
+			cell return_value;
+			bool error = !Execute(return_value);
+			if (error)
+			{
+				return false;
+			}
+			return static_cast<bool>(return_value);
 		}
 
 	private:

@@ -121,4 +121,7 @@ namespace Native
 	AMX_DECLARE_NATIVE(DCC_SetEmbedFooter);
 	AMX_DECLARE_NATIVE(DCC_SetEmbedThumbnail);
 	AMX_DECLARE_NATIVE(DCC_SetEmbedImage);
+
+	AMX_DECLARE_NATIVE(DCC_DeleteInternalMessage);
+
 }
