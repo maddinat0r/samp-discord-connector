@@ -7,7 +7,7 @@
 #include "Callback.hpp"
 #include "Logger.hpp"
 #include "utils.hpp"
-
+#include "Emoji.hpp"
 
 Message::Message(MessageId_t pawn_id, json const &data) : m_PawnId(pawn_id)
 {
@@ -72,6 +72,34 @@ void Message::DeleteMessage()
 		"/channels/{:s}/messages/{:s}", channel->GetId(), GetId()));
 }
 
+void Message::AddReaction(Emoji_t const& emoji)
+{
+	Channel_t const& channel = ChannelManager::Get()->FindChannel(GetChannel());
+	if (!channel)
+		return;
+
+	std::string emoji_str = emoji->GetName();
+
+	if (emoji->GetSnowflake() != "")
+	{
+		emoji_str += ":" + emoji->GetSnowflake();
+	}
+	else
+	{
+		// This is a sort of hacky way thing, discord wants utf8 in hex: %F0%9F%99%82 (for hammer)
+		// I did attempt to just send the unicode to it, but I had a 400 BAD REQUEST, this worked however.
+		std::stringstream conversion;
+		for (size_t i = 0; i < emoji_str.size(); i++)
+		{
+			conversion << "%" << std::hex << static_cast<unsigned int>(static_cast<unsigned char>(emoji_str[i]));
+		}
+		emoji_str = conversion.str();
+	}
+	Network::Get()->Http().Put(fmt::format(
+		"/channels/{:s}/messages/{:s}/reactions/{}/@me", channel->GetId(), GetId(), emoji_str
+	));
+}
+
 void MessageManager::Initialize()
 {
 	// PAWN callbacks
@@ -107,6 +135,36 @@ void MessageManager::Initialize()
 				pawn_cb::Callback::CallFirst(error, "DCC_OnMessageDelete", msg->GetPawnId());
 
 				MessageManager::Get()->Delete(msg->GetPawnId());
+			}
+		});
+	});
+
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_REACTION_ADD, [](json const& data)
+	{
+		Snowflake_t user_id, message_id;
+		if (!utils::TryGetJsonValue(data, user_id, "user_id"))
+			return;
+
+		if (!utils::TryGetJsonValue(data, message_id, "message_id"))
+			return;
+
+		PawnDispatcher::Get()->Dispatch([data, user_id, message_id]() mutable
+		{
+			auto const& msg = MessageManager::Get()->FindById(message_id);
+			auto const& user = UserManager::Get()->FindUserById(user_id);
+			if (msg && user)
+			{
+				Snowflake_t emoji_id;
+				std::string name;
+				utils::TryGetJsonValue(data["emoji"], emoji_id, "id");
+				if (!utils::TryGetJsonValue(data["emoji"], name, "name"))
+					return;
+
+				auto const id = EmojiManager::Get()->AddEmoji(emoji_id, name);
+				// forward DCC_OnMessageReactionAdd(DCC_Message:message, DCC_User:reaction_user, DCC_Emoji:reaction_emoji);
+				pawn_cb::Error error;
+				pawn_cb::Callback::CallFirst(error, "DCC_OnMessageReactionAdd", msg->GetPawnId(), user->GetPawnId(), id);
+				EmojiManager::Get()->DeleteEmoji(id);
 			}
 		});
 	});

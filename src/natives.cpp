@@ -11,7 +11,7 @@
 #include "Logger.hpp"
 #include "Callback.hpp"
 #include "Embed.hpp"
-
+#include "Emoji.hpp"
 #include <fmt/printf.h>
 
 #ifdef ERROR
@@ -2645,6 +2645,89 @@ AMX_DECLARE_NATIVE(Native::DCC_DeleteInternalMessage)
 		return 0;
 	}
 	MessageManager::Get()->Delete(messageid);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_Emoji:DCC_CreateEmoji(const name[DCC_EMOJI_NAME_SIZE], const snowflake[64] = "");
+AMX_DECLARE_NATIVE(Native::DCC_CreateEmoji)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_CreateEmoji", params, "ss");
+	const auto& name = amx_GetCppString(amx, params[1]);
+	const auto& snowflake = amx_GetCppString(amx, params[2]);
+
+	EmojiId_t id = EmojiManager::Get()->AddEmoji(snowflake, name);
+	if (!id)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "failed to create emoji");
+		return 0;
+	}
+	return id;
+}
+
+// native DCC_DeleteEmoji(DCC_Emoji:emoji);
+AMX_DECLARE_NATIVE(Native::DCC_DeleteEmoji)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_DeleteEmoji", params, "d");
+	const auto& emojid = static_cast<EmojiId_t>(params[1]);
+	const auto& emoji = EmojiManager::Get()->FindEmoji(emojid);
+	if (!emoji)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid emoji id '{}'", emojid);
+		return 0;
+	}
+
+	EmojiManager::Get()->DeleteEmoji(emojid);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_GetEmojiName(DCC_Emoji:emoji, dest[DCC_EMOJI_NAME_SIZE], maxlen = DCC_EMOJI_NAME_SIZE);
+AMX_DECLARE_NATIVE(Native::DCC_GetEmojiName)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_GetEmojiName", params, "dsd");
+	std::string dest;
+
+	auto emojid = static_cast<EmojiId_t>(params[1]);
+	auto& emoji = EmojiManager::Get()->FindEmoji(emojid);
+	if (!emoji)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid emoji id '{}'", emojid);
+		return 0;
+	}
+
+	dest = emoji->GetName();
+	if (amx_SetCppString(amx, params[2], dest, params[3]) != AMX_ERR_NONE)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "couldn't set destination string");
+		return -1;
+	}
+
+	return dest.length();
+}
+
+// native DCC_CreateReaction(DCC_Message:message, DCC_Emoji:reaction_emoji);
+AMX_DECLARE_NATIVE(Native::DCC_CreateReaction)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_CreateReaction", params, "dd");
+	const auto& messageid = static_cast<MessageId_t>(params[1]);
+	const auto& message = MessageManager::Get()->Find(messageid);
+	if (!message)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", messageid);
+		return 0;
+	}
+
+	const auto& emojid = static_cast<EmojiId_t>(params[2]);
+	const auto& emoji = EmojiManager::Get()->FindEmoji(emojid);
+	if (!emoji)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid emoji id '{}'", emojid);
+		return 0;
+	}
+
+	message->AddReaction(emoji);
+	EmojiManager::Get()->DeleteEmoji(emojid);
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }

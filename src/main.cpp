@@ -252,6 +252,12 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_SetEmbedImage)
 
 	AMX_DEFINE_NATIVE(DCC_DeleteInternalMessage)
+
+	AMX_DEFINE_NATIVE(DCC_CreateEmoji)
+	AMX_DEFINE_NATIVE(DCC_DeleteEmoji)
+	AMX_DEFINE_NATIVE(DCC_GetEmojiName)
+
+	AMX_DEFINE_NATIVE(DCC_CreateReaction)
 	{ NULL, NULL }
 };
 

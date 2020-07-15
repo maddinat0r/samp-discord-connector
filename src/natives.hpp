@@ -124,4 +124,9 @@ namespace Native
 
 	AMX_DECLARE_NATIVE(DCC_DeleteInternalMessage);
 
+	AMX_DECLARE_NATIVE(DCC_CreateEmoji);
+	AMX_DECLARE_NATIVE(DCC_DeleteEmoji);
+	AMX_DECLARE_NATIVE(DCC_GetEmojiName);
+
+	AMX_DECLARE_NATIVE(DCC_CreateReaction);
 }

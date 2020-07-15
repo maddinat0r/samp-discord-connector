@@ -48,8 +48,8 @@ enum DCC_BotPresenceStatus
 #define DCC_ID_SIZE (20 + 1)
 #define DCC_USERNAME_SIZE (32 + 1)
 #define DCC_NICKNAME_SIZE (32 + 1)
-
-
+#define DCC_EMOJI_NAME_SIZE (32 + 1)
+#define DCC_SNOWFLAKE_SIZE (64 + 1)
 // natives
 //  channels
 native DCC_Channel:DCC_FindChannelByName(const channel_name[]);
@@ -195,6 +195,14 @@ native DCC_SetEmbedFooter(DCC_Embed:embed, const footer_text[], const footer_ico
 native DCC_SetEmbedThumbnail(DCC_Embed:embed, const thumbnail_url[]);
 native DCC_SetEmbedImage(DCC_Embed:embed, const image_url[]);
 
+// emoji
+native DCC_Emoji:DCC_CreateEmoji(const name[DCC_EMOJI_NAME_SIZE], const snowflake[DCC_SNOWFLAKE_SIZE] = "");
+native DCC_DeleteEmoji(DCC_Emoji:emoji);
+native DCC_GetEmojiName(DCC_Emoji:emoji, dest[DCC_EMOJI_NAME_SIZE], maxlen = DCC_EMOJI_NAME_SIZE);
+
+// reaction
+native DCC_CreateReaction(DCC_Message:message, DCC_Emoji:reaction_emoji);
+
 // callbacks
 //  channels
 forward DCC_OnChannelCreate(DCC_Channel:channel);
@@ -204,6 +212,7 @@ forward DCC_OnChannelDelete(DCC_Channel:channel);
 // messages
 forward DCC_OnMessageCreate(DCC_Message:message);
 forward DCC_OnMessageDelete(DCC_Message:message);
+forward DCC_OnMessageReactionAdd(DCC_Message:message, DCC_User:reaction_user, DCC_Emoji:emoji);
 
 //  users
 forward DCC_OnUserUpdate(DCC_User:user);

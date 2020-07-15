@@ -85,6 +85,7 @@ public:
 	}
 
 	void DeleteMessage();
+	void AddReaction(Emoji_t const& emoji);
 };
 
 
