@@ -2731,3 +2731,39 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateReaction)
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
+
+// native DCC_EditMessage(DCC_Message:message, const message[], DCC_Embed:embed = 0);
+AMX_DECLARE_NATIVE(Native::DCC_EditMessage)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_EditMessage", params, "dsd");
+	const auto& messageid = static_cast<MessageId_t>(params[1]);
+	const auto& message = MessageManager::Get()->Find(messageid);
+	if (!message)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", messageid);
+		return 0;
+	}
+
+	const auto content = amx_GetCppString(amx, params[2]);
+	if (content.length() > 2000)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR,
+			"message must be shorter than 2000 characters");
+		return 0;
+	}
+
+	const auto& embedid = static_cast<EmbedId_t>(params[3]);
+	const auto& embed = EmbedManager::Get()->FindEmbed(embedid);
+	if (embed)
+	{
+		message->EditEmbeddedMessage(embed, content);
+		EmbedManager::Get()->DeleteEmbed(embedid);
+	}
+	else
+	{
+		message->EditMessage(content);
+	}
+
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
