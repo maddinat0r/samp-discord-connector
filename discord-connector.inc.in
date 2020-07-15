@@ -91,6 +91,8 @@ native DCC_Message:DCC_GetCreatedMessage(); // for use in DCC_SendChannelMessage
 
 native DCC_DeleteInternalMessage(DCC_Message:message); // This deletes a stored message, this DOES NOT delete it on discord, this is for persistent messages.
 
+native DCC_EditMessage(DCC_Message:message, const content[], DCC_Embed:embed = DCC_Embed:0);
+
 //  users
 native DCC_User:DCC_FindUserByName(const user_name[], const user_discriminator[]);
 native DCC_User:DCC_FindUserById(const user_id[]);
@@ -156,7 +158,6 @@ native DCC_SetGuildRoleMentionable(DCC_Guild:guild, DCC_Role:role, bool:mentiona
 native DCC_CreateGuildRole(DCC_Guild:guild, const name[], const callback[] = "", const format[] = "", {Float, _}:...);
 native DCC_Role:DCC_GetCreatedGuildRole();
 native DCC_DeleteGuildRole(DCC_Guild:guild, DCC_Role:role);
-
 
 // bot
 native DCC_BotPresenceStatus:DCC_GetBotPresenceStatus();
