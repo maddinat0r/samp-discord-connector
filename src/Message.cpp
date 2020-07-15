@@ -194,7 +194,7 @@ void Message::EditEmbeddedMessage(const Embed_t& embed, const std::string & msg)
 		return;
 
 	json data = {
-		{ "content", std::move(msg) },
+		{ "content", msg },
 		{ "embed", {
 			{ "title", embed->GetTitle() },
 			{ "description", embed->GetDescription() },
