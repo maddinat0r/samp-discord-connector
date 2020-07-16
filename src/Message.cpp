@@ -101,6 +101,45 @@ void Message::AddReaction(Emoji_t const& emoji)
 	));
 }
 
+void Message::DeleteReaction(EmojiId_t const emojiid)
+{
+	Channel_t const& channel = ChannelManager::Get()->FindChannel(GetChannel());
+	if (!channel)
+		return;
+
+	std::string url = fmt::format("/channels/{:s}/messages/{:s}/reactions", channel->GetId(), GetId());
+
+	if (emojiid != INVALID_EMOJI_ID)
+	{
+		const auto& emoji = EmojiManager::Get()->FindEmoji(emojiid);
+
+		if (!emoji)
+		{
+			Logger::Get()->Log(LogLevel::ERROR, "invalid emoji id '{}'", emojiid);
+			return;
+		}
+
+		if (emoji->GetSnowflake() != "")
+		{
+			// custom emoji
+			url += fmt::format("/{:s}:{:s}", emoji->GetName(), emoji->GetSnowflake());
+		}
+		else
+		{
+			// unicode emoji
+			std::stringstream conversion;
+			std::string emoji_name = emoji->GetName();
+			for (size_t i = 0; i < emoji_name.size(); i++)
+			{
+				conversion << "%" << std::hex << static_cast<unsigned int>(static_cast<unsigned char>(emoji_name[i]));
+			}
+			url += fmt::format("/{:s}", conversion.str());
+		}
+	}
+
+	Network::Get()->Http().Delete(url);
+}
+
 void MessageManager::Initialize()
 {
 	// PAWN callbacks

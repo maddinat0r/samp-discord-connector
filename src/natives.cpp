@@ -2732,6 +2732,24 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateReaction)
 	return 1;
 }
 
+// native DCC_DeleteMessageReaction(DCC_Message:message, DCC_Emoji:emoji = 0);
+AMX_DECLARE_NATIVE(Native::DCC_DeleteMessageReaction)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_DeleteMessageReactions", params, "dd");
+	const auto& messageid = static_cast<MessageId_t>(params[1]);
+	const auto& message = MessageManager::Get()->Find(messageid);
+	if (!message)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", messageid);
+		return 0;
+	}
+
+	const auto& emojid = static_cast<EmojiId_t>(params[2]);
+	message->DeleteReaction(emojid);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
 // native DCC_EditMessage(DCC_Message:message, const message[], DCC_Embed:embed = 0);
 AMX_DECLARE_NATIVE(Native::DCC_EditMessage)
 {
