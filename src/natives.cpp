@@ -2753,16 +2753,7 @@ AMX_DECLARE_NATIVE(Native::DCC_EditMessage)
 	}
 
 	const auto& embedid = static_cast<EmbedId_t>(params[3]);
-	const auto& embed = EmbedManager::Get()->FindEmbed(embedid);
-	if (embed)
-	{
-		message->EditEmbeddedMessage(embed, content);
-		EmbedManager::Get()->DeleteEmbed(embedid);
-	}
-	else
-	{
-		message->EditMessage(content);
-	}
+	message->EditMessage(content, embedid);
 
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
 	return 1;

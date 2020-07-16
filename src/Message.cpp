@@ -171,62 +171,55 @@ void MessageManager::Initialize()
 	});
 }
 
-void Message::EditMessage(const std::string& msg)
+void Message::EditMessage(const std::string& msg, const EmbedId_t embedid)
 {
 	Channel_t const& channel = ChannelManager::Get()->FindChannel(GetChannel());
 	if (!channel)
 		return;
+
 	json data = {
 		{ "content", msg }
 	};
 
-	std::string json_str;
-	if (!utils::TryDumpJson(data, json_str))
-		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
-
-	Network::Get()->Http().Patch(fmt::format("/channels/{:s}/messages/{:s}/", channel->GetId(), GetId()), json_str);
-}
-
-void Message::EditEmbeddedMessage(const Embed_t& embed, const std::string & msg)
-{
-	Channel_t const& channel = ChannelManager::Get()->FindChannel(GetChannel());
-	if (!channel)
-		return;
-
-	json data = {
-		{ "content", msg },
-		{ "embed", {
-			{ "title", embed->GetTitle() },
-			{ "description", embed->GetDescription() },
-			{ "url", embed->GetUrl() },
-			{ "timestamp", embed->GetTimestamp() },
-			{ "color", embed->GetColor() },
-			{ "footer", {
-				{"text", embed->GetFooterText()},
-				{"icon_url", embed->GetFooterIconUrl()},
-			}},
-			{"thumbnail", {
-				{"url", embed->GetThumbnailUrl()}
-			}},
-			{"image", {
-				{"url", embed->GetImageUrl()}
-			}}
-		}}
-	};
-
-	// Add fields (if any).
-	if (embed->GetFields().size())
+	if (embedid != INVALID_EMBED_ID)
 	{
-		json field_array = json::array();
-		for (const auto& i : embed->GetFields())
+		const auto& embed = EmbedManager::Get()->FindEmbed(embedid);
+		if (embed)
 		{
-			field_array.push_back({
-				{"name", i._name},
-				{"value", i._value},
-				{"inline", i._inline_}
-				});
+			data["embed"] =
+			{
+				{ "title", embed->GetTitle() },
+				{ "description", embed->GetDescription() },
+				{ "url", embed->GetUrl() },
+				{ "timestamp", embed->GetTimestamp() },
+				{ "color", embed->GetColor() },
+				{ "footer", {
+					{"text", embed->GetFooterText()},
+					{"icon_url", embed->GetFooterIconUrl()},
+				}},
+				{"thumbnail", {
+					{"url", embed->GetThumbnailUrl()}
+				}},
+				{"image", {
+					{"url", embed->GetImageUrl()}
+				}}
+			};
+
+			if (embed->GetFields().size())
+			{
+				json field_array = json::array();
+				for (const auto& i : embed->GetFields())
+				{
+					field_array.push_back({
+						{"name", i._name},
+						{"value", i._value},
+						{"inline", i._inline_}
+					});
+				}
+				data["embed"]["fields"] = field_array;
+			}
+			EmbedManager::Get()->DeleteEmbed(embedid);
 		}
-		data["embed"]["fields"] = field_array;
 	}
 
 	std::string json_str;

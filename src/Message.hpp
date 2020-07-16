@@ -86,8 +86,7 @@ public:
 
 	void DeleteMessage();
 	void AddReaction(Emoji_t const& emoji);
-	void EditMessage(const std::string& msg);
-	void EditEmbeddedMessage(const Embed_t& embed, const std::string& msg);
+	void EditMessage(const std::string& msg, const EmbedId_t embedid = INVALID_EMBED_ID);
 };
 
 
