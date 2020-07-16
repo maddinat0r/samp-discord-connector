@@ -101,11 +101,11 @@ void Message::AddReaction(Emoji_t const& emoji)
 	));
 }
 
-void Message::DeleteReaction(EmojiId_t const emojiid)
+bool Message::DeleteReaction(EmojiId_t const emojiid)
 {
 	Channel_t const& channel = ChannelManager::Get()->FindChannel(GetChannel());
 	if (!channel)
-		return;
+		return false;
 
 	std::string url = fmt::format("/channels/{:s}/messages/{:s}/reactions", channel->GetId(), GetId());
 
@@ -116,7 +116,7 @@ void Message::DeleteReaction(EmojiId_t const emojiid)
 		if (!emoji)
 		{
 			Logger::Get()->Log(LogLevel::ERROR, "invalid emoji id '{}'", emojiid);
-			return;
+			return false;
 		}
 
 		if (emoji->GetSnowflake() != "")
@@ -138,6 +138,7 @@ void Message::DeleteReaction(EmojiId_t const emojiid)
 	}
 
 	Network::Get()->Http().Delete(url);
+	return true;
 }
 
 void MessageManager::Initialize()
@@ -286,11 +287,11 @@ void MessageManager::Initialize()
 	});
 }
 
-void Message::EditMessage(const std::string& msg, const EmbedId_t embedid)
+bool Message::EditMessage(const std::string& msg, const EmbedId_t embedid)
 {
 	Channel_t const& channel = ChannelManager::Get()->FindChannel(GetChannel());
 	if (!channel)
-		return;
+		return false;
 
 	json data = {
 		{ "content", msg }
@@ -299,42 +300,45 @@ void Message::EditMessage(const std::string& msg, const EmbedId_t embedid)
 	if (embedid != INVALID_EMBED_ID)
 	{
 		const auto& embed = EmbedManager::Get()->FindEmbed(embedid);
-		if (embed)
+		if (!embed)
 		{
-			data["embed"] =
-			{
-				{ "title", embed->GetTitle() },
-				{ "description", embed->GetDescription() },
-				{ "url", embed->GetUrl() },
-				{ "timestamp", embed->GetTimestamp() },
-				{ "color", embed->GetColor() },
-				{ "footer", {
-					{"text", embed->GetFooterText()},
-					{"icon_url", embed->GetFooterIconUrl()},
-				}},
-				{"thumbnail", {
-					{"url", embed->GetThumbnailUrl()}
-				}},
-				{"image", {
-					{"url", embed->GetImageUrl()}
-				}}
-			};
-
-			if (embed->GetFields().size())
-			{
-				json field_array = json::array();
-				for (const auto& i : embed->GetFields())
-				{
-					field_array.push_back({
-						{"name", i._name},
-						{"value", i._value},
-						{"inline", i._inline_}
-					});
-				}
-				data["embed"]["fields"] = field_array;
-			}
-			EmbedManager::Get()->DeleteEmbed(embedid);
+			Logger::Get()->Log(LogLevel::ERROR, "invalid embed id {}", embedid);
+			return false;
 		}
+
+		data["embed"] =
+		{
+			{ "title", embed->GetTitle() },
+			{ "description", embed->GetDescription() },
+			{ "url", embed->GetUrl() },
+			{ "timestamp", embed->GetTimestamp() },
+			{ "color", embed->GetColor() },
+			{ "footer", {
+				{"text", embed->GetFooterText()},
+				{"icon_url", embed->GetFooterIconUrl()},
+			}},
+			{"thumbnail", {
+				{"url", embed->GetThumbnailUrl()}
+			}},
+			{"image", {
+				{"url", embed->GetImageUrl()}
+			}}
+		};
+
+		if (embed->GetFields().size())
+		{
+			json field_array = json::array();
+			for (const auto& i : embed->GetFields())
+			{
+				field_array.push_back({
+					{"name", i._name},
+					{"value", i._value},
+					{"inline", i._inline_}
+				});
+			}
+			data["embed"]["fields"] = field_array;
+		}
+		EmbedManager::Get()->DeleteEmbed(embedid);
 	}
 
 	std::string json_str;
@@ -342,6 +346,7 @@ void Message::EditMessage(const std::string& msg, const EmbedId_t embedid)
 		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format("/channels/{:s}/messages/{:s}", channel->GetId(), GetId()), json_str);
+	return true;
 }
 
 MessageId_t MessageManager::Create(json const &data)

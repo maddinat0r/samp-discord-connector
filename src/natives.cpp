@@ -2745,9 +2745,9 @@ AMX_DECLARE_NATIVE(Native::DCC_DeleteMessageReaction)
 	}
 
 	const auto& emojid = static_cast<EmojiId_t>(params[2]);
-	message->DeleteReaction(emojid);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
-	return 1;
+	cell retval = static_cast<cell>(message->DeleteReaction(emojid));
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", retval);
+	return retval;
 }
 
 // native DCC_EditMessage(DCC_Message:message, const message[], DCC_Embed:embed = 0);
@@ -2771,8 +2771,8 @@ AMX_DECLARE_NATIVE(Native::DCC_EditMessage)
 	}
 
 	const auto& embedid = static_cast<EmbedId_t>(params[3]);
-	message->EditMessage(content, embedid);
+	cell retval = static_cast<cell>(message->EditMessage(content, embedid));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
-	return 1;
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", retval);
+	return retval;
 }
