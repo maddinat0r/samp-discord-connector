@@ -39,6 +39,13 @@ enum DCC_BotPresenceStatus
 	OFFLINE
 };
 
+enum DCC_MessageReactionType
+{
+	REACTION_ADD = 0, // Sent when a user adds a reaction to a message.
+	REACTION_REMOVE, // Sent when a user removes a reaction from a message.
+	REACTION_REMOVE_ALL, // Sent when a user explicitly removes all reactions from a message.
+	REACTION_REMOVE_EMOJI // Sent when a bot removes all instances of a given emoji from the reactions of a message.
+};
 
 #define DCC_INVALID_CHANNEL DCC_Channel:0
 #define DCC_INVALID_USER DCC_User:0
@@ -213,7 +220,7 @@ forward DCC_OnChannelDelete(DCC_Channel:channel);
 // messages
 forward DCC_OnMessageCreate(DCC_Message:message);
 forward DCC_OnMessageDelete(DCC_Message:message);
-forward DCC_OnMessageReactionAdd(DCC_Message:message, DCC_User:reaction_user, DCC_Emoji:emoji);
+forward DCC_OnMessageReaction(DCC_Message:message, DCC_User:reaction_user, DCC_Emoji:emoji, DCC_MessageReactionType:reaction_type);
 
 //  users
 forward DCC_OnUserUpdate(DCC_User:user);

@@ -162,9 +162,85 @@ void MessageManager::Initialize()
 					return;
 
 				auto const id = EmojiManager::Get()->AddEmoji(emoji_id, name);
-				// forward DCC_OnMessageReactionAdd(DCC_Message:message, DCC_User:reaction_user, DCC_Emoji:reaction_emoji);
+				// forward DCC_OnMessageReactionAdd(DCC_Message:message, DCC_User:reaction_user, DCC_Emoji:emoji, DCC_MessageReactionType:reaction_type);
 				pawn_cb::Error error;
-				pawn_cb::Callback::CallFirst(error, "DCC_OnMessageReactionAdd", msg->GetPawnId(), user->GetPawnId(), id);
+				pawn_cb::Callback::CallFirst(error, "DCC_OnMessageReaction", msg->GetPawnId(), user->GetPawnId(), id, static_cast<int>(Message::ReactionType::REACTION_ADD));
+				EmojiManager::Get()->DeleteEmoji(id);
+			}
+		});
+	});
+
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_REACTION_REMOVE, [](json const& data)
+	{
+		Snowflake_t user_id, message_id;
+		if (!utils::TryGetJsonValue(data, user_id, "user_id"))
+			return;
+
+		if (!utils::TryGetJsonValue(data, message_id, "message_id"))
+			return;
+
+		PawnDispatcher::Get()->Dispatch([data, user_id, message_id]() mutable
+		{
+			auto const& msg = MessageManager::Get()->FindById(message_id);
+			auto const& user = UserManager::Get()->FindUserById(user_id);
+			if (msg && user)
+			{
+				Snowflake_t emoji_id;
+				std::string name;
+				utils::TryGetJsonValue(data["emoji"], emoji_id, "id");
+				if (!utils::TryGetJsonValue(data["emoji"], name, "name"))
+					return;
+
+				auto const id = EmojiManager::Get()->AddEmoji(emoji_id, name);
+				// forward DCC_OnMessageReactionAdd(DCC_Message:message, DCC_User:reaction_user, DCC_Emoji:emoji, DCC_MessageReactionType:reaction_type);
+				pawn_cb::Error error;
+				pawn_cb::Callback::CallFirst(error, "DCC_OnMessageReaction", msg->GetPawnId(), user->GetPawnId(), id, static_cast<int>(Message::ReactionType::REACTION_REMOVE));
+				EmojiManager::Get()->DeleteEmoji(id);
+			}
+		});
+	});
+
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_REACTION_REMOVE_ALL, [](json const& data)
+	{
+		Snowflake_t message_id;
+
+		if (!utils::TryGetJsonValue(data, message_id, "message_id"))
+			return;
+
+		PawnDispatcher::Get()->Dispatch([message_id]() mutable
+		{
+			auto const& msg = MessageManager::Get()->FindById(message_id);
+			if (msg)
+			{
+				// forward DCC_OnMessageReactionAdd(DCC_Message:message, DCC_User:reaction_user, DCC_Emoji:emoji, DCC_MessageReactionType:reaction_type);
+				pawn_cb::Error error;
+				pawn_cb::Callback::CallFirst(error, "DCC_OnMessageReaction", msg->GetPawnId(), INVALID_USER_ID, INVALID_EMOJI_ID, static_cast<int>(Message::ReactionType::REACTION_REMOVE_ALL));
+			}
+		});
+	});
+
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_REACTION_REMOVE_EMOJI, [](json const& data)
+	{
+		Snowflake_t  message_id;
+
+		if (!utils::TryGetJsonValue(data, message_id, "message_id"))
+			return;
+
+		PawnDispatcher::Get()->Dispatch([data, message_id]() mutable
+		{
+			auto const& msg = MessageManager::Get()->FindById(message_id);
+			if (msg)
+			{
+				Snowflake_t emoji_id;
+				std::string name;
+				utils::TryGetJsonValue(data["emoji"], emoji_id, "id");
+				if (!utils::TryGetJsonValue(data["emoji"], name, "name"))
+					return;
+
+				auto const id = EmojiManager::Get()->AddEmoji(emoji_id, name);
+				// forward DCC_OnMessageReactionAdd(DCC_Message:message, DCC_User:reaction_user, DCC_Emoji:emoji, DCC_MessageReactionType:reaction_type);
+				pawn_cb::Error error;
+				pawn_cb::Callback::CallFirst(error, "DCC_OnMessageReaction", msg->GetPawnId(), INVALID_USER_ID, id, static_cast<int>(Message::ReactionType::REACTION_REMOVE_EMOJI));
 				EmojiManager::Get()->DeleteEmoji(id);
 			}
 		});

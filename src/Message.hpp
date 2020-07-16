@@ -37,6 +37,13 @@ private:
 
 	bool _valid;
 
+	enum class ReactionType : int
+	{
+		REACTION_ADD = 0, // Sent when a user adds a reaction to a message.
+		REACTION_REMOVE, // Sent when a user removes a reaction from a message.
+		REACTION_REMOVE_ALL, // Sent when a user explicitly removes all reactions from a message.
+		REACTION_REMOVE_EMOJI // Sent when a bot removes all instances of a given emoji from the reactions of a message.
+	};
 public:
 	Snowflake_t const &GetId() const
 	{
