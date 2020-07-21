@@ -244,25 +244,23 @@ void MessageManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_REACTION_ADD, [](json const& data)
 	{
-		Snowflake_t user_id, message_id;
+		Snowflake_t user_id, message_id, emoji_id;
+		std::string name;
 		if (!utils::TryGetJsonValue(data, user_id, "user_id"))
 			return;
 
 		if (!utils::TryGetJsonValue(data, message_id, "message_id"))
 			return;
+		if (!utils::TryGetJsonValue(data, name, "emoji", "name"))
+			return;
+		utils::TryGetJsonValue(data, emoji_id, "emoji", "id");
 
-		PawnDispatcher::Get()->Dispatch([data, user_id, message_id]() mutable
+		PawnDispatcher::Get()->Dispatch([user_id, message_id, emoji_id, name]() mutable
 		{
 			auto const& msg = MessageManager::Get()->FindById(message_id);
 			auto const& user = UserManager::Get()->FindUserById(user_id);
 			if (msg && user)
 			{
-				Snowflake_t emoji_id;
-				std::string name;
-				utils::TryGetJsonValue(data["emoji"], emoji_id, "id");
-				if (!utils::TryGetJsonValue(data["emoji"], name, "name"))
-					return;
-
 				auto const id = EmojiManager::Get()->AddEmoji(emoji_id, name);
 				// forward DCC_OnMessageReactionAdd(DCC_Message:message, DCC_User:reaction_user, DCC_Emoji:emoji, DCC_MessageReactionType:reaction_type);
 				pawn_cb::Error error;
@@ -274,25 +272,24 @@ void MessageManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_REACTION_REMOVE, [](json const& data)
 	{
-		Snowflake_t user_id, message_id;
+		Snowflake_t user_id, message_id, emoji_id;
+		std::string name;
 		if (!utils::TryGetJsonValue(data, user_id, "user_id"))
 			return;
 
 		if (!utils::TryGetJsonValue(data, message_id, "message_id"))
 			return;
 
-		PawnDispatcher::Get()->Dispatch([data, user_id, message_id]() mutable
+		if (!utils::TryGetJsonValue(data, name, "emoji", "name"))
+			return;
+		utils::TryGetJsonValue(data, emoji_id, "emoji", "id");
+
+		PawnDispatcher::Get()->Dispatch([data, user_id, message_id, emoji_id, name]() mutable
 		{
 			auto const& msg = MessageManager::Get()->FindById(message_id);
 			auto const& user = UserManager::Get()->FindUserById(user_id);
 			if (msg && user)
 			{
-				Snowflake_t emoji_id;
-				std::string name;
-				utils::TryGetJsonValue(data["emoji"], emoji_id, "id");
-				if (!utils::TryGetJsonValue(data["emoji"], name, "name"))
-					return;
-
 				auto const id = EmojiManager::Get()->AddEmoji(emoji_id, name);
 				// forward DCC_OnMessageReactionAdd(DCC_Message:message, DCC_User:reaction_user, DCC_Emoji:emoji, DCC_MessageReactionType:reaction_type);
 				pawn_cb::Error error;
@@ -323,22 +320,20 @@ void MessageManager::Initialize()
 
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_REACTION_REMOVE_EMOJI, [](json const& data)
 	{
-		Snowflake_t  message_id;
+		Snowflake_t  message_id, emoji_id;
+		std::string name;
 
 		if (!utils::TryGetJsonValue(data, message_id, "message_id"))
 			return;
+		if (!utils::TryGetJsonValue(data, name, "emoji", "name"))
+			return;
+		utils::TryGetJsonValue(data, emoji_id, "emoji", "id");
 
-		PawnDispatcher::Get()->Dispatch([data, message_id]() mutable
+		PawnDispatcher::Get()->Dispatch([message_id, emoji_id, name]() mutable
 		{
 			auto const& msg = MessageManager::Get()->FindById(message_id);
 			if (msg)
 			{
-				Snowflake_t emoji_id;
-				std::string name;
-				utils::TryGetJsonValue(data["emoji"], emoji_id, "id");
-				if (!utils::TryGetJsonValue(data["emoji"], name, "name"))
-					return;
-
 				auto const id = EmojiManager::Get()->AddEmoji(emoji_id, name);
 				// forward DCC_OnMessageReactionAdd(DCC_Message:message, DCC_User:reaction_user, DCC_Emoji:emoji, DCC_MessageReactionType:reaction_type);
 				pawn_cb::Error error;

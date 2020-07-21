@@ -300,13 +300,8 @@ namespace pawn_cb
 		}
 		bool Execute()
 		{
-			cell return_value;
-			bool error = !Execute(return_value);
-			if (error)
-			{
-				return false;
-			}
-			return static_cast<bool>(return_value);
+			cell unused;
+			return Execute(unused);
 		}
 
 	private:

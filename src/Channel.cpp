@@ -98,7 +98,9 @@ void Channel::SendMessage(std::string &&msg, pawn_cb::Callback_t &&cb)
 					if (msg != INVALID_MESSAGE_ID)
 					{
 						MessageManager::Get()->SetCreatedMessageId(msg);
-						if (!cb->Execute())
+						cell ret_val;
+						cb->Execute(ret_val);
+						if (!ret_val)
 						{
 							// Callback returned false, delete our stored message.
 							MessageManager::Get()->Delete(msg);
@@ -246,7 +248,9 @@ void Channel::SendEmbeddedMessage(const Embed_t & embed, std::string&& msg, pawn
 						if (msg != INVALID_MESSAGE_ID)
 						{
 							MessageManager::Get()->SetCreatedMessageId(msg);
-							if (!cb->Execute())
+							cell ret_val;
+							cb->Execute(ret_val);
+							if (!ret_val)
 							{
 								MessageManager::Get()->Delete(msg);
 							}

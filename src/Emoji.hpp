@@ -38,8 +38,6 @@ private:
 	~EmojiManager() = default;
 
 private:
-	const unsigned int m_InitValue = 1;
-	std::atomic<unsigned int> m_Initialized{ 0 };
 	std::map<EmojiId_t, Emoji_t> m_Emojis;
 public:
 	EmojiId_t AddEmoji(Snowflake_t const & snowflake, std::string const & name);
