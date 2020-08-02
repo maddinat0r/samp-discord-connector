@@ -99,6 +99,8 @@ native DCC_DeleteInternalMessage(DCC_Message:message); // This deletes a stored 
 
 native DCC_EditMessage(DCC_Message:message, const content[], DCC_Embed:embed = DCC_Embed:0);
 
+native DCC_SetMessagePersistent(DCC_Message:message, bool:persistent);
+native DCC_CacheChannelMessage(const channel_id[DCC_ID_SIZE], const message_id[DCC_ID_SIZE], const callback[] = "", const format[] = "", {Float, _}:...);
 //  users
 native DCC_User:DCC_FindUserByName(const user_name[], const user_discriminator[]);
 native DCC_User:DCC_FindUserById(const user_id[]);

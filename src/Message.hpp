@@ -2,6 +2,8 @@
 
 #include "types.hpp"
 #include "Singleton.hpp"
+#include "PawnDispatcher.hpp"
+#include "Callback.hpp"
 
 #include <string>
 #include <vector>
@@ -36,6 +38,8 @@ private:
 	std::vector<RoleId_t> m_RoleMentions;
 
 	bool _valid;
+
+	bool m_Persistent;
 
 	enum class ReactionType : int
 	{
@@ -81,6 +85,10 @@ public:
 	{
 		return m_RoleMentions;
 	}
+	bool Persistent() const
+	{
+		return m_Persistent;
+	}
 
 	bool IsValid() const
 	{
@@ -95,6 +103,7 @@ public:
 	void AddReaction(Emoji_t const& emoji);
 	bool DeleteReaction(EmojiId_t const emojiid);
 	bool EditMessage(const std::string& msg, const EmbedId_t embedid = INVALID_EMBED_ID);
+	void SetPresistent(bool persistent) { m_Persistent = persistent; };
 };
 
 
@@ -124,6 +133,9 @@ public:
 
 	MessageId_t Create(json const &data);
 	bool Delete(MessageId_t id);
+
+	// This is for the cache.
+	void CreateFromSnowflake(Snowflake_t channel, Snowflake_t message, pawn_cb::Callback_t&& callback);
 
 	Message_t const &Find(MessageId_t id);
 	Message_t const &FindById(Snowflake_t const &sfid);

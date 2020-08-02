@@ -2776,3 +2776,63 @@ AMX_DECLARE_NATIVE(Native::DCC_EditMessage)
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", retval);
 	return retval;
 }
+
+// native DCC_SetMessage(DCC_Message:message, bool persistent);
+AMX_DECLARE_NATIVE(Native::DCC_SetMessagePersistent)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SetMessagePersistent", params, "dd");
+	const auto& messageid = static_cast<MessageId_t>(params[1]);
+	const auto& message = MessageManager::Get()->Find(messageid);
+	bool persistent = static_cast<bool>(params[2]);
+	if (!message)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", messageid);
+		return 0;
+	}
+
+	message->SetPresistent(persistent);
+	Logger::Get()->LogNative(LogLevel::INFO, "return value: '1'");
+	return 1;
+}
+
+// native DCC_CacheChannelMessage(const channel_id[DCC_ID_SIZE], const message_id[DCC_ID_SIZE], const callback[] = "", const format[] = "", {Float, _}:...);
+AMX_DECLARE_NATIVE(Native::DCC_CacheChannelMessage)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_CacheChannelMessage", params, "ssss");
+	const auto& channel_snowflake = amx_GetCppString(amx, params[1]);
+	const auto& message_snowflake = amx_GetCppString(amx, params[2]);
+
+	if (!channel_snowflake.length() || !message_snowflake.length())
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel/message length '{} {}'", channel_snowflake, message_snowflake);
+		return 0;
+	}
+
+	if (!ChannelManager::Get()->FindChannelById(channel_snowflake))
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel snowflake '{}'", channel_snowflake);
+		return 0;
+	}
+	else if(MessageManager::Get()->FindById(message_snowflake))
+	{
+		Logger::Get()->LogNative(LogLevel::INFO, "message is already in cache! '{}'", message_snowflake);
+		return 0;
+	}
+
+	auto
+		cb_name = amx_GetCppString(amx, params[3]),
+		cb_format = amx_GetCppString(amx, params[4]);
+
+	pawn_cb::Error cb_error;
+	auto cb = pawn_cb::Callback::Prepare(
+		amx, cb_name.c_str(), cb_format.c_str(), params, 5, cb_error);
+	if (cb_error && cb_error.get() != pawn_cb::Error::Type::EMPTY_NAME)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "could not prepare callback");
+		return 0;
+	}
+
+	MessageManager::Get()->CreateFromSnowflake(channel_snowflake, message_snowflake, std::move(cb));
+	Logger::Get()->LogNative(LogLevel::INFO, "return value: '1'");
+	return 1;
+}
