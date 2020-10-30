@@ -50,11 +50,7 @@ Guild::Guild(GuildId_t pawn_id, json const &data) :
 					continue;
 
 				Snowflake_t parent_id;
-				if (!utils::TryGetJsonValue(c, parent_id, "parent_id"))
-				{
-					Logger::Get()->Log(LogLevel::ERROR, "invalid JSON: expected \"parent_id\" in \"{}\"", c.dump());
-					break;
-				}
+				utils::TryGetJsonValue(data, parent_id, "parent_id");
 				channel->UpdateParentChannel(parent_id);
 			}
 		}

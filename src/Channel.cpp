@@ -61,6 +61,12 @@ void Channel::Update(json const &data)
 
 void Channel::UpdateParentChannel(Snowflake_t const &parent_id)
 {
+	if (parent_id.length() < 1)
+	{
+		m_ParentId = 0;
+		return;
+	}
+
 	Channel_t const &channel = ChannelManager::Get()->FindChannelById(parent_id);
 	if (!channel)
 	{
@@ -300,11 +306,7 @@ void ChannelManager::Initialize()
 			if (channel->GetType() != Channel::Type::GUILD_CATEGORY)
 			{
 				Snowflake_t parent_id;
-				if (!utils::TryGetJsonValue(data, parent_id, "parent_id"))
-				{
-					Logger::Get()->Log(LogLevel::ERROR, "invalid JSON: expected \"parent_id\" in \"{}\"", data.dump());
-					return;
-				}
+				utils::TryGetJsonValue(data, parent_id, "parent_id");
 				channel->UpdateParentChannel(parent_id);
 			}
 
