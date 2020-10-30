@@ -34,6 +34,12 @@ void User::Update(json const &data)
 
 	utils::TryGetJsonValue(data, m_IsBot, "bot");
 	utils::TryGetJsonValue(data, m_IsVerified, "verified");
+
+	PawnDispatcher::Get()->Dispatch([&]() mutable
+	{
+		pawn_cb::Error error;
+		pawn_cb::Callback::CallFirst(error, "DCC_OnUserUpdate", GetPawnId());
+	});
 }
 
 
@@ -53,8 +59,12 @@ void UserManager::Initialize()
 		m_Initialized++;
 	});
 
+	// Alasnkz: For some reason this does not get called, I assume this is for when we're in a DM rather than a guild?
+	// Being as GUILD_MEMBER_UPDATE also sends the User object.
+/*
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::USER_UPDATE, [](json const &data)
 	{
+
 		Snowflake_t user_id;
 		if (!utils::TryGetJsonValue(data, user_id, "id"))
 		{
@@ -78,7 +88,7 @@ void UserManager::Initialize()
 			pawn_cb::Error error;
 			pawn_cb::Callback::CallFirst(error, "DCC_OnUserUpdate", user->GetPawnId());
 		});
-	});
+	});*/
 }
 
 bool UserManager::IsInitialized()
