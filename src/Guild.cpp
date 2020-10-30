@@ -50,7 +50,7 @@ Guild::Guild(GuildId_t pawn_id, json const &data) :
 					continue;
 
 				Snowflake_t parent_id;
-				utils::TryGetJsonValue(data, parent_id, "parent_id");
+				utils::TryGetJsonValue(c, parent_id, "parent_id");
 				channel->UpdateParentChannel(parent_id);
 			}
 		}
