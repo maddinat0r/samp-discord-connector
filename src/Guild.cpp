@@ -647,7 +647,7 @@ void GuildManager::Initialize()
 			}
 
 			guild->UpdateMember(user->GetPawnId(), data);
-
+			user->Update(data["user"]);
 			// forward DCC_OnGuildMemberUpdate(DCC_Guild:guild, DCC_User:user);
 			pawn_cb::Error error;
 			pawn_cb::Callback::CallFirst(error, "DCC_OnGuildMemberUpdate", guild->GetPawnId(), user->GetPawnId());
