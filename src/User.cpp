@@ -35,7 +35,7 @@ void User::Update(json const &data)
 	utils::TryGetJsonValue(data, m_IsBot, "bot");
 	utils::TryGetJsonValue(data, m_IsVerified, "verified");
 
-	PawnDispatcher::Get()->Dispatch([&]() mutable
+	PawnDispatcher::Get()->Dispatch([this]()
 	{
 		pawn_cb::Error error;
 		pawn_cb::Callback::CallFirst(error, "DCC_OnUserUpdate", GetPawnId());
