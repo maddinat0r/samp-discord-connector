@@ -5,7 +5,6 @@
 
 #include <boost/asio/system_timer.hpp>
 #include <boost/beast/version.hpp>
-#include <date/date.h>
 
 
 Http::Http(std::string token) :
@@ -135,12 +134,7 @@ void Http::NetworkThreadFunc()
 					it_r = response.find("X-RateLimit-Reset");
 					if (it_r != response.end())
 					{
-						auto date_str = response.find(boost::beast::http::field::date)->value().to_string();
-						std::istringstream date_ss{ date_str };
-						date::sys_seconds date_utc;
-						date_ss >> date::parse("%a, %d %b %Y %T %Z", date_utc); // RFC2616 HTTP header date format
-
-						std::chrono::seconds timepoint_now = date_utc.time_since_epoch();
+						std::chrono::seconds timepoint_now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
 						Logger::Get()->Log(LogLevel::DEBUG, "rate-limiting path {} until {} (current time: {})",
 							limited_url,
 							it_r->value().to_string(),
