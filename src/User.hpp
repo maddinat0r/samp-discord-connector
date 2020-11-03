@@ -68,7 +68,7 @@ public:
 		return IsValid();
 	}
 
-	void Update(json const &data);
+	void Update(json const &data, bool in_dispatch = false);
 };
 
 

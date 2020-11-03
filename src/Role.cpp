@@ -18,14 +18,16 @@ Role::Role(RoleId_t pawn_id, json const &data) :
 
 void Role::Update(json const &data)
 {
+	std::string permissions;
 	_valid =
 		utils::TryGetJsonValue(data, m_Name, "name") &&
 		utils::TryGetJsonValue(data, m_Color, "color") &&
 		utils::TryGetJsonValue(data, m_Hoist, "hoist") &&
 		utils::TryGetJsonValue(data, m_Position, "position") &&
-		utils::TryGetJsonValue(data, m_Permissions, "permissions") &&
+		utils::TryGetJsonValue(data, permissions, "permissions") &&
 		utils::TryGetJsonValue(data, m_Mentionable, "mentionable");
 
+	m_Permissions = std::stoull(permissions);
 	if (!_valid)
 	{
 		Logger::Get()->Log(LogLevel::ERROR,

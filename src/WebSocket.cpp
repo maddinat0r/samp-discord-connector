@@ -1,8 +1,10 @@
 #include "WebSocket.hpp"
 #include "Logger.hpp"
+#include "sdk.hpp"
 
 #include <unordered_map>
 
+extern logprintf_t logprintf;
 
 WebSocket::WebSocket() :
 	_ioContext(),
@@ -133,7 +135,7 @@ void WebSocket::OnSslHandshake(beast::error_code ec)
 
 	_websocket->async_handshake(
 		_gatewayUrl + ":443", 
-		"/?encoding=json&v=6",
+		"/?encoding=json&v=8",
 		beast::bind_front_handler(
 			&WebSocket::OnHandshake,
 			this));
@@ -258,7 +260,16 @@ void WebSocket::OnRead(beast::error_code ec,
 				"Discord terminated websocket connection; reason: {} ({})",
 				_websocket->reason().reason.c_str(),
 				_websocket->reason().code);
-			reconnect = true;
+
+			if (_websocket->reason().code == 4014)
+			{
+				logprintf(" >> plugin.dc-connector: bot could not connect due to intent permissions. Modify your discord bot settings and enable every intent.");
+				reconnect = false;
+			}
+			else
+			{
+				reconnect = true;
+			}
 			break;
 		case asio::error::operation_aborted:
 			// connection was closed, do nothing
@@ -400,10 +411,12 @@ void WebSocket::OnWrite(beast::error_code ec,
 		Logger::Get()->Log(LogLevel::ERROR,
 			"Can't write to Discord websocket gateway: {} ({})",
 			ec.message(), ec.value());
+
 		// we don't handle reconnects here, as the read handler already does this
 	}
 }
 
+#define ALL_INTENTS 32767
 void WebSocket::Identify()
 {
 	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::Identify");
@@ -420,6 +433,7 @@ void WebSocket::Identify()
 		{ "d",{
 			{ "token", _apiToken },
 			{ "compress", false },
+			{ "intents", ALL_INTENTS },
 			{ "large_threshold", LARGE_THRESHOLD_NUMBER },
 			{ "properties",{
 				{ "$os", os_name },
