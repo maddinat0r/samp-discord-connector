@@ -32,6 +32,7 @@ public:
 
 public:
 	Channel(ChannelId_t pawn_id, json const &data, GuildId_t guild_id);
+	Channel(ChannelId_t pawn_id, Snowflake_t channel_id, Type type);
 	~Channel() = default;
 
 private:
@@ -129,6 +130,8 @@ public:
 	}
 
 	ChannelId_t AddChannel(json const &data, GuildId_t guild_id = 0);
+	ChannelId_t AddDMChannel(json const & data);
+
 	void DeleteChannel(json const &data);
 
 	Channel_t const &FindChannel(ChannelId_t id);

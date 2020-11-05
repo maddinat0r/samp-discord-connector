@@ -50,11 +50,7 @@ Guild::Guild(GuildId_t pawn_id, json const &data) :
 					continue;
 
 				Snowflake_t parent_id;
-				if (!utils::TryGetJsonValue(c, parent_id, "parent_id"))
-				{
-					Logger::Get()->Log(LogLevel::ERROR, "invalid JSON: expected \"parent_id\" in \"{}\"", c.dump());
-					break;
-				}
+				utils::TryGetJsonValue(c, parent_id, "parent_id");
 				channel->UpdateParentChannel(parent_id);
 			}
 		}
@@ -647,7 +643,7 @@ void GuildManager::Initialize()
 			}
 
 			guild->UpdateMember(user->GetPawnId(), data);
-
+			user->Update(data["user"]);
 			// forward DCC_OnGuildMemberUpdate(DCC_Guild:guild, DCC_User:user);
 			pawn_cb::Error error;
 			pawn_cb::Callback::CallFirst(error, "DCC_OnGuildMemberUpdate", guild->GetPawnId(), user->GetPawnId());

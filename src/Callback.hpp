@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 #include <cstring>
+#include <iterator>
 
 namespace pawn_cb
 {

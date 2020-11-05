@@ -12,7 +12,12 @@ How to install
 2. Edit the server configuration (*server.cfg*) as follows:
    - Windows: `plugins discord-connector`
    - Linux: `plugins discord-connector.so`
-3. Add `discord_bot_token YOURDISCORDBOTTOKEN` to your *server.cfg* file (__never share your bot token with anyone!__)
+3. Add `discord_bot_token YOURDISCORDBOTTOKEN` to your *server.cfg* file, or set it in the environment variable `SAMP_DISCORD_BOT_TOKEN` (__never share your bot token with anyone!__)
+
+I am getting a intent error, how do I fix it?
+---------------
+If you're getting an intent error, you need to go to the [discord developer dashboard](https://discord.com/developers/applications) and select your bot.
+Then, you need to go to your bot settings and activate your intents.
 
 Build instruction
 ---------------

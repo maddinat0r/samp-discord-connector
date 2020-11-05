@@ -51,6 +51,13 @@ Channel::Channel(ChannelId_t pawn_id, json const &data, GuildId_t guild_id) :
 	}
 }
 
+Channel::Channel(ChannelId_t pawn_id, Snowflake_t channel_id, Type type) :
+	m_PawnId(pawn_id),
+	m_Id(channel_id),
+	m_Type(type)
+{
+}
+
 void Channel::Update(json const &data)
 {
 	utils::TryGetJsonValue(data, m_Name, "name"),
@@ -61,6 +68,12 @@ void Channel::Update(json const &data)
 
 void Channel::UpdateParentChannel(Snowflake_t const &parent_id)
 {
+	if (parent_id.length() < 1)
+	{
+		m_ParentId = 0;
+		return;
+	}
+
 	Channel_t const &channel = ChannelManager::Get()->FindChannelById(parent_id);
 	if (!channel)
 	{
@@ -304,11 +317,7 @@ void ChannelManager::Initialize()
 			if (channel->GetType() != Channel::Type::GUILD_CATEGORY)
 			{
 				Snowflake_t parent_id;
-				if (!utils::TryGetJsonValue(data, parent_id, "parent_id"))
-				{
-					Logger::Get()->Log(LogLevel::ERROR, "invalid JSON: expected \"parent_id\" in \"{}\"", data.dump());
-					return;
-				}
+				utils::TryGetJsonValue(data, parent_id, "parent_id");
 				channel->UpdateParentChannel(parent_id);
 			}
 
@@ -397,7 +406,7 @@ ChannelId_t ChannelManager::AddChannel(json const &data, GuildId_t guild_id/* = 
 		return INVALID_CHANNEL_ID;
 	}
 
-	Channel_t const &channel = FindChannelById(sfid);
+	Channel_t const& channel = FindChannelById(sfid);
 	if (channel)
 		return channel->GetPawnId(); // channel already exists
 
@@ -406,6 +415,35 @@ ChannelId_t ChannelManager::AddChannel(json const &data, GuildId_t guild_id/* = 
 		++id;
 
 	if (!m_Channels.emplace(id, Channel_t(new Channel(id, data, guild_id))).second)
+	{
+		Logger::Get()->Log(LogLevel::ERROR,
+			"can't create channel: duplicate key '{}'", id);
+		return INVALID_CHANNEL_ID;
+	}
+
+	Logger::Get()->Log(LogLevel::INFO, "successfully added channel with id '{}'", id);
+	return id;
+}
+
+ChannelId_t ChannelManager::AddDMChannel(json const& data)
+{
+	Snowflake_t sfid;
+	if (!utils::TryGetJsonValue(data, sfid, "channel_id"))
+	{
+		Logger::Get()->Log(LogLevel::ERROR,
+			"invalid JSON: expected \"channel_id\" in \"{}\"", data.dump());
+		return INVALID_CHANNEL_ID;
+	}
+
+	Channel_t const& channel = FindChannelById(sfid);
+	if (channel)
+		return channel->GetPawnId(); // channel already exists
+
+	ChannelId_t id = 1;
+	while (m_Channels.find(id) != m_Channels.end())
+		++id;
+
+	if (!m_Channels.emplace(id, Channel_t(new Channel(id, sfid, Channel::Type::DM))).second)
 	{
 		Logger::Get()->Log(LogLevel::ERROR,
 			"can't create channel: duplicate key '{}'", id);

@@ -12,7 +12,7 @@
 
 Message::Message(MessageId_t pawn_id, json const &data) : m_PawnId(pawn_id)
 {
-	std::string author_id, channel_id;
+	std::string author_id, channel_id, guild_id;
 	_valid =
 		utils::TryGetJsonValue(data, m_Id, "id") &&
 		utils::TryGetJsonValue(data, author_id, "author", "id") &&
@@ -29,7 +29,15 @@ Message::Message(MessageId_t pawn_id, json const &data) : m_PawnId(pawn_id)
 	}
 
 	Channel_t const &channel = ChannelManager::Get()->FindChannelById(channel_id);
-	m_Channel = channel ? channel->GetPawnId() : INVALID_CHANNEL_ID;
+	if (!channel && !utils::TryGetJsonValue(data, guild_id, "guild_id"))
+	{
+		ChannelId_t cid = ChannelManager::Get()->AddDMChannel(data);
+		m_Channel = ChannelManager::Get()->FindChannel(cid)->GetPawnId();
+	}
+	else
+	{
+		m_Channel = channel ? channel->GetPawnId() : INVALID_CHANNEL_ID;
+	}
 
 	User_t const &user = UserManager::Get()->FindUserById(author_id);
 	m_Author = user ? user->GetPawnId() : INVALID_USER_ID;
