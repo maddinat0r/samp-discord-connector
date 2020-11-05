@@ -134,17 +134,27 @@ void Http::NetworkThreadFunc()
 					it_r = response.find("X-RateLimit-Reset");
 					if (it_r != response.end())
 					{
-						std::chrono::seconds timepoint_now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
+						string const& reset_time_str = it_r->value().to_string();
+						long long reset_time_secs = 0;
+						ConvertStrToData(reset_time_str, reset_time_secs);
+						std::chrono::milliseconds milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::seconds(reset_time_secs));
+
+						// we have milliseconds too.
+						if (reset_time_str.find(".") != std::string::npos)
+						{
+							const std::string msstr = reset_time_str.substr(reset_time_str.find("."));
+							long ms;
+							ConvertStrToData(msstr, ms);
+							milliseconds += std::chrono::milliseconds(ms);
+						}
+
+						std::chrono::milliseconds timepoint_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 						Logger::Get()->Log(LogLevel::DEBUG, "rate-limiting path {} until {} (current time: {})",
 							limited_url,
 							it_r->value().to_string(),
 							timepoint_now.count());
-
-						string const &reset_time_str = it_r->value().to_string();
-						long long reset_time_secs = 0;
-						ConvertStrToData(reset_time_str, reset_time_secs);
 						TimePoint_t reset_time = std::chrono::steady_clock::now()
-							+ std::chrono::seconds(reset_time_secs - timepoint_now.count() + 1); // add a buffer of 1 second
+							+ std::chrono::milliseconds(milliseconds.count() - timepoint_now.count() + 1000); // add a buffer of 1 second
 
 						path_ratelimit.insert({ limited_url, reset_time });
 					}
@@ -267,7 +277,7 @@ Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 
 	auto req = std::make_shared<Request_t>();
 	req->method(method);
-	req->target("/api/v6" + url);
+	req->target("/api/v8" + url);
 	req->version(11);
 	req->insert(beast::http::field::connection, "keep-alive");
 	req->insert(beast::http::field::host, "discord.com");
