@@ -208,7 +208,7 @@ void Http::NetworkThreadFunc()
 							it_r->value().to_string(),
 							timepoint_now.count());
 						TimePoint_t reset_time = std::chrono::steady_clock::now()
-							+ std::chrono::milliseconds(milliseconds.count() + 500); // add a buffer of 500 ms
+							+ std::chrono::milliseconds(milliseconds.count() + 250); // add a buffer of 250 ms
 
 						bucket_ratelimit.insert({ bucket, reset_time });
 					}
