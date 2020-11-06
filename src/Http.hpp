@@ -73,8 +73,11 @@ private:
 	> m_Queue;
 	std::atomic<bool> m_NetworkThreadRunning;
 	std::thread m_NetworkThread;
+	std::map<std::string, std::string> bucket_urls;
 
 private: // functions
+	void AddBucketIdentifierFromURL(std::string url, std::string bucket);
+	std::string const GetBucketIdentifierFromURL(std::string url);
 	void NetworkThreadFunc();
 
 	bool Connect();

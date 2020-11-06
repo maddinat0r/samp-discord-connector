@@ -6,7 +6,6 @@
 #include <boost/asio/system_timer.hpp>
 #include <boost/beast/version.hpp>
 
-
 Http::Http(std::string token) :
 	m_SslContext(asio::ssl::context::tlsv12_client),
 	m_Token(token),
@@ -27,12 +26,57 @@ Http::~Http()
 		delete entry;
 }
 
+void Http::AddBucketIdentifierFromURL(std::string url, std::string bucket)
+{
+	std::string reduced_url = "";
+	// Remove IDs from the string
+	while (url.find("/") != std::string::npos)
+	{
+		std::string part = url.substr(0, url.find("/", 1));
+
+		if (part.find_first_of("0123456789") == std::string::npos)
+		{
+			reduced_url += part;
+		}
+
+		url.erase(0, url.find("/", 1));
+	}
+
+	if (bucket_urls.find(reduced_url) == bucket_urls.end())
+	{
+		bucket_urls.insert({ reduced_url, bucket });
+	}
+}
+
+std::string const Http::GetBucketIdentifierFromURL(std::string url)
+{
+	std::string reduced_url = "";
+	// Remove IDs from the string
+	while (url.find("/") != std::string::npos)
+	{
+		std::string part = url.substr(0, url.find("/", 1));
+
+		if (part.find_first_of("0123456789") == std::string::npos)
+		{
+			reduced_url += part;
+		}
+
+		url.erase(0, url.find("/", 1));
+	}
+
+	if (bucket_urls.find(reduced_url) != bucket_urls.end())
+	{
+		return bucket_urls.at(reduced_url);
+	}
+	return "INVALID";
+}
+
 void Http::NetworkThreadFunc()
 {
-	std::unordered_map<std::string, TimePoint_t> path_ratelimit;
 	unsigned int retry_counter = 0;
 	unsigned int const MaxRetries = 3;
 	bool skip_entry = false;
+	std::unordered_map<std::string, TimePoint_t> bucket_ratelimit;
 
 	if (!Connect())
 		return;
@@ -41,15 +85,15 @@ void Http::NetworkThreadFunc()
 	{
 		TimePoint_t current_time = std::chrono::steady_clock::now();
 		std::list<QueueEntry*> skipped_entries;
-
 		QueueEntry *entry;
 		while (m_Queue.pop(entry))
 		{
 			// check if we're rate-limited
-			auto pr_it = path_ratelimit.find(entry->Request->target().to_string());
-			if (pr_it != path_ratelimit.end())
+			std::string bucket = GetBucketIdentifierFromURL(entry->Request->target().to_string());
+			auto pr_it = bucket_ratelimit.find(bucket);
+			if (pr_it != bucket_ratelimit.end() && bucket != "INVALID")
 			{
-				// rate-limit for this path exists
+				// rate-limit for this bucket exists
 				// are we still within the rate-limit timepoint?
 				if (current_time < pr_it->second)
 				{
@@ -59,8 +103,8 @@ void Http::NetworkThreadFunc()
 				}
 
 				// no, delete rate-limit and go on
-				path_ratelimit.erase(pr_it);
-				Logger::Get()->Log(LogLevel::DEBUG, "rate-limit on path '{}' lifted",
+				bucket_ratelimit.erase(pr_it);
+				Logger::Get()->Log(LogLevel::DEBUG, "rate-limit on bucket '{}' lifted",
 					entry->Request->target().to_string());
 			}
 
@@ -114,24 +158,34 @@ void Http::NetworkThreadFunc()
 			auto it_r = response.find("X-RateLimit-Remaining");
 			if (it_r != response.end())
 			{
+				auto bucket_identifier = response.find("X-RateLimit-Bucket");
+				if (bucket_identifier != response.end())
+				{
+					if (bucket_urls.find(bucket_identifier->value().to_string()) == bucket_urls.end())
+					{
+						//Logger::Get()->Log(LogLevel::ERROR, "{}", entry->Request->target().to_string());
+						AddBucketIdentifierFromURL(entry->Request->target().to_string(), bucket_identifier->value().to_string());
+					}
+				}
+
+				bucket = GetBucketIdentifierFromURL(entry->Request->target().to_string());
 				if (it_r->value().compare("0") == 0)
 				{
 					// we're now officially rate-limited
 					// the next call to this path will fail
-					std::string limited_url = entry->Request->target().to_string();
-					auto lit = path_ratelimit.find(limited_url);
-					if (lit != path_ratelimit.end())
+					auto lit = bucket_ratelimit.find(bucket);
+					if (lit != bucket_ratelimit.end())
 					{
 						Logger::Get()->Log(LogLevel::ERROR,
-							"Error while processing rate-limit: already rate-limited path '{}'",
-							limited_url);
+							"Error while processing rate-limit: already rate-limited bucket '{}'",
+							bucket);
 
 						// skip this request, we'll re-add it to the queue to retry later
 						skipped_entries.push_back(entry);
 						continue;
 					}
 
-					it_r = response.find("X-RateLimit-Reset");
+					it_r = response.find("X-RateLimit-Reset-After");
 					if (it_r != response.end())
 					{
 						string const& reset_time_str = it_r->value().to_string();
@@ -142,21 +196,21 @@ void Http::NetworkThreadFunc()
 						// we have milliseconds too.
 						if (reset_time_str.find(".") != std::string::npos)
 						{
-							const std::string msstr = reset_time_str.substr(reset_time_str.find("."));
+							const std::string msstr = reset_time_str.substr(reset_time_str.find(".")+1);
 							long ms;
 							ConvertStrToData(msstr, ms);
 							milliseconds += std::chrono::milliseconds(ms);
 						}
 
 						std::chrono::milliseconds timepoint_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-						Logger::Get()->Log(LogLevel::DEBUG, "rate-limiting path {} until {} (current time: {})",
-							limited_url,
+						Logger::Get()->Log(LogLevel::DEBUG, "rate-limiting bucket {} until {} (current time: {})",
+							bucket,
 							it_r->value().to_string(),
 							timepoint_now.count());
 						TimePoint_t reset_time = std::chrono::steady_clock::now()
-							+ std::chrono::milliseconds(milliseconds.count() - timepoint_now.count() + 1000); // add a buffer of 1 second
+							+ std::chrono::milliseconds(milliseconds.count() + 500); // add a buffer of 500 ms
 
-						path_ratelimit.insert({ limited_url, reset_time });
+						bucket_ratelimit.insert({ bucket, reset_time });
 					}
 				}
 			}
