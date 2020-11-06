@@ -297,7 +297,6 @@ namespace pawn_cb
 
 			if (amx_address >= 0)
 				amx_Release(_amx, amx_address);
-
 			return error == AMX_ERR_NONE;
 		}
 		bool Execute()

@@ -250,6 +250,19 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_SetEmbedFooter)
 	AMX_DEFINE_NATIVE(DCC_SetEmbedThumbnail)
 	AMX_DEFINE_NATIVE(DCC_SetEmbedImage)
+
+	AMX_DEFINE_NATIVE(DCC_DeleteInternalMessage)
+
+	AMX_DEFINE_NATIVE(DCC_CreateEmoji)
+	AMX_DEFINE_NATIVE(DCC_DeleteEmoji)
+	AMX_DEFINE_NATIVE(DCC_GetEmojiName)
+
+	AMX_DEFINE_NATIVE(DCC_CreateReaction)
+	AMX_DEFINE_NATIVE(DCC_DeleteMessageReaction)
+
+	AMX_DEFINE_NATIVE(DCC_EditMessage)
+	AMX_DEFINE_NATIVE(DCC_SetMessagePersistent)
+	AMX_DEFINE_NATIVE(DCC_CacheChannelMessage)
 	{ NULL, NULL }
 };
 

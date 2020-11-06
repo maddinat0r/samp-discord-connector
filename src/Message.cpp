@@ -7,7 +7,8 @@
 #include "Callback.hpp"
 #include "Logger.hpp"
 #include "utils.hpp"
-
+#include "Emoji.hpp"
+#include "Embed.hpp"
 
 Message::Message(MessageId_t pawn_id, json const &data) : m_PawnId(pawn_id)
 {
@@ -80,6 +81,136 @@ void Message::DeleteMessage()
 		"/channels/{:s}/messages/{:s}", channel->GetId(), GetId()));
 }
 
+void Message::AddReaction(Emoji_t const& emoji)
+{
+	Channel_t const& channel = ChannelManager::Get()->FindChannel(GetChannel());
+	if (!channel)
+		return;
+
+	std::string emoji_str = emoji->GetName();
+
+	if (emoji->GetSnowflake() != "")
+	{
+		emoji_str += ":" + emoji->GetSnowflake();
+	}
+	else
+	{
+		// This is a sort of hacky way thing, discord wants utf8 in hex: %F0%9F%99%82 (for hammer)
+		// I did attempt to just send the unicode to it, but I had a 400 BAD REQUEST, this worked however.
+		std::stringstream conversion;
+		for (size_t i = 0; i < emoji_str.size(); i++)
+		{
+			conversion << "%" << std::hex << static_cast<unsigned int>(static_cast<unsigned char>(emoji_str[i]));
+		}
+		emoji_str = conversion.str();
+	}
+	Network::Get()->Http().Put(fmt::format(
+		"/channels/{:s}/messages/{:s}/reactions/{}/@me", channel->GetId(), GetId(), emoji_str
+	));
+}
+
+bool Message::DeleteReaction(EmojiId_t const emojiid)
+{
+	Channel_t const& channel = ChannelManager::Get()->FindChannel(GetChannel());
+	if (!channel)
+		return false;
+
+	std::string url = fmt::format("/channels/{:s}/messages/{:s}/reactions", channel->GetId(), GetId());
+
+	if (emojiid != INVALID_EMOJI_ID)
+	{
+		const auto& emoji = EmojiManager::Get()->FindEmoji(emojiid);
+
+		if (!emoji)
+		{
+			Logger::Get()->Log(LogLevel::ERROR, "invalid emoji id '{}'", emojiid);
+			return false;
+		}
+
+		if (emoji->GetSnowflake() != "")
+		{
+			// custom emoji
+			url += fmt::format("/{:s}:{:s}", emoji->GetName(), emoji->GetSnowflake());
+		}
+		else
+		{
+			// unicode emoji
+			std::stringstream conversion;
+			std::string emoji_name = emoji->GetName();
+			for (size_t i = 0; i < emoji_name.size(); i++)
+			{
+				conversion << "%" << std::hex << static_cast<unsigned int>(static_cast<unsigned char>(emoji_name[i]));
+			}
+			url += fmt::format("/{:s}", conversion.str());
+		}
+	}
+
+	Network::Get()->Http().Delete(url);
+	return true;
+}
+
+bool Message::EditMessage(const std::string& msg, const EmbedId_t embedid)
+{
+	Channel_t const& channel = ChannelManager::Get()->FindChannel(GetChannel());
+	if (!channel)
+		return false;
+
+	json data = {
+		{ "content", msg }
+	};
+
+	if (embedid != INVALID_EMBED_ID)
+	{
+		const auto& embed = EmbedManager::Get()->FindEmbed(embedid);
+		if (!embed)
+		{
+			Logger::Get()->Log(LogLevel::ERROR, "invalid embed id {}", embedid);
+			return false;
+		}
+
+		data["embed"] =
+		{
+			{ "title", embed->GetTitle() },
+			{ "description", embed->GetDescription() },
+			{ "url", embed->GetUrl() },
+			{ "timestamp", embed->GetTimestamp() },
+			{ "color", embed->GetColor() },
+			{ "footer", {
+				{"text", embed->GetFooterText()},
+				{"icon_url", embed->GetFooterIconUrl()},
+			}},
+			{"thumbnail", {
+				{"url", embed->GetThumbnailUrl()}
+			}},
+			{"image", {
+				{"url", embed->GetImageUrl()}
+			}}
+		};
+
+		if (embed->GetFields().size())
+		{
+			json field_array = json::array();
+			for (const auto& i : embed->GetFields())
+			{
+				field_array.push_back({
+					{"name", i._name},
+					{"value", i._value},
+					{"inline", i._inline_}
+					});
+			}
+			data["embed"]["fields"] = field_array;
+		}
+		EmbedManager::Get()->DeleteEmbed(embedid);
+	}
+
+	std::string json_str;
+	if (!utils::TryDumpJson(data, json_str))
+		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+
+	Network::Get()->Http().Patch(fmt::format("/channels/{:s}/messages/{:s}", channel->GetId(), GetId()), json_str);
+	return true;
+}
+
 void MessageManager::Initialize()
 {
 	// PAWN callbacks
@@ -118,6 +249,107 @@ void MessageManager::Initialize()
 			}
 		});
 	});
+
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_REACTION_ADD, [](json const& data)
+	{
+		Snowflake_t user_id, message_id, emoji_id;
+		std::string name;
+		if (!utils::TryGetJsonValue(data, user_id, "user_id"))
+			return;
+
+		if (!utils::TryGetJsonValue(data, message_id, "message_id"))
+			return;
+		if (!utils::TryGetJsonValue(data, name, "emoji", "name"))
+			return;
+		utils::TryGetJsonValue(data, emoji_id, "emoji", "id");
+
+		PawnDispatcher::Get()->Dispatch([user_id, message_id, emoji_id, name]() mutable
+		{
+			auto const& msg = MessageManager::Get()->FindById(message_id);
+			auto const& user = UserManager::Get()->FindUserById(user_id);
+			if (msg && user)
+			{
+				auto const id = EmojiManager::Get()->AddEmoji(emoji_id, name);
+				// forward DCC_OnMessageReactionAdd(DCC_Message:message, DCC_User:reaction_user, DCC_Emoji:emoji, DCC_MessageReactionType:reaction_type);
+				pawn_cb::Error error;
+				pawn_cb::Callback::CallFirst(error, "DCC_OnMessageReaction", msg->GetPawnId(), user->GetPawnId(), id, static_cast<int>(Message::ReactionType::REACTION_ADD));
+				EmojiManager::Get()->DeleteEmoji(id);
+			}
+		});
+	});
+
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_REACTION_REMOVE, [](json const& data)
+	{
+		Snowflake_t user_id, message_id, emoji_id;
+		std::string name;
+		if (!utils::TryGetJsonValue(data, user_id, "user_id"))
+			return;
+
+		if (!utils::TryGetJsonValue(data, message_id, "message_id"))
+			return;
+
+		if (!utils::TryGetJsonValue(data, name, "emoji", "name"))
+			return;
+		utils::TryGetJsonValue(data, emoji_id, "emoji", "id");
+
+		PawnDispatcher::Get()->Dispatch([data, user_id, message_id, emoji_id, name]() mutable
+		{
+			auto const& msg = MessageManager::Get()->FindById(message_id);
+			auto const& user = UserManager::Get()->FindUserById(user_id);
+			if (msg && user)
+			{
+				auto const id = EmojiManager::Get()->AddEmoji(emoji_id, name);
+				// forward DCC_OnMessageReactionAdd(DCC_Message:message, DCC_User:reaction_user, DCC_Emoji:emoji, DCC_MessageReactionType:reaction_type);
+				pawn_cb::Error error;
+				pawn_cb::Callback::CallFirst(error, "DCC_OnMessageReaction", msg->GetPawnId(), user->GetPawnId(), id, static_cast<int>(Message::ReactionType::REACTION_REMOVE));
+				EmojiManager::Get()->DeleteEmoji(id);
+			}
+		});
+	});
+
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_REACTION_REMOVE_ALL, [](json const& data)
+	{
+		Snowflake_t message_id;
+
+		if (!utils::TryGetJsonValue(data, message_id, "message_id"))
+			return;
+
+		PawnDispatcher::Get()->Dispatch([message_id]() mutable
+		{
+			auto const& msg = MessageManager::Get()->FindById(message_id);
+			if (msg)
+			{
+				// forward DCC_OnMessageReactionAdd(DCC_Message:message, DCC_User:reaction_user, DCC_Emoji:emoji, DCC_MessageReactionType:reaction_type);
+				pawn_cb::Error error;
+				pawn_cb::Callback::CallFirst(error, "DCC_OnMessageReaction", msg->GetPawnId(), INVALID_USER_ID, INVALID_EMOJI_ID, static_cast<int>(Message::ReactionType::REACTION_REMOVE_ALL));
+			}
+		});
+	});
+
+	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::MESSAGE_REACTION_REMOVE_EMOJI, [](json const& data)
+	{
+		Snowflake_t  message_id, emoji_id;
+		std::string name;
+
+		if (!utils::TryGetJsonValue(data, message_id, "message_id"))
+			return;
+		if (!utils::TryGetJsonValue(data, name, "emoji", "name"))
+			return;
+		utils::TryGetJsonValue(data, emoji_id, "emoji", "id");
+
+		PawnDispatcher::Get()->Dispatch([message_id, emoji_id, name]() mutable
+		{
+			auto const& msg = MessageManager::Get()->FindById(message_id);
+			if (msg)
+			{
+				auto const id = EmojiManager::Get()->AddEmoji(emoji_id, name);
+				// forward DCC_OnMessageReactionAdd(DCC_Message:message, DCC_User:reaction_user, DCC_Emoji:emoji, DCC_MessageReactionType:reaction_type);
+				pawn_cb::Error error;
+				pawn_cb::Callback::CallFirst(error, "DCC_OnMessageReaction", msg->GetPawnId(), INVALID_USER_ID, id, static_cast<int>(Message::ReactionType::REACTION_REMOVE_EMOJI));
+				EmojiManager::Get()->DeleteEmoji(id);
+			}
+		});
+	});
 }
 
 MessageId_t MessageManager::Create(json const &data)
@@ -146,6 +378,38 @@ bool MessageManager::Delete(MessageId_t id)
 	m_Messages.erase(it);
 	Logger::Get()->Log(LogLevel::DEBUG, "deleted message with id '{}'", id);
 	return true;
+}
+
+void MessageManager::CreateFromSnowflake(Snowflake_t channel, Snowflake_t message, pawn_cb::Callback_t&& callback)
+{
+	Network::Get()->Http().Get(fmt::format("/channels/{:s}/messages/{:s}", channel, message),
+		[this, callback](Http::Response r)
+		{
+			Logger::Get()->Log(LogLevel::DEBUG,
+				"message fetch response: status {}; body: {}; add: {}",
+				r.status, r.body, r.additional_data);
+			if (r.status / 100 == 2) // success
+			{
+				const auto & message_id = Create(json::parse(r.body));
+				if (callback)
+				{
+					PawnDispatcher::Get()->Dispatch([this, message_id, callback]() mutable
+					{
+						if (message_id)
+						{
+							SetCreatedMessageId(message_id);
+							callback->Execute();
+							SetCreatedMessageId(INVALID_MESSAGE_ID);
+						}
+					});
+				}
+				if (!Find(message_id)->Persistent())
+				{
+					Delete(message_id);
+				}
+			}
+		}
+	);
 }
 
 Message_t const &MessageManager::Find(MessageId_t id)

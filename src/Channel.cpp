@@ -112,9 +112,11 @@ void Channel::SendMessage(std::string &&msg, pawn_cb::Callback_t &&cb)
 					{
 						MessageManager::Get()->SetCreatedMessageId(msg);
 						cb->Execute();
+						if (!MessageManager::Get()->Find(msg)->Persistent())
+						{
+							MessageManager::Get()->Delete(msg);
+						}
 						MessageManager::Get()->SetCreatedMessageId(INVALID_MESSAGE_ID);
-
-						MessageManager::Get()->Delete(msg);
 					}
 				});
 			}
@@ -258,9 +260,11 @@ void Channel::SendEmbeddedMessage(const Embed_t & embed, std::string&& msg, pawn
 						{
 							MessageManager::Get()->SetCreatedMessageId(msg);
 							cb->Execute();
+							if (!MessageManager::Get()->Find(msg)->Persistent())
+							{
+								MessageManager::Get()->Delete(msg);
+							}
 							MessageManager::Get()->SetCreatedMessageId(INVALID_MESSAGE_ID);
-
-							MessageManager::Get()->Delete(msg);
 						}
 					});
 			}

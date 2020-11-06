@@ -121,4 +121,17 @@ namespace Native
 	AMX_DECLARE_NATIVE(DCC_SetEmbedFooter);
 	AMX_DECLARE_NATIVE(DCC_SetEmbedThumbnail);
 	AMX_DECLARE_NATIVE(DCC_SetEmbedImage);
+
+	AMX_DECLARE_NATIVE(DCC_DeleteInternalMessage);
+
+	AMX_DECLARE_NATIVE(DCC_CreateEmoji);
+	AMX_DECLARE_NATIVE(DCC_DeleteEmoji);
+	AMX_DECLARE_NATIVE(DCC_GetEmojiName);
+
+	AMX_DECLARE_NATIVE(DCC_CreateReaction);
+	AMX_DECLARE_NATIVE(DCC_DeleteMessageReaction);
+
+	AMX_DECLARE_NATIVE(DCC_EditMessage);
+	AMX_DECLARE_NATIVE(DCC_SetMessagePersistent);
+	AMX_DECLARE_NATIVE(DCC_CacheChannelMessage);
 }

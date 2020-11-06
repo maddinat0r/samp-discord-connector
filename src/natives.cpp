@@ -11,7 +11,7 @@
 #include "Logger.hpp"
 #include "Callback.hpp"
 #include "Embed.hpp"
-
+#include "Emoji.hpp"
 #include <fmt/printf.h>
 
 #ifdef ERROR
@@ -2615,6 +2615,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedThumbnail)
 	return 1;
 }
 
+// native DCC_SetEmbedImage(DCC_Embed:embed, const image_url[]);
 AMX_DECLARE_NATIVE(Native::DCC_SetEmbedImage)
 {
 	ScopedDebugInfo dbg_info(amx, "DCC_SetEmbedImage", params, "ds");
@@ -2629,5 +2630,209 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedImage)
 	auto const url = amx_GetCppString(amx, params[2]);
 	embed->SetImageUrl(url);
 	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_DeleteInternalMessage(DCC_Message:message);
+AMX_DECLARE_NATIVE(Native::DCC_DeleteInternalMessage)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_DeleteInternalMessage", params, "d");
+	auto messageid = static_cast<MessageId_t>(params[1]);
+	auto& message = MessageManager::Get()->Find(messageid);
+	if (!message)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", messageid);
+		return 0;
+	}
+	MessageManager::Get()->Delete(messageid);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_Emoji:DCC_CreateEmoji(const name[DCC_EMOJI_NAME_SIZE], const snowflake[64] = "");
+AMX_DECLARE_NATIVE(Native::DCC_CreateEmoji)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_CreateEmoji", params, "ss");
+	const auto& name = amx_GetCppString(amx, params[1]);
+	const auto& snowflake = amx_GetCppString(amx, params[2]);
+
+	EmojiId_t id = EmojiManager::Get()->AddEmoji(snowflake, name);
+	if (!id)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "failed to create emoji");
+		return 0;
+	}
+	return id;
+}
+
+// native DCC_DeleteEmoji(DCC_Emoji:emoji);
+AMX_DECLARE_NATIVE(Native::DCC_DeleteEmoji)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_DeleteEmoji", params, "d");
+	const auto& emojid = static_cast<EmojiId_t>(params[1]);
+	const auto& emoji = EmojiManager::Get()->FindEmoji(emojid);
+	if (!emoji)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid emoji id '{}'", emojid);
+		return 0;
+	}
+
+	EmojiManager::Get()->DeleteEmoji(emojid);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_GetEmojiName(DCC_Emoji:emoji, dest[DCC_EMOJI_NAME_SIZE], maxlen = DCC_EMOJI_NAME_SIZE);
+AMX_DECLARE_NATIVE(Native::DCC_GetEmojiName)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_GetEmojiName", params, "dsd");
+	std::string dest;
+
+	auto emojid = static_cast<EmojiId_t>(params[1]);
+	auto& emoji = EmojiManager::Get()->FindEmoji(emojid);
+	if (!emoji)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid emoji id '{}'", emojid);
+		return 0;
+	}
+
+	dest = emoji->GetName();
+	if (amx_SetCppString(amx, params[2], dest, params[3]) != AMX_ERR_NONE)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "couldn't set destination string");
+		return -1;
+	}
+
+	return dest.length();
+}
+
+// native DCC_CreateReaction(DCC_Message:message, DCC_Emoji:reaction_emoji);
+AMX_DECLARE_NATIVE(Native::DCC_CreateReaction)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_CreateReaction", params, "dd");
+	const auto& messageid = static_cast<MessageId_t>(params[1]);
+	const auto& message = MessageManager::Get()->Find(messageid);
+	if (!message)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", messageid);
+		return 0;
+	}
+
+	const auto& emojid = static_cast<EmojiId_t>(params[2]);
+	const auto& emoji = EmojiManager::Get()->FindEmoji(emojid);
+	if (!emoji)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid emoji id '{}'", emojid);
+		return 0;
+	}
+
+	message->AddReaction(emoji);
+	EmojiManager::Get()->DeleteEmoji(emojid);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_DeleteMessageReaction(DCC_Message:message, DCC_Emoji:emoji = 0);
+AMX_DECLARE_NATIVE(Native::DCC_DeleteMessageReaction)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_DeleteMessageReactions", params, "dd");
+	const auto& messageid = static_cast<MessageId_t>(params[1]);
+	const auto& message = MessageManager::Get()->Find(messageid);
+	if (!message)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", messageid);
+		return 0;
+	}
+
+	const auto& emojid = static_cast<EmojiId_t>(params[2]);
+	cell retval = static_cast<cell>(message->DeleteReaction(emojid));
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", retval);
+	return retval;
+}
+
+// native DCC_EditMessage(DCC_Message:message, const message[], DCC_Embed:embed = 0);
+AMX_DECLARE_NATIVE(Native::DCC_EditMessage)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_EditMessage", params, "dsd");
+	const auto& messageid = static_cast<MessageId_t>(params[1]);
+	const auto& message = MessageManager::Get()->Find(messageid);
+	if (!message)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", messageid);
+		return 0;
+	}
+
+	const auto content = amx_GetCppString(amx, params[2]);
+	if (content.length() > 2000)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR,
+			"message must be shorter than 2000 characters");
+		return 0;
+	}
+
+	const auto& embedid = static_cast<EmbedId_t>(params[3]);
+	cell retval = static_cast<cell>(message->EditMessage(content, embedid));
+
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", retval);
+	return retval;
+}
+
+// native DCC_SetMessage(DCC_Message:message, bool persistent);
+AMX_DECLARE_NATIVE(Native::DCC_SetMessagePersistent)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SetMessagePersistent", params, "dd");
+	const auto& messageid = static_cast<MessageId_t>(params[1]);
+	const auto& message = MessageManager::Get()->Find(messageid);
+	bool persistent = static_cast<bool>(params[2]);
+	if (!message)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", messageid);
+		return 0;
+	}
+
+	message->SetPresistent(persistent);
+	Logger::Get()->LogNative(LogLevel::INFO, "return value: '1'");
+	return 1;
+}
+
+// native DCC_CacheChannelMessage(const channel_id[DCC_ID_SIZE], const message_id[DCC_ID_SIZE], const callback[] = "", const format[] = "", {Float, _}:...);
+AMX_DECLARE_NATIVE(Native::DCC_CacheChannelMessage)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_CacheChannelMessage", params, "ssss");
+	const auto& channel_snowflake = amx_GetCppString(amx, params[1]);
+	const auto& message_snowflake = amx_GetCppString(amx, params[2]);
+
+	if (!channel_snowflake.length() || !message_snowflake.length())
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel/message length '{} {}'", channel_snowflake, message_snowflake);
+		return 0;
+	}
+
+	if (!ChannelManager::Get()->FindChannelById(channel_snowflake))
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel snowflake '{}'", channel_snowflake);
+		return 0;
+	}
+	else if(MessageManager::Get()->FindById(message_snowflake))
+	{
+		Logger::Get()->LogNative(LogLevel::INFO, "message is already in cache! '{}'", message_snowflake);
+		return 0;
+	}
+
+	auto
+		cb_name = amx_GetCppString(amx, params[3]),
+		cb_format = amx_GetCppString(amx, params[4]);
+
+	pawn_cb::Error cb_error;
+	auto cb = pawn_cb::Callback::Prepare(
+		amx, cb_name.c_str(), cb_format.c_str(), params, 5, cb_error);
+	if (cb_error && cb_error.get() != pawn_cb::Error::Type::EMPTY_NAME)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "could not prepare callback");
+		return 0;
+	}
+
+	MessageManager::Get()->CreateFromSnowflake(channel_snowflake, message_snowflake, std::move(cb));
+	Logger::Get()->LogNative(LogLevel::INFO, "return value: '1'");
 	return 1;
 }

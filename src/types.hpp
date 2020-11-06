@@ -30,3 +30,7 @@ const RoleId_t INVALID_ROLE_ID = 0;
 using Embed_t = std::unique_ptr<class Embed>;
 using EmbedId_t = cell;
 const EmbedId_t INVALID_EMBED_ID = 0;
+
+using Emoji_t = std::unique_ptr<class Emoji>;
+using EmojiId_t = cell;
+const EmojiId_t INVALID_EMOJI_ID = 0;
