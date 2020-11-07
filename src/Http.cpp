@@ -138,6 +138,11 @@ void Http::NetworkThreadFunc()
 
 						do_reconnect = true;
 					}
+					else if (response.result_int() == 429 /* rate limited */)
+					{
+						Logger::Get()->Log(LogLevel::ERROR, "Got a 429 from path '{}' (bucket '{}') this should not happen.",
+							entry->Request->target().to_string(), GetBucketIdentifierFromURL(entry->Request->target().to_string()));
+					}
 				}
 
 				if (do_reconnect)
@@ -153,7 +158,6 @@ void Http::NetworkThreadFunc()
 			} while (error_code);
 			if (skip_entry)
 				continue; // continue queue loop
-
 
 			auto it_r = response.find("X-RateLimit-Remaining");
 			if (it_r != response.end())
