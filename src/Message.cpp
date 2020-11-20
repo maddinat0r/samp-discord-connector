@@ -225,7 +225,10 @@ void MessageManager::Initialize()
 				pawn_cb::Error error;
 				pawn_cb::Callback::CallFirst(error, "DCC_OnMessageCreate", msg);
 
-				MessageManager::Get()->Delete(msg);
+				if (!MessageManager::Get()->Find(msg)->Persistent())
+				{
+					MessageManager::Get()->Delete(msg);
+				}
 			}
 		});
 	});
