@@ -9,7 +9,7 @@ set(DCC_CONFIG_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/config_headers")
 
 configure_file(
 	"../discord-connector.inc.in"
-	"discord-connector.inc"
+	"${CMAKE_BINARY_DIR}/artifact/pawno/include/discord-connector.inc"
 	@ONLY
 )
 
@@ -71,9 +71,34 @@ endif()
 set_property(TARGET discord-connector PROPERTY CXX_STANDARD 14)
 set_property(TARGET discord-connector PROPERTY CXX_STANDARD_REQUIRED ON)
 
+if(MSVC)
+	set_target_properties(discord-connector
+		PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_BINARY_DIR}/artifact/plugins>
+		LIBRARY_OUTPUT_DIRECTORY  $<1:${CMAKE_BINARY_DIR}/artifact/plugins>
+	)
+
+	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+		set_target_properties(discord-connector PROPERTIES
+			COMPILE_PDB_OUTPUT_DIRECTORY $<1:${CMAKE_BINARY_DIR}/artifact/plugins>
+		)
+	else()
+		set_target_properties(discord-connector PROPERTIES
+			COMPILE_PDB_OUTPUT_DIRECTORY $<1:${CMAKE_BINARY_DIR}>
+		)
+	endif()
+elseif(UNIX)
+message("binary dir:" ${CMAKE_BINARY_DIR})
+set_target_properties(discord-connector
+    PROPERTIES
+	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/artifact/plugins
+	LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/artifact/plugins
+	ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/artifact/plugins
+)
+endif()
+
 target_include_directories(discord-connector PRIVATE
 	${OPENSSL_INCLUDE_DIR}
-	${Boost_INCLUDE_DIR}
 	${SAMPSDK_INCLUDE_DIR}
 	${DCC_CONFIG_INCLUDE_DIR}
 	${LOGCORE_INCLUDE_DIR}
@@ -94,8 +119,21 @@ if(MSVC)
 endif()
 
 target_compile_definitions(discord-connector PRIVATE ONLY_C_LOCALE) # make the date library use the C locale only
+if(USING_BOOST_NO_CONAN)
+	target_include_directories(discord-connector PUBLIC ${Boost_INCLUDE_DIR})
+	target_link_libraries(discord-connector ${Boost_LIBRARIES})
+else()
+	target_link_libraries(discord-connector CONAN_PKG::boost)
+endif()
 
-target_link_libraries(discord-connector log-core fmt OpenSSL::SSL)
+if(USING_OPENSSL_NO_CONAN)
+	target_include_directories(discord-connector PUBLIC ${OPENSSL_INCLUDE_DIR})
+	target_link_libraries(discord-connector OpenSSL::SSL)
+else()
+	target_link_libraries(discord-connector CONAN_PKG::openssl)
+endif()
+
+target_link_libraries(discord-connector log-core CONAN_PKG::fmt)
 
 if(UNIX)
 	if(NOT APPLE)
@@ -133,25 +171,30 @@ if (MSVC)
 	target_compile_options(discord-connector PUBLIC "$<$<CONFIG:Release>:/Od>")
 endif()
 
+add_custom_command(
+    TARGET discord-connector POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+		${PROJECT_SOURCE_DIR}/LICENSE
+		${CMAKE_BINARY_DIR}/artifact/LICENSE)
 
-install(TARGETS discord-connector DESTINATION "plugins/")
-get_target_property(LOGCORE_LOCATION log-core LOCATION)
-install(FILES "${LOGCORE_LOCATION}" DESTINATION "./")
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/discord-connector.inc" DESTINATION "pawno/include/")
-install(FILES "${PROJECT_SOURCE_DIR}/LICENSE" DESTINATION "./")
-if (WIN32 AND NOT OPENSSL_USE_STATIC_LIBS)
-	file (GLOB _openssl_dlls  "${OPENSSL_ROOT_DIR}/bin/lib*.dll")
-	foreach (_dll_file ${_openssl_dlls})
-		install (FILES "${_dll_file}" DESTINATION "./")
-	endforeach()
+if(GH_ACBUILD AND UNIX)
+add_custom_command(
+    TARGET discord-connector POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+		${CMAKE_BINARY_DIR}/lib/discord-connector.so
+		${CMAKE_BINARY_DIR}/artifact/plugins/discord-connector.so)
+
+add_custom_command(
+	TARGET discord-connector POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy
+		${CMAKE_BINARY_DIR}/lib/log-core2.so
+		${CMAKE_BINARY_DIR}/artifact/log-core2.so)
 endif()
 
-
-set(CPACK_PACKAGE_VERSION ${DCC_VERSION})
-if(WIN32)
-	set(CPACK_GENERATOR ZIP)
-else()
-	set(CPACK_GENERATOR TGZ)
+if(MSVC)
+add_custom_command(
+    TARGET discord-connector POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+		${PROJECT_SOURCE_DIR}/LICENSE
+		${CMAKE_BINARY_DIR}/artifact/LICENSE)
 endif()
-
-include(CPack)

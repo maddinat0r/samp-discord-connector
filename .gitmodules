@@ -10,3 +10,9 @@
 [submodule "libs/fmt"]
 	path = libs/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "libs/log-core"]
+	path = libs/log-core
+	url = https://github.com/Alasnkz/samp-log-core.git
+[submodule "libs/cmake-conan"]
+	path = libs/cmake-conan
+	url = https://github.com/conan-io/cmake-conan

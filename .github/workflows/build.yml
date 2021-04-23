@@ -1,0 +1,105 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'master' 
+    paths:
+      - '**.hpp'
+      - '**.cpp'
+      - '**.h'
+      - '**.c'
+      - '**CMakeLists.txt'
+      - '.github/workflows/build.yml'
+  pull_request:
+    branches:
+      - 'master'
+    paths:
+      - '**.hpp'
+      - '**.cpp'
+      - '**.h'
+      - '**.c'
+      - '**CMakeLists.txt'
+      - '.github/workflows/build.yml'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-20.04]
+        build-type: [Debug]
+        include:
+          - os: windows-latest
+            cmake-args: '-AWin32 -Thost=x86 -DGH_ACBUILD=TRUE  -DUSING_BOOST_NO_CONAN=TRUE -DUSING_OPENSSL_NO_CONAN=TRUE -DBoost_NO_BOOST_CMAKE=ON'
+          - os: ubuntu-20.04
+            cmake-args: '-DCMAKE_CXX_FLAGS=-m32 -DCMAKE_C_FLAGS=-m32 -DGH_ACBUILD=TRUE'
+
+    runs-on: ${{ matrix.os }}
+    env:
+      BUILD_TYPE: ${{ matrix.build-type }}
+      CMAKE_BUILD_PARALLEL_LEVEL: 2
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Set env
+      run: echo "REPO_TAG=$(git describe --tags --always)" >> $GITHUB_ENV
+      shell: bash
+    
+    - name: get-cmake
+      uses: lukka/get-cmake@v3.19.0
+
+    - if: runner.os == 'Windows'
+      name: Install boost
+      run: |
+          $Url = "https://sourceforge.net/projects/boost/files/boost-binaries/1.73.0/boost_1_73_0-msvc-14.2-64.exe"
+          (New-Object System.Net.WebClient).DownloadFile($Url, "$env:TEMP\boost.exe")
+          Start-Process -Wait -FilePath "$env:TEMP\boost.exe" "/SILENT","/SP-","/SUPPRESSMSGBOXES","/DIR=C:\\hostedtoolcache\\windows\\Boost"
+
+    - if: runner.os == 'Windows'
+      name: Set boost env
+      run: echo "BOOST_ROOT=C:\\hostedtoolcache\windows\\Boost" >> $GITHUB_ENV
+      shell: bash
+
+    - if: runner.os == 'Windows'
+      name: Install openssl
+      run: choco install openssl --forcex86 | out-null
+      
+    - if: runner.os == 'Windows'
+      name: Setup openssl envvar
+      run: echo "OPENSSL_ROOT=C:\\Program Files (x86)\\OpenSSL-Win32" >> $GITHUB_ENV
+      
+    - if: runner.os == 'Linux'
+      name: Install gcc/g++-multilib
+      run: |
+        sudo apt-get update
+        sudo apt install gcc-multilib g++-multilib
+      
+    - name: Get python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9.0 # SemVer's version range syntax
+
+    - name: Install conan
+      run: |
+        python -m pip install --upgrade pip
+        pip install conan
+        conan remote add conan-transit-legacy https://api.bintray.com/conan/conan/conan-transit
+
+    - name: Configure cmake & build
+      uses: lukka/run-cmake@v2
+      with:
+        cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+        cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
+        buildDirectory: '${{ runner.workspace }}/build'
+        cmakeAppendedArgs: '${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DDCC_VERSION=${{ env.REPO_TAG }} -DBOOST_ROOT=${{ env.BOOST_ROOT }} -DOPENSSL_ROOT=${{ env.OPENSSL_ROOT }}'
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: discord-connector-${{ env.REPO_TAG }}-${{ runner.os }}-${{ matrix.build-type }}
+        path: ${{ runner.workspace }}/build/artifact/
