@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - 'master' 
-      - 'github-actions' # temp
   pull_request:
     branches:
       - 'master'
