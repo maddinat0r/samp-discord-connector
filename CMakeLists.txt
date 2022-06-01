@@ -81,7 +81,7 @@ if(USING_BOOST_NO_CONAN)
 else()
 	conan_check(REQUIRED)
 	conan_cmake_run(
-		REQUIRES boost/1.73.0
+		REQUIRES boost/1.79.0
 		ARCH x86
 		BASIC_SETUP CMAKE_TARGETS
 		BUILD missing
@@ -105,7 +105,7 @@ if(USING_OPENSSL_NO_CONAN)
 		message(FATAL_ERROR "Could NOT find OpenSSL; specify additional paths.")
 	endif()
 else()
-	add_conan_lib(CONAN_PKG::openssl openssl/1.1.1h)
+	add_conan_lib(CONAN_PKG::openssl openssl/1.1.1k)
 endif()
 
 add_subdirectory(libs/log-core)

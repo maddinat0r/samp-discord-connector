@@ -134,4 +134,14 @@ namespace Native
 	AMX_DECLARE_NATIVE(DCC_EditMessage);
 	AMX_DECLARE_NATIVE(DCC_SetMessagePersistent);
 	AMX_DECLARE_NATIVE(DCC_CacheChannelMessage);
+
+	AMX_DECLARE_NATIVE(DCC_CreateCommand);
+	AMX_DECLARE_NATIVE(DCC_GetInteractionMentionCount);
+	AMX_DECLARE_NATIVE(DCC_GetInteractionMention);
+	AMX_DECLARE_NATIVE(DCC_GetInteractionContent);
+	AMX_DECLARE_NATIVE(DCC_GetInteractionChannel);
+	AMX_DECLARE_NATIVE(DCC_GetInteractionGuild);
+	AMX_DECLARE_NATIVE(DCC_SendInteractionEmbed);
+	AMX_DECLARE_NATIVE(DCC_SendInteractionMessage);
+	AMX_DECLARE_NATIVE(DCC_DeleteCommand);
 }

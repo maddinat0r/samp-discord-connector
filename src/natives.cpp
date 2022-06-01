@@ -12,6 +12,8 @@
 #include "Callback.hpp"
 #include "Embed.hpp"
 #include "Emoji.hpp"
+#include "Command.hpp"
+#include "CommandInteraction.hpp"
 #include <fmt/printf.h>
 
 #ifdef ERROR
@@ -2836,3 +2838,333 @@ AMX_DECLARE_NATIVE(Native::DCC_CacheChannelMessage)
 	Logger::Get()->LogNative(LogLevel::INFO, "return value: '1'");
 	return 1;
 }
+
+// native DCC_Command:DCC_CreateCommand(const command_name[DCC_COMMAND_SIZE], const description[DCC_COMMAND_DESCRIPTION_SIZE], const callback[], bool:allow_everyone = true, DCC_Guild:guild = DCC_INVALID_GUILD);
+AMX_DECLARE_NATIVE(Native::DCC_CreateCommand)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_CreateCommand", params, "sssii");
+	const auto& name = amx_GetCppString(amx, params[1]);
+	const auto& description = amx_GetCppString(amx, params[2]);
+	const auto& callback = amx_GetCppString(amx, params[3]);
+	const auto& allow_everyone = static_cast<bool>(params[4]);
+	const auto& guild = static_cast<GuildId_t>(params[5]);
+	//const auto& permissions_size = static_cast<size_t>(params[6]);
+
+	if (!GuildManager::Get()->FindGuild(guild) && guild != INVALID_GUILD_ID) {
+		Logger::Get()->LogNative(LogLevel::ERROR, "passed invalid guild id '{}'", guild);
+		return 0;
+	}
+
+	CommandId_t id = CommandManager::Get()->FindCommandIdByName(name, guild);
+	if (id == INVALID_COMMAND_ID)
+	{
+		// New command!
+		id = CommandManager::Get()->AddCommand(name, description);
+		auto & command = CommandManager::Get()->FindCommand(id);
+		command->SetCallback(callback);
+		
+		/*if (options_size)
+		{
+			cell* array = nullptr;
+			if (amx_GetAddr(amx, params[4], &array) != AMX_ERR_NONE)
+			{
+				Logger::Get()->LogNative(LogLevel::INFO, "unable to find the array for options");
+				return 0;
+			}
+
+			for (size_t i = 0; i < options_size; i++)
+			{
+				// TODO: find option and assign it
+			}
+		}
+		else
+		{
+			Logger::Get()->LogNative(LogLevel::INFO, "command '{:s}' created with NO options!", name);
+		}
+		*/
+
+		/*if (permissions_size)
+		{
+			cell* array = nullptr;
+			
+			if (amx_GetAddr(amx, params[4], &array) != AMX_ERR_NONE)
+			{
+				Logger::Get()->LogNative(LogLevel::INFO, "unable to find the array for permissions");
+				return 0;
+			}
+			
+			int location = 0;
+			size_t i = permissions_size - 2; /* ignore default ""
+			for (; i != 0;)
+			{
+				int len;
+				amx_StrLen(&array[location], &len);
+				std::string string(len, ' ');
+				amx_GetString(&string[0], &array[location], 0, len + 1);
+				i -= len;
+				location += len + 1;
+				
+				if (string.length())
+				{
+					Logger::Get()->Log(LogLevel::ERROR, "role {} {}", string, i);
+					auto const& role = RoleManager::Get()->FindRoleById(string);
+					if (role) {
+						command->SetPermission(role->GetPawnId(), true);
+					}
+				}
+			}
+		}
+		else
+		{
+			Logger::Get()->LogNative(LogLevel::INFO, "command '{:s}' created with NO permissions!", name);
+		}*/
+		CommandOption_t option = std::unique_ptr<CommandOption>(new CommandOption());
+		option->SetType(COMMAND_OPTION_TYPE::OPTION_STRING);
+		option->SetName("arguments");
+		option->SetRequired(false);
+		option->SetDescription("just type");
+		command->AllowEveryone(allow_everyone);
+		command->AddOption("arguments", option);
+		command->SetGuild(guild);
+		command->HandleNewCreation();
+	}
+	else
+	{
+		auto & command = CommandManager::Get()->FindCommand(id);
+		command->SetCallback(callback);
+	}
+	return id;
+}
+
+// native DCC_GetInteractionMentionCount(DCC_Interaction:interaction, &mentioned_user_count);
+AMX_DECLARE_NATIVE(Native::DCC_GetInteractionMentionCount)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_GetInteractionMentionCount", params, "dr");
+
+	CommandInteractionId_t id = params[1];
+	CommandInteraction_t const& interaction = CommandInteractionManager::Get()->FindCommandInteraction(id);
+	if (!interaction)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", id);
+		return 0;
+	}
+
+	cell* dest = nullptr;
+	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = static_cast<cell>(interaction->GetMentions().size());
+
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_GetInteractionMention(DCC_Interaction:interaction, offset, &DCC_User:mentioned_user);
+AMX_DECLARE_NATIVE(Native::DCC_GetInteractionMention)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_GetInteractionMention", params, "ddr");
+
+	CommandInteractionId_t id = params[1];
+	CommandInteraction_t const& interaction = CommandInteractionManager::Get()->FindCommandInteraction(id);
+	if (!interaction)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", id);
+		return 0;
+	}
+
+	auto const offset = static_cast<unsigned int>(params[2]);
+	auto const& mentions = interaction->GetMentions();
+	if (offset >= mentions.size())
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR,
+			"invalid offset '{}', max size is '{}'",
+			offset, mentions.size());
+		return 0;
+	}
+
+	cell* dest = nullptr;
+	if (amx_GetAddr(amx, params[3], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = static_cast<cell>(mentions.at(offset));
+
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_GetInteractionContent(DCC_Interaction:interaction, dest[], max_size = sizeof dest);
+AMX_DECLARE_NATIVE(Native::DCC_GetInteractionContent)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_GetMessageContent", params, "drd");
+
+	CommandInteractionId_t id = params[1];
+	CommandInteraction_t const& interaction = CommandInteractionManager::Get()->FindCommandInteraction(id);
+	if (!interaction)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", id);
+		return 0;
+	}
+
+	cell ret_val = amx_SetCppString(
+		amx, params[2], interaction->GetOptions().at(0)->m_Value, params[3]) == AMX_ERR_NONE;
+
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	return ret_val;
+}
+
+// native DCC_GetInteractionChannel(DCC_Interaction:interaction, &DCC_Channel:channel);
+AMX_DECLARE_NATIVE(Native::DCC_GetInteractionChannel)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_GetInteractionChannel", params, "dr");
+
+	CommandInteractionId_t id = params[1];
+	CommandInteraction_t const& interaction = CommandInteractionManager::Get()->FindCommandInteraction(id);
+	if (!interaction)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", id);
+		return 0;
+	}
+
+	
+	cell* dest = nullptr;
+	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = static_cast<cell>(interaction->GetChannelID());
+
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_GetInteractionGuild(DCC_Interaction:interaction, &DCC_Channel:channel);
+AMX_DECLARE_NATIVE(Native::DCC_GetInteractionGuild)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_GetInteractionGuild", params, "dr");
+
+	CommandInteractionId_t id = params[1];
+	CommandInteraction_t const& interaction = CommandInteractionManager::Get()->FindCommandInteraction(id);
+	if (!interaction)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", id);
+		return 0;
+	}
+
+	cell* dest = nullptr;
+	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		return 0;
+	}
+
+	*dest = static_cast<cell>(interaction->GetGuildID());
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SendInteractionEmbed(DCC_Interaction:interaction, DCC_Embed:embed, const message[] = "");
+AMX_DECLARE_NATIVE(Native::DCC_SendInteractionEmbed)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SendInteractionEmbed", params, "ddsss");
+
+	CommandInteractionId_t id = params[1];
+	CommandInteraction_t const& interaction = CommandInteractionManager::Get()->FindCommandInteraction(id);
+	if (!interaction)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", interaction);
+		return 0;
+	}
+
+	EmbedId_t embedid = static_cast<EmbedId_t>(params[2]);
+	Embed_t const& embed = EmbedManager::Get()->FindEmbed(embedid);
+	if (!embed)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		return 0;
+	}
+
+	auto message = amx_GetCppString(amx, params[3]);
+	if (message.length() > 2000)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR,
+			"message must be shorter than 2000 characters");
+		return 0;
+	}
+
+	interaction->SendEmbed(embedid, message);
+	EmbedManager::Get()->DeleteEmbed(embedid);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_SendInteractionMessage(DCC_Interaction:interaction, const message[] = "");
+AMX_DECLARE_NATIVE(Native::DCC_SendInteractionMessage)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_SendInteractionMessage", params, "ds");
+
+	CommandInteractionId_t id = params[1];
+	CommandInteraction_t const& interaction = CommandInteractionManager::Get()->FindCommandInteraction(id);
+	if (!interaction)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", interaction);
+		return 0;
+	}
+
+	auto message = amx_GetCppString(amx, params[2]);
+	if (message.length() > 2000)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR,
+			"message must be shorter than 2000 characters");
+		return 0;
+	}
+
+	interaction->SendInteractionMessage(message);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+// native DCC_DeleteCommand(DCC_Command:command);
+AMX_DECLARE_NATIVE(Native::DCC_DeleteCommand)
+{
+	ScopedDebugInfo dbg_info(amx, "DCC_DeleteCommand", params, "d");
+
+	CommandId_t id = params[1];
+	Command_t const& command = CommandManager::Get()->FindCommand(id);
+	if (!command)
+	{
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid command id '{}'", id);
+		return 0;
+	}
+
+	command->DeleteFromDiscord();
+	CommandManager::Get()->DeleteCommand(id);
+	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	return 1;
+}
+
+/* Maybe this will work one day :))
+// native DCC_Option:DCC_AddCommandOption(const name[], const description[], type, bool:required = true, DCC_Option:parent_option);
+AMX_DECLARE_NATIVE(Native::DCC_AddCommandOption)
+{
+	const auto& name = amx_GetCppString(amx, params[1]);
+	const auto& description = amx_GetCppString(amx, params[2]);
+	int type = static_cast<int>(params[3]);
+	bool required = static_cast<bool>(params[4]);
+	
+	return 1;
+}
+*/
+
+// native DCC_SetCommandPermission(DCC_Command:command, DCC_Role:role, bool:enable);
+/*AMX_DECLARE_NATIVE(Native::DCC_SetCommandPermission)
+{
+	return 1;
+}*/

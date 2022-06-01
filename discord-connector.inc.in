@@ -56,6 +56,9 @@ enum DCC_MessageReactionType
 #define DCC_USERNAME_SIZE (32 + 1)
 #define DCC_NICKNAME_SIZE (32 + 1)
 #define DCC_EMOJI_NAME_SIZE (32 + 1)
+#define DCC_COMMAND_SIZE (32 + 1)
+#define DCC_COMMAND_DESCRIPTION_SIZE (32 + 1)
+
 // natives
 //  channels
 native DCC_Channel:DCC_FindChannelByName(const channel_name[]);
@@ -212,6 +215,19 @@ native DCC_GetEmojiName(DCC_Emoji:emoji, dest[DCC_EMOJI_NAME_SIZE], maxlen = DCC
 // reaction
 native DCC_CreateReaction(DCC_Message:message, DCC_Emoji:reaction_emoji);
 native DCC_DeleteMessageReaction(DCC_Message:message, DCC_Emoji:reaction_emoji = DCC_Emoji:0); // if reaction_emoji is 0 (default value) this will delete ALL of the reactions on the message.
+
+// commands
+native DCC_Command:DCC_CreateCommand(const command_name[DCC_COMMAND_SIZE], const description[DCC_COMMAND_DESCRIPTION_SIZE], const callback[], bool:allow_everyone = true, DCC_Guild:guild = DCC_INVALID_GUILD);
+native DCC_DeleteCommand(DCC_Command:command);
+
+// interactions
+native DCC_GetInteractionMentionCount(DCC_Interaction:interaction, &mentioned_user_count);
+native DCC_GetInteractionMention(DCC_Interaction:interaction, offset, &DCC_User:mentioned_user);
+native DCC_GetInteractionContent(DCC_Interaction:interaction, dest[], max_size = sizeof dest);
+native DCC_GetInteractionChannel(DCC_Interaction:interaction, &DCC_Channel:channel);
+native DCC_GetInteractionGuild(DCC_Interaction:interaction, &DCC_Guild:guild);
+native DCC_SendInteractionEmbed(DCC_Interaction:interaction, DCC_Embed:embed, const message[] = "");
+native DCC_SendInteractionMessage(DCC_Interaction:interaction, const message[] = "");
 
 // callbacks
 //  channels

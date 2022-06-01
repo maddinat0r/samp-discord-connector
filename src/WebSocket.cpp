@@ -135,7 +135,7 @@ void WebSocket::OnSslHandshake(beast::error_code ec)
 
 	_websocket->async_handshake(
 		_gatewayUrl + ":443", 
-		"/?encoding=json&v=8",
+		"/?encoding=json&v=10",
 		beast::bind_front_handler(
 			&WebSocket::OnHandshake,
 			this));
@@ -342,6 +342,7 @@ void WebSocket::OnRead(beast::error_code ec,
 			__WS_EVENT_MAP_PAIR(PRESENCES_REPLACE),
 			__WS_EVENT_MAP_PAIR(INVITE_CREATE),
 			__WS_EVENT_MAP_PAIR(INVITE_DELETE),
+			__WS_EVENT_MAP_PAIR(INTERACTION_CREATE)
 		};
 
 		auto it = events_map.find(result["t"].get<std::string>());

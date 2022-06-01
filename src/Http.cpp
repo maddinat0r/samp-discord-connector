@@ -329,13 +329,13 @@ bool Http::ReconnectRetry()
 }
 
 Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
-	std::string const &url, std::string const &content)
+	std::string const &url, std::string const &content, bool use_api)
 {
 	Logger::Get()->Log(LogLevel::DEBUG, "Http::PrepareRequest");
 
 	auto req = std::make_shared<Request_t>();
 	req->method(method);
-	req->target("/api/v8" + url);
+	req->target((use_api == true ? "/api/v10" : "") + url);
 	req->version(11);
 	req->insert(beast::http::field::connection, "keep-alive");
 	req->insert(beast::http::field::host, "discord.com");
@@ -352,11 +352,11 @@ Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 }
 
 void Http::SendRequest(beast::http::verb const method, std::string const &url,
-	std::string const &content, ResponseCallback_t &&callback)
+	std::string const &content, ResponseCallback_t &&callback, bool use_api)
 {
 	Logger::Get()->Log(LogLevel::DEBUG, "Http::SendRequest");
 
-	SharedRequest_t req = PrepareRequest(method, url, content);
+	SharedRequest_t req = PrepareRequest(method, url, content, use_api);
 
 	if (callback == nullptr && Logger::Get()->IsLogLevel(LogLevel::DEBUG))
 	{
@@ -383,12 +383,12 @@ Http::ResponseCallback_t Http::CreateResponseCallback(ResponseCb_t &&callback)
 }
 
 
-void Http::Get(std::string const &url, ResponseCb_t &&callback)
+void Http::Get(std::string const &url, ResponseCb_t &&callback, bool use_api)
 {
 	Logger::Get()->Log(LogLevel::DEBUG, "Http::Get");
 
 	SendRequest(beast::http::verb::get, url, "",
-		CreateResponseCallback(std::move(callback)));
+		CreateResponseCallback(std::move(callback)), use_api);
 }
 
 void Http::Post(std::string const &url, std::string const &content,
@@ -407,11 +407,11 @@ void Http::Delete(std::string const &url)
 	SendRequest(beast::http::verb::delete_, url, "", nullptr);
 }
 
-void Http::Put(std::string const &url)
+void Http::Put(std::string const &url, std::string const& content)
 {
 	Logger::Get()->Log(LogLevel::DEBUG, "Http::Put");
 
-	SendRequest(beast::http::verb::put, url, "", nullptr);
+	SendRequest(beast::http::verb::put, url, content, nullptr);
 }
 
 void Http::Patch(std::string const &url, std::string const &content)

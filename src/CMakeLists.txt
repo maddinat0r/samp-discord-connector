@@ -54,6 +54,10 @@ add_samp_plugin(discord-connector
 	Embed.hpp
 	Emoji.cpp
 	Emoji.hpp
+	Command.cpp
+	Command.hpp
+	CommandInteraction.cpp
+	CommandInteraction.hpp
 	main.cpp
 	misc.hpp
 	natives.cpp
@@ -148,7 +152,6 @@ endif()
 if (MSVC)
 	target_compile_options(discord-connector PRIVATE
 		/W4
-		/WX
 		/permissive-
 	)
 
