@@ -14,8 +14,8 @@ Command::Command(Snowflake_t const& id, std::string const& name, std::string con
 	m_ID(id),
 	m_Name(name),
 	m_Description(description),
-	m_Valid(true),
-	m_Guild(guild)
+	m_Guild(guild),
+	m_Valid(true)
 {
 }
 

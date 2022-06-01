@@ -96,8 +96,13 @@ jobs:
     - name: Build
       run: cd build && cmake --build .
       
+
+    - name: Zip artifact
+      run: Compress-Archive ${{ runner.workspace }}/build/artifact/* ${{ runner.workspace }}/build/artifact/discord-connector-${{ env.REPO_TAG }}-${{ runner.os }}-${{ matrix.build-type }}.zip
+      shell: pwsh
+      
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: discord-connector-${{ env.REPO_TAG }}-${{ runner.os }}-${{ matrix.build-type }}
-        path: ${{ runner.workspace }}\build\artifact\
+        path: ${{ runner.workspace }}\build\artifact\discord-connector-${{ env.REPO_TAG }}-${{ runner.os }}-${{ matrix.build-type }}.zip
