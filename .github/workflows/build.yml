@@ -94,7 +94,7 @@ jobs:
       run: mkdir build && cd build && cmake .. ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DDCC_VERSION=${{ env.REPO_TAG }} -DBOOST_ROOT=${{ env.BOOST_ROOT }} -DOPENSSL_ROOT=${{ env.OPENSSL_ROOT }}
 
     - name: Build
-      run: cmake --build .
+      run: cd build && cmake --build .
       
     - name: Upload artifact
       uses: actions/upload-artifact@v2
