@@ -164,8 +164,6 @@ elseif(UNIX)
 		-Wall
 		-Wextra
 		-pedantic
-		-faligned-new
-		-Werror
 	)
 endif()
 
