@@ -84,7 +84,7 @@ public:
 		return m_Description;
 	}
 
-	bool const IsRequired()
+	bool IsRequired()
 	{
 		return m_Required;
 	}
@@ -138,13 +138,13 @@ public:
 	}*/
 	void DeleteFromDiscord();
 private:
+	Snowflake_t m_ID;
 	std::string m_Name;
 	std::string m_Description;
 	GuildId_t m_Guild;
 	bool m_DefaultEveryone = true;
 	std::map<std::string, CommandOption_t> m_Options;
 	//std::map<RoleId_t, bool> m_Permissions;
-	Snowflake_t m_ID;
 	std::string m_Callback;
 	bool m_Valid = false;
 };

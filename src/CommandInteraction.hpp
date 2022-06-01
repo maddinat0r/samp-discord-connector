@@ -30,17 +30,17 @@ public:
 	void ParseOptions(nlohmann::json const& interaction_json, std::string const& guildid);
 	void AddInteractionOption(CommandInteractionOption_t &option);
 
-	CommandInteractionId_t const GetPawnId()
+	CommandInteractionId_t GetPawnId()
 	{
 		return m_ID;
 	}
 
-	GuildId_t const GetGuildID()
+	GuildId_t GetGuildID()
 	{
 		return m_Guild;
 	}
 
-	ChannelId_t const GetChannelID()
+	ChannelId_t GetChannelID()
 	{
 		return m_Channel;
 	}

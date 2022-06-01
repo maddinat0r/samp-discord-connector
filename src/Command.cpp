@@ -148,6 +148,7 @@ void CommandManager::Initialize()
 {
 	Network::Get()->WebSocket().RegisterEvent(WebSocket::Event::READY, [this](json const& data)
 	{
+		(void)data;
 		Network::Get()->Http().Get("/api/oauth2/applications/@me", [this](Http::Response r)
 		{
 			json response = json::parse(r.body);
