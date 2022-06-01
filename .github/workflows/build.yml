@@ -51,7 +51,7 @@ jobs:
       shell: bash
     
     - name: get-cmake
-      uses: lukka/get-cmake@v3.19.0
+      uses: lukka/get-cmake@v3.23.0
 
     - if: runner.os == 'Windows'
       name: Install boost
@@ -91,7 +91,7 @@ jobs:
         conan remote add conan-transit-legacy https://api.bintray.com/conan/conan/conan-transit
 
     - name: Configure cmake & build
-      uses: lukka/run-cmake@v2
+      uses: lukka/run-cmake@v10.0
       with:
         cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
         cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
