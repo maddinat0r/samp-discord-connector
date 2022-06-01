@@ -90,13 +90,8 @@ jobs:
         pip install conan
         conan remote add conan-transit-legacy https://api.bintray.com/conan/conan/conan-transit
 
-    - name: Configure cmake & build
-      uses: lukka/run-cmake@v10.0
-      with:
-        cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-        cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-        buildDirectory: '${{ runner.workspace }}/build'
-        cmakeAppendedArgs: '${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DDCC_VERSION=${{ env.REPO_TAG }} -DBOOST_ROOT=${{ env.BOOST_ROOT }} -DOPENSSL_ROOT=${{ env.OPENSSL_ROOT }}'
+    - name: Generate build files
+      run: mkdir build && cd build && cmake .. ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DDCC_VERSION=${{ env.REPO_TAG }} -DBOOST_ROOT=${{ env.BOOST_ROOT }} -DOPENSSL_ROOT=${{ env.OPENSSL_ROOT }}
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
