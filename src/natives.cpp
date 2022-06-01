@@ -3079,7 +3079,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SendInteractionEmbed)
 	CommandInteraction_t const& interaction = CommandInteractionManager::Get()->FindCommandInteraction(id);
 	if (!interaction)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", interaction);
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", id);
 		return 0;
 	}
 
@@ -3114,7 +3114,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SendInteractionMessage)
 	CommandInteraction_t const& interaction = CommandInteractionManager::Get()->FindCommandInteraction(id);
 	if (!interaction)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", interaction);
+		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", id);
 		return 0;
 	}
 
