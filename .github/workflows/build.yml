@@ -98,11 +98,11 @@ jobs:
       
 
     - name: Zip artifact
-      run: Compress-Archive ${{ runner.workspace }}/build/artifact/* ${{ runner.workspace }}/build/artifact/discord-connector-${{ env.REPO_TAG }}-${{ runner.os }}-${{ matrix.build-type }}.zip
+      run: Compress-Archive ${{ runner.workspace }}/samp-discord-connector/build/artifact/* ${{ runner.workspace }}/samp-discord-connector/build/artifact/discord-connector-${{ env.REPO_TAG }}-${{ runner.os }}-${{ matrix.build-type }}.zip
       shell: pwsh
       
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: discord-connector-${{ env.REPO_TAG }}-${{ runner.os }}-${{ matrix.build-type }}
-        path: ${{ runner.workspace }}\build\artifact\discord-connector-${{ env.REPO_TAG }}-${{ runner.os }}-${{ matrix.build-type }}.zip
+        path: ${{ runner.workspace }}\samp-discord-connector\build\artifact\discord-connector-${{ env.REPO_TAG }}-${{ runner.os }}-${{ matrix.build-type }}.zip

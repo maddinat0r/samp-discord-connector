@@ -2894,7 +2894,7 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateCommand)
 			}
 			
 			int location = 0;
-			size_t i = permissions_size - 2; /* ignore default ""
+			size_t i = permissions_size - 2; ignore default ""
 			for (; i != 0;)
 			{
 				int len;
