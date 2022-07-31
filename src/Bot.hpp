@@ -30,7 +30,7 @@ private:
 	PresenceStatus m_PresenceStatus = PresenceStatus::ONLINE;
 	std::string m_ActivityName;
 	ChannelId_t m_CreatedChannelId = INVALID_CHANNEL_ID;
-
+	Snowflake_t m_ApplicationID;
 public:
 	void TriggerTypingIndicator(Channel_t const &channel);
 	void SetNickname(Guild_t const &guild, std::string const &nickname);
@@ -48,4 +48,14 @@ public:
 	}
 
 	void SetActivity(std::string const &name);
+
+	void SetApplicationID(Snowflake_t id)
+	{
+		m_ApplicationID = id;
+	}
+
+	Snowflake_t const GetApplicationID()
+	{
+		return m_ApplicationID;
+	}
 };

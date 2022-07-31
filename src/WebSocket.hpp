@@ -61,7 +61,8 @@ public:
 		WEBHOOKS_UPDATE,
 		PRESENCES_REPLACE,
 		INVITE_CREATE,
-		INVITE_DELETE
+		INVITE_DELETE,
+		INTERACTION_CREATE
 	};
 	using EventCallback_t = std::function<void(json const &)>;
 

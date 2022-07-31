@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-20.04]
-        build-type: [Debug]
+        build-type: [Debug, Release]
         include:
           - os: windows-latest
             cmake-args: '-AWin32 -Thost=x86 -DGH_ACBUILD=TRUE  -DUSING_BOOST_NO_CONAN=TRUE -DUSING_OPENSSL_NO_CONAN=TRUE -DBoost_NO_BOOST_CMAKE=ON'
@@ -51,7 +51,7 @@ jobs:
       shell: bash
     
     - name: get-cmake
-      uses: lukka/get-cmake@v3.19.0
+      uses: lukka/get-cmake@v3.23.0
 
     - if: runner.os == 'Windows'
       name: Install boost
@@ -90,16 +90,19 @@ jobs:
         pip install conan
         conan remote add conan-transit-legacy https://api.bintray.com/conan/conan/conan-transit
 
-    - name: Configure cmake & build
-      uses: lukka/run-cmake@v2
-      with:
-        cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-        cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-        buildDirectory: '${{ runner.workspace }}/build'
-        cmakeAppendedArgs: '${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DDCC_VERSION=${{ env.REPO_TAG }} -DBOOST_ROOT=${{ env.BOOST_ROOT }} -DOPENSSL_ROOT=${{ env.OPENSSL_ROOT }}'
+    - name: Generate build files
+      run: mkdir build && cd build && cmake .. ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DDCC_VERSION=${{ env.REPO_TAG }} -DBOOST_ROOT=${{ env.BOOST_ROOT }} -DOPENSSL_ROOT=${{ env.OPENSSL_ROOT }}
 
+    - name: Build
+      run: cd build && cmake --build .
+      
+
+    - name: Zip artifact
+      run: Compress-Archive ${{ runner.workspace }}/samp-discord-connector/build/artifact/* ${{ runner.workspace }}/samp-discord-connector/build/artifact/discord-connector-${{ env.REPO_TAG }}-${{ runner.os }}-${{ matrix.build-type }}.zip
+      shell: pwsh
+      
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: discord-connector-${{ env.REPO_TAG }}-${{ runner.os }}-${{ matrix.build-type }}
-        path: ${{ runner.workspace }}/build/artifact/
+        path: ${{ runner.workspace }}/samp-discord-connector/build/artifact/discord-connector-${{ env.REPO_TAG }}-${{ runner.os }}-${{ matrix.build-type }}.zip

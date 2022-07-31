@@ -163,6 +163,7 @@ public:
 	void KickMember(User_t const &user);
 	void CreateMemberBan(User_t const &user, std::string const &reason);
 	void RemoveMemberBan(User_t const &user);
+	const Member& FindMember(Snowflake_t const& member);
 
 	void SetRolePosition(Role_t const &role, int position);
 	void SetRoleName(Role_t const &role, std::string const &name);
@@ -206,6 +207,15 @@ public:
 	}
 	std::vector<GuildId_t> GetAllGuildIds() const;
 
+	std::vector<GuildId_t> const GetGuilds()
+	{
+		std::vector<GuildId_t> tmp;
+		for (const auto& i : m_Guilds)
+		{
+			tmp.push_back(i.first);
+		}
+		return tmp;
+	}
 	Guild_t const &FindGuild(GuildId_t id);
 	Guild_t const &FindGuildByName(std::string const &name);
 	Guild_t const &FindGuildById(Snowflake_t const &sfid);

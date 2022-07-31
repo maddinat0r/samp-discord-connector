@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <thread>
 #include <atomic>
+#include <map>
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
@@ -85,16 +86,16 @@ private: // functions
 	bool ReconnectRetry();
 
 	SharedRequest_t PrepareRequest(beast::http::verb const method,
-		std::string const &url, std::string const &content);
+		std::string const &url, std::string const &content, bool use_api = true);
 	void SendRequest(beast::http::verb const method, std::string const &url,
-		std::string const &content, ResponseCallback_t &&callback);
+		std::string const &content, ResponseCallback_t &&callback, bool use_api = true);
 	ResponseCallback_t CreateResponseCallback(ResponseCb_t &&callback);
 
 public: // functions
-	void Get(std::string const &url, ResponseCb_t &&callback);
+	void Get(std::string const &url, ResponseCb_t &&callback, bool use_api = true);
 	void Post(std::string const &url, std::string const &content,
 		ResponseCb_t &&callback = nullptr);
 	void Delete(std::string const &url);
-	void Put(std::string const &url);
+	void Put(std::string const &url, std::string const& content = "");
 	void Patch(std::string const &url, std::string const &content);
 };

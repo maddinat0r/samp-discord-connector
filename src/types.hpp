@@ -34,3 +34,15 @@ const EmbedId_t INVALID_EMBED_ID = 0;
 using Emoji_t = std::unique_ptr<class Emoji>;
 using EmojiId_t = cell;
 const EmojiId_t INVALID_EMOJI_ID = 0;
+
+using Command_t = std::unique_ptr<class Command>;
+using CommandId_t = cell;
+const CommandId_t INVALID_COMMAND_ID = 0;
+
+using CommandOption_t = std::unique_ptr<class CommandOption>;
+
+using CommandInteraction_t = std::unique_ptr<class CommandInteraction>;
+using CommandInteractionId_t = cell;
+const CommandInteractionId_t INVALID_COMMAND_INTERACTION_ID = 0;
+
+using CommandInteractionOption_t = std::unique_ptr<struct CommandInteractionOption>;

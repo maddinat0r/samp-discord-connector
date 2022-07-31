@@ -6,6 +6,7 @@
 #include "User.hpp"
 #include "Channel.hpp"
 #include "Message.hpp"
+#include "Command.hpp"
 #include "SampConfigReader.hpp"
 #include "Logger.hpp"
 #include "version.hpp"
@@ -25,7 +26,7 @@ void InitializeEverything(std::string const &bot_token)
 	UserManager::Get()->Initialize();
 	ChannelManager::Get()->Initialize();
 	MessageManager::Get()->Initialize();
-
+	CommandManager::Get()->Initialize();
 	Network::Get()->Initialize(bot_token);
 }
 
@@ -48,7 +49,8 @@ bool WaitForInitialization()
 	{
 		if (GuildManager::Get()->IsInitialized()
 			&& UserManager::Get()->IsInitialized()
-			&& ChannelManager::Get()->IsInitialized())
+			&& ChannelManager::Get()->IsInitialized()
+			&& CommandManager::Get()->IsInitialized())
 		{
 			return true;
 		}
@@ -263,6 +265,16 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	AMX_DEFINE_NATIVE(DCC_EditMessage)
 	AMX_DEFINE_NATIVE(DCC_SetMessagePersistent)
 	AMX_DEFINE_NATIVE(DCC_CacheChannelMessage)
+
+	AMX_DEFINE_NATIVE(DCC_CreateCommand)
+	AMX_DEFINE_NATIVE(DCC_GetInteractionMentionCount)
+	AMX_DEFINE_NATIVE(DCC_GetInteractionMention)
+	AMX_DEFINE_NATIVE(DCC_GetInteractionContent)
+	AMX_DEFINE_NATIVE(DCC_GetInteractionChannel)
+	AMX_DEFINE_NATIVE(DCC_GetInteractionGuild)
+	AMX_DEFINE_NATIVE(DCC_SendInteractionEmbed)
+	AMX_DEFINE_NATIVE(DCC_SendInteractionMessage)
+	AMX_DEFINE_NATIVE(DCC_DeleteCommand)
 	{ NULL, NULL }
 };
 
