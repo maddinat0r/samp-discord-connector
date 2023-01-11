@@ -6,8 +6,19 @@
 -------------------------------------------------
 **This plugin allows you to control a Discord bot from within your PAWN script.**
 
-How to install
---------------
+**How to install on an open.mp server**
+-----------------------------------
+1. Extract the contents of the archive to a directory, copy the file(s) in plugins into **COMPONENTS** if you do not do this, it will try to load as a SA:MP plugin instead.
+2. Edit your configuration file (**config.json**) as follows:
+   ```json
+      "discord": {
+         "bot_token": "MYBOTTOKEN"
+      }
+    ```
+   Alternatively you can use the enviromental variable **SAMP_DISCORD_BOT_TOKEN** to set the token instead. **DO NOT SHARE YOUR TOKEN WITH ANYONE**
+
+How to install on a SA:MP server
+--------------------------------
 1. Extract the content of the downloaded archive into the root directory of your SA-MP server.
 2. Edit the server configuration (*server.cfg*) as follows:
    - Windows: `plugins discord-connector`
