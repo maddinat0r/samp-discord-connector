@@ -78,6 +78,7 @@ jobs:
     - if: runner.os == 'Linux'
       name: Install gcc/g++-multilib
       run: |
+        sudo dpkg --add-architecture i386
         sudo apt-get update
         sudo apt install gcc-8-multilib g++-8-multilib libstdc++6:i386 libc6:i386
 
