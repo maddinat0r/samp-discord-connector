@@ -80,7 +80,7 @@ jobs:
       run: |
         sudo dpkg --add-architecture i386
         sudo apt-get update
-        sudo apt install gcc-8-multilib g++-8-multilib libstdc++6:i386 libc6:i386
+        sudo apt install gcc-9-multilib g++-9-multilib libstdc++-10-dev:i386
 
     - name: Get python
       uses: actions/setup-python@v2
