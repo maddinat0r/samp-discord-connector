@@ -68,7 +68,7 @@ void Command::HandleNewCreation()
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
 	{
-		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 		return;
 	}
 
@@ -85,7 +85,7 @@ void Command::HandleNewCreation()
 	{
 		if (r.status == 201)
 		{
-			Logger::Get()->Log(LogLevel::INFO, "successfully got a created response from discord for command '{:s}'", m_Name);
+			Logger::Get()->Log(samplog_LogLevel::INFO, "successfully got a created response from discord for command '{:s}'", m_Name);
 			json response = json::parse(r.body);
 			m_ID = response.at("id").get<std::string>();
 
@@ -113,10 +113,10 @@ void Command::HandleNewCreation()
 				std::string json_str;
 				if (!utils::TryDumpJson(permission, json_str))
 				{
-					Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+					Logger::Get()->Log(samplog_LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 					return;
 				}
-				Logger::Get()->Log(LogLevel::ERROR, "{}", json_str);
+				Logger::Get()->Log(samplog_LogLevel::ERROR, "{}", json_str);
 				Network::Get()->Http().Put(api, json_str);
 			}*/
 		}
@@ -210,7 +210,7 @@ void CommandManager::Initialize()
 			my_awesome_json["type"] = 5; // DeferredChannelMessageWithSource
 			if (!utils::TryDumpJson(my_awesome_json, json_str))
 			{
-				Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+				Logger::Get()->Log(samplog_LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 				return;
 			}
 
@@ -279,7 +279,7 @@ void CommandManager::ParseOptionData(Command_t & command, nlohmann::json & optio
 
 void CommandManager::ParseCommandCreationData(nlohmann::json& command_json, GuildId_t guild)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "creating command from discord {} for guild {}", command_json.at("name"), guild);
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "creating command from discord {} for guild {}", command_json.at("name"), guild);
 	
 	Command_t & command = AddCommandInternal(command_json.at("id"), command_json.at("name"), command_json.at("description"), guild);
 	if (command_json.find("options") != command_json.end())
@@ -299,12 +299,12 @@ Command_t & CommandManager::AddCommandInternal(Snowflake_t const& snowflake, std
 	static Command_t invalid_command;
 	if (!m_Commands.emplace(id, Command_t(new Command(snowflake, name, description, guild))).first->second)
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"can't create command: duplicate key '{}'", id);
 		return invalid_command;
 	}
 
-	Logger::Get()->Log(LogLevel::INFO, "successfully created command with id '{}'", id);
+	Logger::Get()->Log(samplog_LogLevel::INFO, "successfully created command with id '{}'", id);
 	return m_Commands.find(id)->second;
 }
 
@@ -316,12 +316,12 @@ CommandId_t CommandManager::AddCommand(std::string const& name, std::string cons
 
 	if (!m_Commands.emplace(id, Command_t(new Command("", name, description, INVALID_GUILD_ID))).first->second)
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"can't create command: duplicate key '{}'", id);
 		return INVALID_USER_ID;
 	}
 
-	Logger::Get()->Log(LogLevel::INFO, "successfully created command with id '{}'", id);
+	Logger::Get()->Log(samplog_LogLevel::INFO, "successfully created command with id '{}'", id);
 	return id;
 }
 
@@ -329,12 +329,12 @@ bool CommandManager::DeleteCommand(CommandId_t id)
 {
 	if (m_Commands.find(id) == m_Commands.end())
 	{
-		Logger::Get()->Log(LogLevel::WARNING, "attempted to delete command with id '{}' but it does not exist", id);
+		Logger::Get()->Log(samplog_LogLevel::WARNING, "attempted to delete command with id '{}' but it does not exist", id);
 		return false;
 	}
 
 	m_Commands.erase(id);
-	Logger::Get()->Log(LogLevel::INFO, "successfully deleted command with id '{}'", id);
+	Logger::Get()->Log(samplog_LogLevel::INFO, "successfully deleted command with id '{}'", id);
 	return true;
 }
 

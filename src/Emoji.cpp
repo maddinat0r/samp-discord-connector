@@ -20,12 +20,12 @@ EmojiId_t EmojiManager::AddEmoji(Snowflake_t const & snowflake, std::string cons
 
 	if (!m_Emojis.emplace(id, Emoji_t(new Emoji(snowflake, name))).first->second)
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"can't create embed: duplicate key '{}'", id);
 		return INVALID_USER_ID;
 	}
 
-	Logger::Get()->Log(LogLevel::INFO, "successfully created emoji with id '{}'", id);
+	Logger::Get()->Log(samplog_LogLevel::INFO, "successfully created emoji with id '{}'", id);
 	return id;
 }
 
@@ -33,12 +33,12 @@ bool EmojiManager::DeleteEmoji(EmojiId_t id)
 {
 	if (m_Emojis.find(id) == m_Emojis.end())
 	{
-		Logger::Get()->Log(LogLevel::WARNING, "attempted to delete emoji with id '{}' but it does not exist", id);
+		Logger::Get()->Log(samplog_LogLevel::WARNING, "attempted to delete emoji with id '{}' but it does not exist", id);
 		return false;
 	}
 
 	m_Emojis.erase(id);
-	Logger::Get()->Log(LogLevel::INFO, "successfully deleted emoji with id '{}'", id);
+	Logger::Get()->Log(samplog_LogLevel::INFO, "successfully deleted emoji with id '{}'", id);
 	return true;
 }
 

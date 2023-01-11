@@ -20,7 +20,7 @@ Channel::Channel(ChannelId_t pawn_id, json const &data, GuildId_t guild_id) :
 	if (!utils::TryGetJsonValue(data, type, "type")
 		|| !utils::TryGetJsonValue(data, m_Id, "id"))
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"invalid JSON: expected \"type\" and \"id\" in \"{}\"", data.dump());
 		return;
 	}
@@ -43,7 +43,7 @@ Channel::Channel(ChannelId_t pawn_id, json const &data, GuildId_t guild_id) :
 			}
 			else
 			{
-				Logger::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(samplog_LogLevel::ERROR,
 					"invalid JSON: expected \"guild_id\" in \"{}\"", data.dump());
 			}
 		}
@@ -77,7 +77,7 @@ void Channel::UpdateParentChannel(Snowflake_t const &parent_id)
 	Channel_t const &channel = ChannelManager::Get()->FindChannelById(parent_id);
 	if (!channel)
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"can't update parent channel \"parent_id\" not cached \"{}\"", parent_id);
 		return;
 	}
@@ -92,14 +92,14 @@ void Channel::SendMessage(std::string &&msg, pawn_cb::Callback_t &&cb)
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Http::ResponseCb_t response_cb;
 	if (cb)
 	{
 		response_cb = [cb](Http::Response response)
 		{
-			Logger::Get()->Log(LogLevel::DEBUG,
+			Logger::Get()->Log(samplog_LogLevel::DEBUG,
 				"channel message create response: status {}; body: {}; add: {}",
 				response.status, response.body, response.additional_data);
 			if (response.status / 100 == 2) // success
@@ -135,7 +135,7 @@ void Channel::SetChannelName(std::string const &name)
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
 }
@@ -148,7 +148,7 @@ void Channel::SetChannelTopic(std::string const &topic)
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
 }
@@ -161,7 +161,7 @@ void Channel::SetChannelPosition(int const position)
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
 }
@@ -174,7 +174,7 @@ void Channel::SetChannelNsfw(bool const is_nsfw)
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
 }
@@ -190,7 +190,7 @@ void Channel::SetChannelParentCategory(Channel_t const &parent)
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format("/channels/{:s}", GetId()), json_str);
 }
@@ -212,17 +212,31 @@ void Channel::SendEmbeddedMessage(const Embed_t & embed, std::string&& msg, pawn
 			{ "color", embed->GetColor() },
 			{ "footer", {
 				{"text", embed->GetFooterText()},
-				{"icon_url", embed->GetFooterIconUrl()},
+				//{"icon_url", embed->GetFooterIconUrl()},
 			}},
 			{"thumbnail", {
-				{"url", embed->GetThumbnailUrl()}
+				//{"url", embed->GetThumbnailUrl()}
 			}},
 			{"image", {
-				{"url", embed->GetImageUrl()}
+				//{"url", embed->GetImageUrl()}
 			}}
 		}}
 	};
 
+	if (!embed->GetThumbnailUrl().empty())
+	{
+		data["embed"]["thumbnail"] += {"url", embed->GetThumbnailUrl()};
+	}
+
+	if (!embed->GetFooterIconUrl().empty())
+	{
+		data["embed"]["footer"] += {"icon_url", embed->GetFooterIconUrl()};
+	}
+
+	if (!embed->GetImageUrl().empty())
+	{
+		data["embed"]["image"] += {"url", embed->GetImageUrl()};
+	}
 	// Add fields (if any).
 	if (embed->GetFields().size())
 	{
@@ -240,14 +254,14 @@ void Channel::SendEmbeddedMessage(const Embed_t & embed, std::string&& msg, pawn
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Http::ResponseCb_t response_cb;
 	if (cb)
 	{
 		response_cb = [cb](Http::Response response)
 		{
-			Logger::Get()->Log(LogLevel::DEBUG,
+			Logger::Get()->Log(samplog_LogLevel::DEBUG,
 				"channel message create response: status {}; body: {}; add: {}",
 				response.status, response.body, response.additional_data);
 			if (response.status / 100 == 2) // success
@@ -300,7 +314,7 @@ void ChannelManager::Initialize()
 			Snowflake_t sfid;
 			if (!utils::TryGetJsonValue(data, sfid, "id"))
 			{
-				Logger::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(samplog_LogLevel::ERROR,
 					"invalid JSON: expected \"id\" in \"{}\"", data.dump());
 				return;
 			}
@@ -308,7 +322,7 @@ void ChannelManager::Initialize()
 			Channel_t const &channel = ChannelManager::Get()->FindChannelById(sfid);
 			if (!channel)
 			{
-				Logger::Get()->Log(LogLevel::ERROR,
+				Logger::Get()->Log(samplog_LogLevel::ERROR,
 					"can't update channel: channel id \"{}\" not cached", sfid);
 				return;
 			}
@@ -342,7 +356,7 @@ void ChannelManager::Initialize()
 		}
 		else
 		{
-			Logger::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(samplog_LogLevel::ERROR,
 				"invalid JSON: expected \"{}\" in \"{}\"", PRIVATE_CHANNEL_KEY, data.dump());
 		}
 		m_Initialized++;
@@ -365,14 +379,14 @@ bool ChannelManager::CreateGuildChannel(Guild_t const &guild,
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
 	{
-		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 		return false;
 	}
 
 	Network::Get()->Http().Post(fmt::format("/guilds/{:s}/channels", guild->GetId()), json_str,
 		[this, cb](Http::Response r)
 	{
-		Logger::Get()->Log(LogLevel::DEBUG,
+		Logger::Get()->Log(samplog_LogLevel::DEBUG,
 			"channel create response: status {}; body: {}; add: {}",
 			r.status, r.body, r.additional_data);
 		if (r.status / 100 == 2) // success
@@ -401,7 +415,7 @@ ChannelId_t ChannelManager::AddChannel(json const &data, GuildId_t guild_id/* = 
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
 		return INVALID_CHANNEL_ID;
 	}
@@ -416,12 +430,12 @@ ChannelId_t ChannelManager::AddChannel(json const &data, GuildId_t guild_id/* = 
 
 	if (!m_Channels.emplace(id, Channel_t(new Channel(id, data, guild_id))).second)
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"can't create channel: duplicate key '{}'", id);
 		return INVALID_CHANNEL_ID;
 	}
 
-	Logger::Get()->Log(LogLevel::INFO, "successfully added channel with id '{}'", id);
+	Logger::Get()->Log(samplog_LogLevel::INFO, "successfully added channel with id '{}'", id);
 	return id;
 }
 
@@ -430,7 +444,7 @@ ChannelId_t ChannelManager::AddDMChannel(json const& data)
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "channel_id"))
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"invalid JSON: expected \"channel_id\" in \"{}\"", data.dump());
 		return INVALID_CHANNEL_ID;
 	}
@@ -445,12 +459,12 @@ ChannelId_t ChannelManager::AddDMChannel(json const& data)
 
 	if (!m_Channels.emplace(id, Channel_t(new Channel(id, sfid, Channel::Type::DM))).second)
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"can't create channel: duplicate key '{}'", id);
 		return INVALID_CHANNEL_ID;
 	}
 
-	Logger::Get()->Log(LogLevel::INFO, "successfully added channel with id '{}'", id);
+	Logger::Get()->Log(samplog_LogLevel::INFO, "successfully added channel with id '{}'", id);
 	return id;
 }
 
@@ -459,7 +473,7 @@ void ChannelManager::DeleteChannel(json const &data)
 	Snowflake_t sfid;
 	if (!utils::TryGetJsonValue(data, sfid, "id"))
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"invalid JSON: expected \"id\" in \"{}\"", data.dump());
 		return;
 	}
@@ -469,7 +483,7 @@ void ChannelManager::DeleteChannel(json const &data)
 		Channel_t const &channel = FindChannelById(sfid);
 		if (!channel)
 		{
-			Logger::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(samplog_LogLevel::ERROR,
 				"can't delete channel: channel id \"{}\" not cached", sfid);
 			return;
 		}

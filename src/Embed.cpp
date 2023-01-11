@@ -31,12 +31,12 @@ EmbedId_t EmbedManager::AddEmbed(std::string const& title, std::string const& de
 	if (!m_Embeds.emplace(id, Embed_t(new Embed(title, description, url, timestamp, footer_text, footer_icon_url, thumbnail_url, image_url,
 		color))).first->second)
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"can't create embed: duplicate key '{}'", id);
 		return INVALID_USER_ID;
 	}
 
-	Logger::Get()->Log(LogLevel::INFO, "successfully created embed with id '{}'", id);
+	Logger::Get()->Log(samplog_LogLevel::INFO, "successfully created embed with id '{}'", id);
 	return id;
 }
 
@@ -44,12 +44,12 @@ bool EmbedManager::DeleteEmbed(EmbedId_t id)
 {
 	if (m_Embeds.find(id) == m_Embeds.end())
 	{
-		Logger::Get()->Log(LogLevel::WARNING, "attempted to delete embed with id '{}' but it does not exist", id);
+		Logger::Get()->Log(samplog_LogLevel::WARNING, "attempted to delete embed with id '{}' but it does not exist", id);
 		return false;
 	}
 
 	m_Embeds.erase(id);
-	Logger::Get()->Log(LogLevel::INFO, "successfully deleted embed with id '{}'", id);
+	Logger::Get()->Log(samplog_LogLevel::INFO, "successfully deleted embed with id '{}'", id);
 	return true;
 }
 

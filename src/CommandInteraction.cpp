@@ -35,7 +35,7 @@ CommandInteraction::CommandInteraction(CommandInteractionId_t id, UserId_t user,
 		auto & command = CommandManager::Get()->FindCommand(CommandManager::Get()->FindCommandIdByName(name, guild->GetPawnId()));
 		if (!guild || command->GetGuild() != guild->GetPawnId())
 		{
-			Logger::Get()->Log(LogLevel::WARNING, "recieved a command interaction for command {} (guild {}) but the callee guild doesn't match", name, guild_str);
+			Logger::Get()->Log(samplog_LogLevel::WARNING, "recieved a command interaction for command {} (guild {}) but the callee guild doesn't match", name, guild_str);
 			return;
 		}
 
@@ -46,7 +46,7 @@ CommandInteraction::CommandInteraction(CommandInteractionId_t id, UserId_t user,
 		auto& command = CommandManager::Get()->FindCommand(CommandManager::Get()->FindCommandIdByName(name));
 		if (!command)
 		{
-			Logger::Get()->Log(LogLevel::WARNING, "recieved a command interaction for command {} but no command exists", name);
+			Logger::Get()->Log(samplog_LogLevel::WARNING, "recieved a command interaction for command {} but no command exists", name);
 			return;
 		}
 	}
@@ -139,16 +139,32 @@ void CommandInteraction::SendEmbed(EmbedId_t embedid, const std::string message)
 			{ "color", embed->GetColor() },
 			{ "footer", {
 				{"text", embed->GetFooterText()},
-				{"icon_url", embed->GetFooterIconUrl()},
+				//{"icon_url", embed->GetFooterIconUrl()},
 			} },
 			{ "thumbnail", {
-				{"url", embed->GetThumbnailUrl()}
+				//{"url", embed->GetThumbnailUrl()}
 			} },
 			{ "image", {
-				{"url", embed->GetImageUrl()}
+				//{"url", embed->GetImageUrl()}
 			}}
 		});
 	
+	if (!embed->GetThumbnailUrl().empty())
+	{
+		data["embeds"][0]["thumbnail"] += {"url", embed->GetThumbnailUrl()};
+	}
+
+	if (!embed->GetFooterIconUrl().empty())
+	{
+		data["embeds"][0]["footer"] += {"icon_url", embed->GetFooterIconUrl()};
+	}
+
+	if (!embed->GetImageUrl().empty())
+	{
+		data["embeds"][0]["image"] += {"url", embed->GetImageUrl()};
+	}
+
+
 	if (embed->GetFields().size())
 	{
 		json field_array = json::array();
@@ -165,7 +181,7 @@ void CommandInteraction::SendEmbed(EmbedId_t embedid, const std::string message)
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	/*/webhooks/{application.id}/{interaction.token}/messages/@original*/
 	Network::Get()->Http().Patch(fmt::format("/webhooks/{:s}/{:s}/messages/@original", ThisBot::Get()->GetApplicationID(), m_Token), json_str);
@@ -179,7 +195,7 @@ void CommandInteraction::SendInteractionMessage(const std::string message)
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	/*/webhooks/{application.id}/{interaction.token}/messages/@original*/
 	Network::Get()->Http().Patch(fmt::format("/webhooks/{:s}/{:s}/messages/@original", ThisBot::Get()->GetApplicationID(), m_Token), json_str);
@@ -202,12 +218,12 @@ CommandInteractionId_t CommandInteractionManager::AddCommandInteraction(UserId_t
 
 	if (!m_Interactions.emplace(id, CommandInteraction_t(new CommandInteraction(id, user, interaction_json))).first->second)
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"can't create command interaction: duplicate key '{}'", id);
 		return INVALID_USER_ID;
 	}
 
-	Logger::Get()->Log(LogLevel::INFO, "successfully created command interaction with id '{}'", id);
+	Logger::Get()->Log(samplog_LogLevel::INFO, "successfully created command interaction with id '{}'", id);
 	return id;
 }
 
@@ -215,11 +231,11 @@ bool CommandInteractionManager::DeleteCommandInteraction(CommandInteractionId_t 
 {
 	if (m_Interactions.find(interaction) == m_Interactions.end())
 	{
-		Logger::Get()->Log(LogLevel::WARNING, "attempted to delete command interaction with id '{}' but it does not exist", interaction);
+		Logger::Get()->Log(samplog_LogLevel::WARNING, "attempted to delete command interaction with id '{}' but it does not exist", interaction);
 		return false;
 	}
 
 	m_Interactions.erase(interaction);
-	Logger::Get()->Log(LogLevel::INFO, "successfully deleted command interaction with id '{}'", interaction);
+	Logger::Get()->Log(samplog_LogLevel::INFO, "successfully deleted command interaction with id '{}'", interaction);
 	return true;
 }

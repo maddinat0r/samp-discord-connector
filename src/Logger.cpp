@@ -24,6 +24,6 @@ ScopedDebugInfo::ScopedDebugInfo(AMX * const amx, const char *func,
 	DebugInfoManager::Get()->Update(amx, func);
 
 	auto &logger = Logger::Get()->m_Logger;
-	if (logger.IsLogLevel(LogLevel::DEBUG))
+	if (logger.IsLogLevel(samplog_LogLevel::DEBUG))
 		logger.LogNativeCall(amx, params, func, params_format);
 }

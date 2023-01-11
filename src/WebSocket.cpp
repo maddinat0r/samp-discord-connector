@@ -14,12 +14,12 @@ WebSocket::WebSocket() :
 	m_HeartbeatTimer(_ioContext),
 	m_HeartbeatInterval()
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::WebSocket");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::WebSocket");
 }
 
 WebSocket::~WebSocket()
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::~WebSocket");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::~WebSocket");
 
 	Disconnect();
 
@@ -29,7 +29,7 @@ WebSocket::~WebSocket()
 
 void WebSocket::Initialize(std::string token, std::string gateway_url)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::Initialize");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::Initialize");
 
 	_gatewayUrl = gateway_url;
 	_apiToken = token;
@@ -44,7 +44,7 @@ void WebSocket::Initialize(std::string token, std::string gateway_url)
 
 void WebSocket::Connect()
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::Connect");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::Connect");
 
 	_resolver.async_resolve(
 		_gatewayUrl,
@@ -57,11 +57,11 @@ void WebSocket::Connect()
 void WebSocket::OnResolve(beast::error_code ec, 
 	asio::ip::tcp::resolver::results_type results)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnResolve");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::OnResolve");
 
 	if (ec)
 	{
-		Logger::Get()->Log(LogLevel::ERROR, 
+		Logger::Get()->Log(samplog_LogLevel::ERROR, 
 			"Can't resolve Discord gateway URL '{}': {} ({})",
 			_gatewayUrl, ec.message(), ec.value());
 		Disconnect(true);
@@ -85,11 +85,11 @@ void WebSocket::OnConnect(beast::error_code ec,
 {
 	boost::ignore_unused(ep);
 
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnConnect");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::OnConnect");
 
 	if (ec)
 	{
-		Logger::Get()->Log(LogLevel::ERROR, 
+		Logger::Get()->Log(samplog_LogLevel::ERROR, 
 			"Can't connect to Discord gateway: {} ({})",
 			ec.message(), ec.value());
 		Disconnect(true);
@@ -106,11 +106,11 @@ void WebSocket::OnConnect(beast::error_code ec,
 
 void WebSocket::OnSslHandshake(beast::error_code ec)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnSslHandshake");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::OnSslHandshake");
 
 	if (ec)
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"Can't establish secured connection to Discord gateway: {} ({})",
 			ec.message(), ec.value());
 		Disconnect(true);
@@ -143,11 +143,11 @@ void WebSocket::OnSslHandshake(beast::error_code ec)
 
 void WebSocket::OnHandshake(beast::error_code ec)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnHandshake");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::OnHandshake");
 
 	if (ec)
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"Can't upgrade to WSS protocol: {} ({})",
 			ec.message(), ec.value());
 		Disconnect(true);
@@ -166,7 +166,7 @@ void WebSocket::OnHandshake(beast::error_code ec)
 
 void WebSocket::Disconnect(bool reconnect /*= false*/)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::Disconnect");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::Disconnect");
 
 	_reconnect = reconnect;
 
@@ -184,7 +184,7 @@ void WebSocket::OnClose(beast::error_code ec)
 {
 	boost::ignore_unused(ec);
 
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnClose");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::OnClose");
 
 	m_HeartbeatTimer.cancel();
 
@@ -195,7 +195,7 @@ void WebSocket::OnClose(beast::error_code ec)
 
 		if (time.count() > 0)
 		{
-			Logger::Get()->Log(LogLevel::INFO,
+			Logger::Get()->Log(samplog_LogLevel::INFO,
 				"reconnecting in {:d} seconds",
 				time.count());
 		}
@@ -210,7 +210,7 @@ void WebSocket::OnClose(beast::error_code ec)
 
 void WebSocket::OnReconnect(beast::error_code ec)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::OnReconnect");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::OnReconnect");
 
 	if (ec)
 	{
@@ -218,10 +218,10 @@ void WebSocket::OnReconnect(beast::error_code ec)
 		{
 		case boost::asio::error::operation_aborted:
 			// timer was chancelled, do nothing
-			Logger::Get()->Log(LogLevel::DEBUG, "reconnect timer chancelled");
+			Logger::Get()->Log(samplog_LogLevel::DEBUG, "reconnect timer chancelled");
 			break;
 		default:
-			Logger::Get()->Log(LogLevel::ERROR, "reconnect timer error: {} ({})",
+			Logger::Get()->Log(samplog_LogLevel::ERROR, "reconnect timer error: {} ({})",
 				ec.message(), ec.value());
 			break;
 		}
@@ -234,7 +234,7 @@ void WebSocket::OnReconnect(beast::error_code ec)
 
 void WebSocket::Read()
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::Read");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::Read");
 
 	_websocket->async_read(
 		_buffer,
@@ -246,7 +246,7 @@ void WebSocket::Read()
 void WebSocket::OnRead(beast::error_code ec,
 	std::size_t bytes_transferred)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, 
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, 
 		"WebSocket::OnRead({:d})",
 		bytes_transferred);
 
@@ -256,14 +256,14 @@ void WebSocket::OnRead(beast::error_code ec,
 		switch (ec.value())
 		{
 		case asio::ssl::error::stream_errors::stream_truncated:
-			Logger::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(samplog_LogLevel::ERROR,
 				"Discord terminated websocket connection; reason: {} ({})",
 				_websocket->reason().reason.c_str(),
 				_websocket->reason().code);
 
 			if (_websocket->reason().code == 4014)
 			{
-				logprintf(" >> plugin.dc-connector: bot could not connect due to intent permissions. Modify your discord bot settings and enable every intent.");
+				logprintf(" >> discord-connector: bot could not connect due to intent permissions. Modify your discord bot settings and enable every intent.");
 				reconnect = false;
 			}
 			else
@@ -275,7 +275,7 @@ void WebSocket::OnRead(beast::error_code ec,
 			// connection was closed, do nothing
 			break;
 		default:
-			Logger::Get()->Log(LogLevel::ERROR,
+			Logger::Get()->Log(samplog_LogLevel::ERROR,
 				"Can't read from Discord websocket gateway: {} ({})",
 				ec.message(),
 				ec.value());
@@ -285,7 +285,7 @@ void WebSocket::OnRead(beast::error_code ec,
 
 		if (reconnect)
 		{
-			Logger::Get()->Log(LogLevel::INFO,
+			Logger::Get()->Log(samplog_LogLevel::INFO,
 				"websocket gateway connection terminated; attempting reconnect...");
 			Disconnect(true);
 		}
@@ -360,12 +360,12 @@ void WebSocket::OnRead(beast::error_code ec,
 		}
 		else
 		{
-			Logger::Get()->Log(LogLevel::WARNING, "Unknown gateway event '{}'", result["t"].get<std::string>());
-			Logger::Get()->Log(LogLevel::DEBUG, "UGE res: {}", result.dump(4));
+			Logger::Get()->Log(samplog_LogLevel::WARNING, "Unknown gateway event '{}'", result["t"].get<std::string>());
+			Logger::Get()->Log(samplog_LogLevel::DEBUG, "UGE res: {}", result.dump(4));
 		}
 	} break;
 	case 7: // reconnect
-		Logger::Get()->Log(LogLevel::INFO,
+		Logger::Get()->Log(samplog_LogLevel::INFO,
 			"websocket gateway requested reconnect; attempting reconnect...");
 		Disconnect(true);
 		return;
@@ -379,11 +379,11 @@ void WebSocket::OnRead(beast::error_code ec,
 		DoHeartbeat({});
 		break;
 	case 11: // heartbeat ACK
-		Logger::Get()->Log(LogLevel::DEBUG, "heartbeat ACK");
+		Logger::Get()->Log(samplog_LogLevel::DEBUG, "heartbeat ACK");
 		break;
 	default:
-		Logger::Get()->Log(LogLevel::WARNING, "Unhandled payload opcode '{}'", payload_opcode);
-		Logger::Get()->Log(LogLevel::DEBUG, "UPO res: {}", result.dump(4));
+		Logger::Get()->Log(samplog_LogLevel::WARNING, "Unhandled payload opcode '{}'", payload_opcode);
+		Logger::Get()->Log(samplog_LogLevel::DEBUG, "UPO res: {}", result.dump(4));
 	}
 
 	Read();
@@ -391,7 +391,7 @@ void WebSocket::OnRead(beast::error_code ec,
 
 void WebSocket::Write(std::string const &data)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::Write");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::Write");
 
 	_websocket->async_write(
 		asio::buffer(data),
@@ -403,13 +403,13 @@ void WebSocket::Write(std::string const &data)
 void WebSocket::OnWrite(beast::error_code ec,
 	size_t bytes_transferred)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, 
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, 
 		"WebSocket::OnWrite({:d})", 
 		bytes_transferred);
 
 	if (ec)
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"Can't write to Discord websocket gateway: {} ({})",
 			ec.message(), ec.value());
 
@@ -420,7 +420,7 @@ void WebSocket::OnWrite(beast::error_code ec,
 #define ALL_INTENTS 32767
 void WebSocket::Identify()
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::Identify");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::Identify");
 
 	const char *os_name =
 #ifdef WIN32
@@ -451,7 +451,7 @@ void WebSocket::Identify()
 
 void WebSocket::SendResumePayload()
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::SendResumePayload");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::SendResumePayload");
 
 	json resume_payload = {
 		{ "op", 6 },
@@ -467,7 +467,7 @@ void WebSocket::SendResumePayload()
 
 void WebSocket::RequestGuildMembers(std::string guild_id)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::RequestGuildMembers");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::RequestGuildMembers");
 
 	json payload = {
 		{ "op", 8 },
@@ -483,7 +483,7 @@ void WebSocket::RequestGuildMembers(std::string guild_id)
 
 void WebSocket::UpdateStatus(std::string const &status, std::string const &activity_name)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::UpdateStatus");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::UpdateStatus");
 
 	json payload = {
 		{ "op", 3 },
@@ -508,7 +508,7 @@ void WebSocket::UpdateStatus(std::string const &status, std::string const &activ
 
 void WebSocket::DoHeartbeat(beast::error_code ec)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "WebSocket::DoHeartbeat");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::DoHeartbeat");
 
 	if (ec)
 	{
@@ -516,10 +516,10 @@ void WebSocket::DoHeartbeat(beast::error_code ec)
 		{
 		case boost::asio::error::operation_aborted:
 			// timer was chancelled, do nothing
-			Logger::Get()->Log(LogLevel::DEBUG, "heartbeat timer chancelled");
+			Logger::Get()->Log(samplog_LogLevel::DEBUG, "heartbeat timer chancelled");
 			break;
 		default:
-			Logger::Get()->Log(LogLevel::ERROR, "Heartbeat error: {} ({})",
+			Logger::Get()->Log(samplog_LogLevel::ERROR, "Heartbeat error: {} ({})",
 				ec.message(), ec.value());
 			break;
 		}
@@ -531,7 +531,7 @@ void WebSocket::DoHeartbeat(beast::error_code ec)
 		{ "d", _sequenceNumber }
 	};
 
-	Logger::Get()->Log(LogLevel::DEBUG, "sending heartbeat");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "sending heartbeat");
 	Write(heartbeat_payload.dump());
 
 	m_HeartbeatTimer.expires_from_now(m_HeartbeatInterval);

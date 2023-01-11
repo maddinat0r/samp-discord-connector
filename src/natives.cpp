@@ -28,7 +28,7 @@ AMX_DECLARE_NATIVE(Native::native_name)
 
 
 	cell ret_val = ;
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 */
@@ -43,7 +43,7 @@ AMX_DECLARE_NATIVE(Native::DCC_FindChannelByName)
 
 	cell ret_val = channel ? channel->GetPawnId() : 0;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -57,7 +57,7 @@ AMX_DECLARE_NATIVE(Native::DCC_FindChannelById)
 
 	cell ret_val = channel ? channel->GetPawnId() : 0;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -70,13 +70,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelId)
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
 	cell ret_val = amx_SetCppString(amx, params[2], channel->GetId(), params[3]) == AMX_ERR_NONE;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -89,20 +89,20 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelType)
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(channel->GetType());
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -115,20 +115,20 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelGuild)
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(channel->GetGuildId());
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -141,13 +141,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelName)
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
 	cell ret_val = amx_SetCppString(amx, params[2], channel->GetName(), params[3]) == AMX_ERR_NONE;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -160,13 +160,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelTopic)
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
 	cell ret_val = amx_SetCppString(amx, params[2], channel->GetTopic(), params[3]) == AMX_ERR_NONE;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -179,20 +179,20 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelPosition)
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(channel->GetPosition());
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -205,13 +205,13 @@ AMX_DECLARE_NATIVE(Native::DCC_IsChannelNsfw)
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
 	if (channel->GetType() != Channel::Type::GUILD_TEXT)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"invalid channel type; must be guild text channel");
 		return 0;
 	}
@@ -219,13 +219,13 @@ AMX_DECLARE_NATIVE(Native::DCC_IsChannelNsfw)
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(channel->IsNsfw() ? 1 : 0);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -238,20 +238,20 @@ AMX_DECLARE_NATIVE(Native::DCC_GetChannelParentCategory)
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = channel->GetParentId();
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -265,14 +265,14 @@ AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
 	auto message = amx_GetCppString(amx, params[2]);
 	if (message.length() > 2000)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"message must be shorter than 2000 characters");
 		return 0;
 	}
@@ -286,14 +286,14 @@ AMX_DECLARE_NATIVE(Native::DCC_SendChannelMessage)
 		amx, cb_name.c_str(), cb_format.c_str(), params, 5, cb_error);
 	if (cb_error && cb_error.get() != pawn_cb::Error::Type::EMPTY_NAME)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "could not prepare callback");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "could not prepare callback");
 		return 0;
 	}
 
 
 	channel->SendMessage(std::move(message), std::move(cb));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -306,21 +306,21 @@ AMX_DECLARE_NATIVE(Native::DCC_SetChannelName)
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
 	auto name = amx_GetCppString(amx, params[2]);
 	if (name.length() < 2 || name.length() > 100)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"name must be between 2 and 100 characters in length");
 		return 0;
 	}
 
 	channel->SetChannelName(name);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -333,13 +333,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetChannelTopic)
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
 	if (channel->GetType() != Channel::Type::GUILD_TEXT)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"invalid channel type; must be guild text channel");
 		return 0;
 	}
@@ -347,14 +347,14 @@ AMX_DECLARE_NATIVE(Native::DCC_SetChannelTopic)
 	auto topic = amx_GetCppString(amx, params[2]);
 	if (topic.length() > 1024)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"topic must be between 0 and 1024 characters in length");
 		return 0;
 	}
 
 	channel->SetChannelTopic(topic);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -367,13 +367,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetChannelPosition)
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
 	channel->SetChannelPosition(static_cast<int>(params[2]));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -386,13 +386,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetChannelNsfw)
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
 	channel->SetChannelNsfw(params[2] != 0);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -405,7 +405,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetChannelParentCategory)
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
@@ -413,21 +413,21 @@ AMX_DECLARE_NATIVE(Native::DCC_SetChannelParentCategory)
 	Channel_t const &parent_channel = ChannelManager::Get()->FindChannel(parent_channelid);
 	if (!parent_channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid parent channel id '{}'",
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid parent channel id '{}'",
 			parent_channelid);
 		return 0;
 	}
 
 	if (parent_channel->GetType() != Channel::Type::GUILD_CATEGORY)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"invalid channel type; must be guild category channel");
 		return 0;
 	}
 
 	channel->SetChannelParentCategory(parent_channel);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -440,13 +440,13 @@ AMX_DECLARE_NATIVE(Native::DCC_DeleteChannel)
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
 	channel->DeleteChannel();
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -459,13 +459,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetMessageId)
 	Message_t const &msg = MessageManager::Get()->Find(id);
 	if (!msg)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid message id '{}'", id);
 		return 0;
 	}
 
 	cell ret_val = amx_SetCppString(amx, params[2], msg->GetId(), params[3]) == AMX_ERR_NONE;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -478,20 +478,20 @@ AMX_DECLARE_NATIVE(Native::DCC_GetMessageChannel)
 	Message_t const &msg = MessageManager::Get()->Find(id);
 	if (!msg)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid message id '{}'", id);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(msg->GetChannel());
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -504,20 +504,20 @@ AMX_DECLARE_NATIVE(Native::DCC_GetMessageAuthor)
 	Message_t const &msg = MessageManager::Get()->Find(id);
 	if (!msg)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid message id '{}'", id);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(msg->GetAuthor());
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -530,14 +530,14 @@ AMX_DECLARE_NATIVE(Native::DCC_GetMessageContent)
 	Message_t const &msg = MessageManager::Get()->Find(id);
 	if (!msg)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid message id '{}'", id);
 		return 0;
 	}
 
 	cell ret_val = amx_SetCppString(
 		amx, params[2], msg->GetContent(), params[3]) == AMX_ERR_NONE;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -550,20 +550,20 @@ AMX_DECLARE_NATIVE(Native::DCC_IsMessageTts)
 	Message_t const &msg = MessageManager::Get()->Find(id);
 	if (!msg)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid message id '{}'", id);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(msg->IsTts() ? 1 : 0);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -576,20 +576,20 @@ AMX_DECLARE_NATIVE(Native::DCC_IsMessageMentioningEveryone)
 	Message_t const &msg = MessageManager::Get()->Find(id);
 	if (!msg)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid message id '{}'", id);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(msg->MentionsEveryone() ? 1 : 0);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -602,20 +602,20 @@ AMX_DECLARE_NATIVE(Native::DCC_GetMessageUserMentionCount)
 	Message_t const &msg = MessageManager::Get()->Find(id);
 	if (!msg)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid message id '{}'", id);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(msg->GetUserMentions().size());
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -628,7 +628,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetMessageUserMention)
 	Message_t const &msg = MessageManager::Get()->Find(id);
 	if (!msg)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid message id '{}'", id);
 		return 0;
 	}
 
@@ -636,7 +636,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetMessageUserMention)
 	auto const &mentions = msg->GetUserMentions();
 	if (offset >= mentions.size())
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"invalid offset '{}', max size is '{}'",
 			offset, mentions.size());
 		return 0;
@@ -645,13 +645,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetMessageUserMention)
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[3], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(mentions.at(offset));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -664,20 +664,20 @@ AMX_DECLARE_NATIVE(Native::DCC_GetMessageRoleMentionCount)
 	Message_t const &msg = MessageManager::Get()->Find(id);
 	if (!msg)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid message id '{}'", id);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(msg->GetRoleMentions().size());
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -690,7 +690,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetMessageRoleMention)
 	Message_t const &msg = MessageManager::Get()->Find(id);
 	if (!msg)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid message id '{}'", id);
 		return 0;
 	}
 
@@ -698,7 +698,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetMessageRoleMention)
 	auto const &mentions = msg->GetRoleMentions();
 	if (offset >= mentions.size())
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"invalid offset '{}', max size is '{}'",
 			offset, mentions.size());
 		return 0;
@@ -707,13 +707,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetMessageRoleMention)
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[3], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(mentions.at(offset));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -726,13 +726,13 @@ AMX_DECLARE_NATIVE(Native::DCC_DeleteMessage)
 	Message_t const &msg = MessageManager::Get()->Find(id);
 	if (!msg)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid message id '{}'", id);
 		return 0;
 	}
 
 	msg->DeleteMessage();
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -742,7 +742,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetCreatedMessage)
 	ScopedDebugInfo dbg_info(amx, "DCC_GetCreatedMessage", params);
 
 	auto ret_val = static_cast<cell>(MessageManager::Get()->GetCreatedMessageId());
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{:d}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{:d}'", ret_val);
 	return ret_val;
 }
 
@@ -758,7 +758,7 @@ AMX_DECLARE_NATIVE(Native::DCC_FindUserByName)
 
 	cell ret_val = user ? user->GetPawnId() : 0;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -772,7 +772,7 @@ AMX_DECLARE_NATIVE(Native::DCC_FindUserById)
 
 	cell ret_val = user ? user->GetPawnId() : 0;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -785,13 +785,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetUserId)
 	User_t const &user = UserManager::Get()->FindUser(userid);
 	if (!user)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user id '{}'", userid);
 		return 0;
 	}
 
 	cell ret_val = amx_SetCppString(amx, params[2], user->GetId(), params[3]) == AMX_ERR_NONE;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -804,13 +804,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetUserName)
 	User_t const &user = UserManager::Get()->FindUser(userid);
 	if (!user)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user id '{}'", userid);
 		return 0;
 	}
 
 	cell ret_val = amx_SetCppString(amx, params[2], user->GetUsername(), params[3]) == AMX_ERR_NONE;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -823,13 +823,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetUserDiscriminator)
 	User_t const &user = UserManager::Get()->FindUser(userid);
 	if (!user)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user id '{}'", userid);
 		return 0;
 	}
 
 	cell ret_val = amx_SetCppString(amx, params[2], user->GetDiscriminator(), params[3]) == AMX_ERR_NONE;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -842,20 +842,20 @@ AMX_DECLARE_NATIVE(Native::DCC_IsUserBot)
 	User_t const &user = UserManager::Get()->FindUser(userid);
 	if (!user)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user id '{}'", userid);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = user->IsBot() ? 1 : 0;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -868,20 +868,20 @@ AMX_DECLARE_NATIVE(Native::DCC_IsUserVerified)
 	User_t const &user = UserManager::Get()->FindUser(userid);
 	if (!user)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user id '{}'", userid);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = user->IsVerified() ? 1 : 0;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -896,7 +896,7 @@ AMX_DECLARE_NATIVE(Native::DCC_FindRoleByName)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return INVALID_ROLE_ID;
 	}
 
@@ -914,7 +914,7 @@ AMX_DECLARE_NATIVE(Native::DCC_FindRoleByName)
 		}
 	}
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -928,7 +928,7 @@ AMX_DECLARE_NATIVE(Native::DCC_FindRoleById)
 
 	cell ret_val = role ? role->GetPawnId() : 0;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -941,13 +941,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetRoleId)
 	Role_t const &role = RoleManager::Get()->FindRole(roleid);
 	if (!role)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid role id '{}'", roleid);
 		return 0;
 	}
 
 	cell ret_val = amx_SetCppString(amx, params[2], role->GetId(), params[3]) == AMX_ERR_NONE;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -960,13 +960,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetRoleName)
 	Role_t const &role = RoleManager::Get()->FindRole(roleid);
 	if (!role)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid role id '{}'", roleid);
 		return 0;
 	}
 
 	cell ret_val = amx_SetCppString(amx, params[2], role->GetName(), params[3]) == AMX_ERR_NONE;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -979,20 +979,20 @@ AMX_DECLARE_NATIVE(Native::DCC_GetRoleColor)
 	Role_t const &role = RoleManager::Get()->FindRole(roleid);
 	if (!role)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid role id '{}'", roleid);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(role->GetColor());
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1005,14 +1005,14 @@ AMX_DECLARE_NATIVE(Native::DCC_GetRolePermissions)
 	Role_t const &role = RoleManager::Get()->FindRole(roleid);
 	if (!role)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid role id '{}'", roleid);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference for 'perm_high'");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference for 'perm_high'");
 		return 0;
 	}
 
@@ -1021,13 +1021,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetRolePermissions)
 	dest = nullptr;
 	if (amx_GetAddr(amx, params[3], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference for 'perm_low'");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference for 'perm_low'");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(role->GetPermissions() & 0xFFFFFFFF);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1040,20 +1040,20 @@ AMX_DECLARE_NATIVE(Native::DCC_IsRoleHoist)
 	Role_t const &role = RoleManager::Get()->FindRole(roleid);
 	if (!role)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid role id '{}'", roleid);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = role->IsHoist() ? 1 : 0;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1066,20 +1066,20 @@ AMX_DECLARE_NATIVE(Native::DCC_GetRolePosition)
 	Role_t const &role = RoleManager::Get()->FindRole(roleid);
 	if (!role)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid role id '{}'", roleid);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(role->GetPosition());
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1092,20 +1092,20 @@ AMX_DECLARE_NATIVE(Native::DCC_IsRoleMentionable)
 	Role_t const &role = RoleManager::Get()->FindRole(roleid);
 	if (!role)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid role id '{}'", roleid);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = role->IsMentionable() ? 1 : 0;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1119,7 +1119,7 @@ AMX_DECLARE_NATIVE(Native::DCC_FindGuildByName)
 
 	cell ret_val = guild ? guild->GetPawnId() : 0;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -1133,7 +1133,7 @@ AMX_DECLARE_NATIVE(Native::DCC_FindGuildById)
 
 	cell ret_val = guild ? guild->GetPawnId() : 0;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -1146,13 +1146,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildId)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
 	cell ret_val = amx_SetCppString(amx, params[2], guild->GetId(), params[3]) == AMX_ERR_NONE;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -1165,13 +1165,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildName)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
 	cell ret_val = amx_SetCppString(amx, params[2], guild->GetName(), params[3]) == AMX_ERR_NONE;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -1184,13 +1184,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildOwnerId)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
 	cell ret_val = amx_SetCppString(amx, params[2], guild->GetOwnerId(), params[3]) == AMX_ERR_NONE;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -1203,7 +1203,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildRole)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -1211,7 +1211,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildRole)
 	auto const &roles = guild->GetRoles();
 	if (offset >= roles.size())
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"invalid offset '{}', max size is '{}'",
 			offset, roles.size());
 		return 0;
@@ -1220,13 +1220,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildRole)
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[3], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(roles.at(offset));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1239,20 +1239,20 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildRoleCount)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(guild->GetRoles().size());
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1265,7 +1265,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMember)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -1273,7 +1273,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMember)
 	auto const &members = guild->GetMembers();
 	if (offset >= members.size())
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"invalid offset '{}', max size is '{}'",
 			offset, members.size());
 		return 0;
@@ -1282,13 +1282,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMember)
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[3], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(members.at(offset).UserId);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1301,20 +1301,20 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberCount)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(guild->GetMembers().size());
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1327,7 +1327,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberVoiceChannel)
 	auto const &guild = GuildManager::Get()->FindGuild(guild_id);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guild_id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guild_id);
 		return 0;
 	}
 
@@ -1341,16 +1341,16 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberVoiceChannel)
 		cell *dest = nullptr;
 		if (amx_GetAddr(amx, params[3], &dest) != AMX_ERR_NONE || dest == nullptr)
 		{
-			Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+			Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 			return 0;
 		}
 
 		*dest = static_cast<cell>(m.GetVoiceChannel());
-		Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+		Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 		return 1;
 	}
 
-	Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", user_id);
+	Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user id '{}'", user_id);
 	return 0;
 }
 
@@ -1363,7 +1363,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberNickname)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -1382,13 +1382,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberNickname)
 
 	if (!member_found)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user specified");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user specified");
 		return 0;
 	}
 
 	cell ret_val = amx_SetCppString(amx, params[3], nick, params[4]) == AMX_ERR_NONE;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -1401,7 +1401,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberRole)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -1418,14 +1418,14 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberRole)
 
 	if (roles == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user specified");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user specified");
 		return 0;
 	}
 
 	auto offset = static_cast<unsigned int>(params[3]);
 	if (offset >= roles->size())
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"invalid offset '{}', max size is '{}'",
 			offset, roles->size());
 		return 0;
@@ -1434,13 +1434,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberRole)
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[4], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(roles->at(offset));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1453,7 +1453,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberRoleCount)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -1470,20 +1470,20 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberRoleCount)
 
 	if (roles == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user specified");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user specified");
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[3], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(roles->size());
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1496,7 +1496,7 @@ AMX_DECLARE_NATIVE(Native::DCC_HasGuildMemberRole)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -1513,14 +1513,14 @@ AMX_DECLARE_NATIVE(Native::DCC_HasGuildMemberRole)
 
 	if (roles == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user specified");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user specified");
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[4], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
@@ -1537,7 +1537,7 @@ AMX_DECLARE_NATIVE(Native::DCC_HasGuildMemberRole)
 
 	*dest = res ? 1 : 0;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1550,7 +1550,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberStatus)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -1567,20 +1567,20 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildMemberStatus)
 
 	if (status == Guild::Member::PresenceStatus::INVALID)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user specified");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user specified");
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[3], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(status);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1593,7 +1593,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildChannel)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -1601,7 +1601,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildChannel)
 	auto const &channels = guild->GetChannels();
 	if (offset >= channels.size())
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"invalid offset '{}', max size is '{}'",
 			offset, channels.size());
 		return 0;
@@ -1610,13 +1610,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildChannel)
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[3], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(channels.at(offset));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1629,20 +1629,20 @@ AMX_DECLARE_NATIVE(Native::DCC_GetGuildChannelCount)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(guild->GetChannels().size());
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1654,7 +1654,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetAllGuilds)
 	cell *dest = nullptr;
 	if (amx_GetAddr(amx, params[1], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
@@ -1666,7 +1666,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetAllGuilds)
 
 	if (guilds_count > max_dest_size)
 	{
-		Logger::Get()->LogNative(LogLevel::WARNING,
+		Logger::Get()->LogNative(samplog_LogLevel::WARNING,
 			"destination array is too small (should be at least '{}' cells)",
 			guilds_count);
 	}
@@ -1675,7 +1675,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetAllGuilds)
 	for (cell i = 0; i != count; ++i)
 		dest[i] = guild_ids.at(i);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", count);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", count);
 	return count;
 }
 
@@ -1688,21 +1688,21 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildName)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
 	auto name = amx_GetCppString(amx, params[2]);
 	if (name.length() < 2 || name.length() > 100)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"name must be between 2 and 100 characters in length");
 		return 0;
 	}
 
 	guild->SetGuildName(name);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1716,14 +1716,14 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateGuildChannel)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
 	auto name = amx_GetCppString(amx, params[2]);
 	if (name.length() < 2 || name.length() > 100)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"name must be between 2 and 100 characters in length");
 		return 0;
 	}
@@ -1733,7 +1733,7 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateGuildChannel)
 		&& type != Channel::Type::GUILD_TEXT
 		&& type != Channel::Type::GUILD_VOICE)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel type");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel type");
 		return 0;
 	}
 
@@ -1746,13 +1746,13 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateGuildChannel)
 		amx, cb_name.c_str(), cb_format.c_str(), params, 6, cb_error);
 	if (cb_error && cb_error.get() != pawn_cb::Error::Type::EMPTY_NAME)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "could not prepare callback");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "could not prepare callback");
 		return 0;
 	}
 
 	ChannelManager::Get()->CreateGuildChannel(guild, name, type, std::move(cb));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1772,7 +1772,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildMemberNickname)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -1780,13 +1780,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildMemberNickname)
 	User_t const &user = UserManager::Get()->FindUser(userid);
 	if (!user)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user id '{}'", userid);
 		return 0;
 	}
 
 	guild->SetMemberNickname(user, amx_GetCppString(amx, params[3]));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1799,7 +1799,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildMemberVoiceChannel)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guild_id);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guild_id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guild_id);
 		return 0;
 	}
 
@@ -1807,7 +1807,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildMemberVoiceChannel)
 	User_t const &user = UserManager::Get()->FindUser(user_id);
 	if (!user)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", user_id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user id '{}'", user_id);
 		return 0;
 	}
 
@@ -1815,12 +1815,12 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildMemberVoiceChannel)
 	Channel_t const &channel = ChannelManager::Get()->FindChannel(channel_id);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channel_id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channel_id);
 		return 0;
 	}
 	guild->SetMemberVoiceChannel(user, channel->GetId());
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1833,7 +1833,7 @@ AMX_DECLARE_NATIVE(Native::DCC_AddGuildMemberRole)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -1841,7 +1841,7 @@ AMX_DECLARE_NATIVE(Native::DCC_AddGuildMemberRole)
 	User_t const &user = UserManager::Get()->FindUser(userid);
 	if (!user)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user id '{}'", userid);
 		return 0;
 	}
 
@@ -1849,13 +1849,13 @@ AMX_DECLARE_NATIVE(Native::DCC_AddGuildMemberRole)
 	Role_t const &role = RoleManager::Get()->FindRole(roleid);
 	if (!role)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid role id '{}'", roleid);
 		return 0;
 	}
 
 	guild->AddMemberRole(user, role);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1868,7 +1868,7 @@ AMX_DECLARE_NATIVE(Native::DCC_RemoveGuildMemberRole)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -1876,7 +1876,7 @@ AMX_DECLARE_NATIVE(Native::DCC_RemoveGuildMemberRole)
 	User_t const &user = UserManager::Get()->FindUser(userid);
 	if (!user)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user id '{}'", userid);
 		return 0;
 	}
 
@@ -1884,13 +1884,13 @@ AMX_DECLARE_NATIVE(Native::DCC_RemoveGuildMemberRole)
 	Role_t const &role = RoleManager::Get()->FindRole(roleid);
 	if (!role)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid role id '{}'", roleid);
 		return 0;
 	}
 
 	guild->RemoveMemberRole(user, role);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1903,7 +1903,7 @@ AMX_DECLARE_NATIVE(Native::DCC_RemoveGuildMember)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -1911,13 +1911,13 @@ AMX_DECLARE_NATIVE(Native::DCC_RemoveGuildMember)
 	User_t const &user = UserManager::Get()->FindUser(userid);
 	if (!user)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user id '{}'", userid);
 		return 0;
 	}
 
 	guild->KickMember(user);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1930,7 +1930,7 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateGuildMemberBan)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -1938,13 +1938,13 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateGuildMemberBan)
 	User_t const &user = UserManager::Get()->FindUser(userid);
 	if (!user)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user id '{}'", userid);
 		return 0;
 	}
 
 	guild->CreateMemberBan(user, amx_GetCppString(amx, params[3]));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1957,7 +1957,7 @@ AMX_DECLARE_NATIVE(Native::DCC_RemoveGuildMemberBan)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -1965,13 +1965,13 @@ AMX_DECLARE_NATIVE(Native::DCC_RemoveGuildMemberBan)
 	User_t const &user = UserManager::Get()->FindUser(userid);
 	if (!user)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user id '{}'", userid);
 		return 0;
 	}
 
 	guild->RemoveMemberBan(user);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -1984,7 +1984,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildRolePosition)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -1992,13 +1992,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildRolePosition)
 	Role_t const &role = RoleManager::Get()->FindRole(roleid);
 	if (!role)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid role id '{}'", roleid);
 		return 0;
 	}
 
 	guild->SetRolePosition(role, static_cast<int>(params[3]));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2011,7 +2011,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildRoleName)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -2019,13 +2019,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildRoleName)
 	Role_t const &role = RoleManager::Get()->FindRole(roleid);
 	if (!role)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid role id '{}'", roleid);
 		return 0;
 	}
 
 	guild->SetRoleName(role, amx_GetCppString(amx, params[3]));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2038,7 +2038,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildRolePermissions)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -2046,7 +2046,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildRolePermissions)
 	Role_t const &role = RoleManager::Get()->FindRole(roleid);
 	if (!role)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid role id '{}'", roleid);
 		return 0;
 	}
 
@@ -2057,7 +2057,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildRolePermissions)
 
 	guild->SetRolePermissions(role, permissions);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2070,7 +2070,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildRoleColor)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -2078,13 +2078,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildRoleColor)
 	Role_t const &role = RoleManager::Get()->FindRole(roleid);
 	if (!role)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid role id '{}'", roleid);
 		return 0;
 	}
 
 	guild->SetRoleColor(role, static_cast<unsigned int>(params[3]));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2097,7 +2097,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildRoleHoist)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -2105,13 +2105,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildRoleHoist)
 	Role_t const &role = RoleManager::Get()->FindRole(roleid);
 	if (!role)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid role id '{}'", roleid);
 		return 0;
 	}
 
 	guild->SetRoleHoist(role, params[3] != 0);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2124,7 +2124,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildRoleMentionable)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -2132,13 +2132,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetGuildRoleMentionable)
 	Role_t const &role = RoleManager::Get()->FindRole(roleid);
 	if (!role)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid role id '{}'", roleid);
 		return 0;
 	}
 
 	guild->SetRoleMentionable(role, params[3] != 0);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2152,14 +2152,14 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateGuildRole)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
 	auto name = amx_GetCppString(amx, params[2]);
 	if (name.length() < 2 || name.length() > 100)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"name must be between 2 and 100 characters in length");
 		return 0;
 	}
@@ -2173,13 +2173,13 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateGuildRole)
 		amx, cb_name.c_str(), cb_format.c_str(), params, 5, cb_error);
 	if (cb_error && cb_error.get() != pawn_cb::Error::Type::EMPTY_NAME)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "could not prepare callback");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "could not prepare callback");
 		return 0;
 	}
 
 	GuildManager::Get()->CreateGuildRole(guild, name, std::move(cb));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2199,7 +2199,7 @@ AMX_DECLARE_NATIVE(Native::DCC_DeleteGuildRole)
 	Guild_t const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -2207,13 +2207,13 @@ AMX_DECLARE_NATIVE(Native::DCC_DeleteGuildRole)
 	Role_t const &role = RoleManager::Get()->FindRole(roleid);
 	if (!role)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid role id '{}'", roleid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid role id '{}'", roleid);
 		return 0;
 	}
 
 	guild->DeleteRole(role);
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2233,7 +2233,7 @@ AMX_DECLARE_NATIVE(Native::DCC_TriggerBotTypingIndicator)
 	auto const &channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
@@ -2250,7 +2250,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetBotNickname)
 	auto const &guild = GuildManager::Get()->FindGuild(guildid);
 	if (!guild)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid guild id '{}'", guildid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid guild id '{}'", guildid);
 		return 0;
 	}
 
@@ -2263,7 +2263,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetBotNickname)
 			|| nickname.front() == '@' || nickname.front() == '#' || nickname.front() == ':'
 			|| nickname.find("```") == 0)
 		{
-			Logger::Get()->LogNative(LogLevel::ERROR, "invalid nickname '{:s}'", nickname);
+			Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid nickname '{:s}'", nickname);
 			return 0;
 		}
 	}
@@ -2282,7 +2282,7 @@ AMX_DECLARE_NATIVE(Native::DCC_CreatePrivateChannel)
 	auto const &user = UserManager::Get()->FindUser(userid);
 	if (!user)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid user id '{}'", userid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid user id '{}'", userid);
 		return 0;
 	}
 
@@ -2295,13 +2295,13 @@ AMX_DECLARE_NATIVE(Native::DCC_CreatePrivateChannel)
 		amx, cb_name.c_str(), cb_format.c_str(), params, 4, cb_error);
 	if (cb_error && cb_error.get() != pawn_cb::Error::Type::EMPTY_NAME)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "could not prepare callback");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "could not prepare callback");
 		return 0;
 	}
 
 	ThisBot::Get()->CreatePrivateChannel(user, std::move(cb));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2320,7 +2320,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetBotPresenceStatus)
 	bool ret_val = ThisBot::Get()->SetPresenceStatus(
 		static_cast<ThisBot::PresenceStatus>(params[1]));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -2331,7 +2331,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetBotActivity)
 
 	ThisBot::Get()->SetActivity(amx_GetCppString(amx, params[1]));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2370,12 +2370,12 @@ AMX_DECLARE_NATIVE(Native::DCC_EscapeMarkdown)
 
 	if (amx_SetCppString(amx, params[2], dest, params[3]) != AMX_ERR_NONE)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "couldn't set destination string");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "couldn't set destination string");
 		return -1;
 	}
 
 	auto ret_val = static_cast<cell>(dest.length());
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -2397,7 +2397,7 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateEmbed)
 	EmbedId_t id = EmbedManager::Get()->AddEmbed(title, description, url, timestamp, color, footer_text, footer_icon_url, thumbnail_url, image_url);
 	if (!id)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "failed to create embed");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "failed to create embed");
 		return 0;
 	}
 	return id;
@@ -2411,12 +2411,12 @@ AMX_DECLARE_NATIVE(Native::DCC_DeleteEmbed)
 	Embed_t const& embed = EmbedManager::Get()->FindEmbed(embedid);
 	if (!embed)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid embed id '{}'", embedid);
 		return 0;
 	}
 
 	EmbedManager::Get()->DeleteEmbed(embedid);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2430,7 +2430,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SendChannelEmbedMessage)
 	Channel_t const& channel = ChannelManager::Get()->FindChannel(channelid);
 	if (!channel)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel id '{}'", channelid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel id '{}'", channelid);
 		return 0;
 	}
 
@@ -2438,14 +2438,14 @@ AMX_DECLARE_NATIVE(Native::DCC_SendChannelEmbedMessage)
 	Embed_t const& embed = EmbedManager::Get()->FindEmbed(embedid);
 	if (!embed)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid embed id '{}'", embedid);
 		return 0;
 	}
 
 	auto message = amx_GetCppString(amx, params[3]);
 	if (message.length() > 2000)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"message must be shorter than 2000 characters");
 		return 0;
 	}
@@ -2459,13 +2459,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SendChannelEmbedMessage)
 		amx, cb_name.c_str(), cb_format.c_str(), params, 6, cb_error);
 	if (cb_error && cb_error.get() != pawn_cb::Error::Type::EMPTY_NAME)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "could not prepare callback");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "could not prepare callback");
 		return 0;
 	}
 
 	channel->SendEmbeddedMessage(embed, std::move(message), std::move(cb));
 	EmbedManager::Get()->DeleteEmbed(embedid);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2477,7 +2477,7 @@ AMX_DECLARE_NATIVE(Native::DCC_AddEmbedField)
 	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
 	if (!embed)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid embed id '{}'", embedid);
 		return 0;
 	}
 
@@ -2485,7 +2485,7 @@ AMX_DECLARE_NATIVE(Native::DCC_AddEmbedField)
 	auto const value = amx_GetCppString(amx, params[3]);
 	auto const inline_ = static_cast<bool>(params[4]);
 	embed->AddField(name, value, inline_);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2497,13 +2497,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedTitle)
 	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
 	if (!embed)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid embed id '{}'", embedid);
 		return 0;
 	}
 
 	auto const title = amx_GetCppString(amx, params[2]);
 	embed->SetTitle(title);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2515,13 +2515,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedDescription)
 	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
 	if (!embed)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid embed id '{}'", embedid);
 		return 0;
 	}
 
 	auto const description = amx_GetCppString(amx, params[2]);
 	embed->SetDescription(description);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2533,13 +2533,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedUrl)
 	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
 	if (!embed)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid embed id '{}'", embedid);
 		return 0;
 	}
 
 	auto const url = amx_GetCppString(amx, params[2]);
 	embed->SetUrl(url);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2551,13 +2551,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedTimestamp)
 	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
 	if (!embed)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid embed id '{}'", embedid);
 		return 0;
 	}
 
 	auto const timestamp = amx_GetCppString(amx, params[2]);
 	embed->SetTimestamp(timestamp);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2569,13 +2569,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedColor)
 	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
 	if (!embed)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid embed id '{}'", embedid);
 		return 0;
 	}
 
 	auto const color = static_cast<int>(params[2]);
 	embed->SetColor(color);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2587,7 +2587,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedFooter)
 	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
 	if (!embed)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid embed id '{}'", embedid);
 		return 0;
 	}
 
@@ -2595,7 +2595,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedFooter)
 	auto const icon_url = amx_GetCppString(amx, params[3]);
 	embed->SetFooterText(text);
 	embed->SetFooterIconUrl(icon_url);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2607,13 +2607,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedThumbnail)
 	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
 	if (!embed)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid embed id '{}'", embedid);
 		return 0;
 	}
 
 	auto const url = amx_GetCppString(amx, params[2]);
 	embed->SetThumbnailUrl(url);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2625,13 +2625,13 @@ AMX_DECLARE_NATIVE(Native::DCC_SetEmbedImage)
 	auto& embed = EmbedManager::Get()->FindEmbed(embedid);
 	if (!embed)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid embed id '{}'", embedid);
 		return 0;
 	}
 
 	auto const url = amx_GetCppString(amx, params[2]);
 	embed->SetImageUrl(url);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2643,11 +2643,11 @@ AMX_DECLARE_NATIVE(Native::DCC_DeleteInternalMessage)
 	auto& message = MessageManager::Get()->Find(messageid);
 	if (!message)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", messageid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid message id '{}'", messageid);
 		return 0;
 	}
 	MessageManager::Get()->Delete(messageid);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2661,7 +2661,7 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateEmoji)
 	EmojiId_t id = EmojiManager::Get()->AddEmoji(snowflake, name);
 	if (!id)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "failed to create emoji");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "failed to create emoji");
 		return 0;
 	}
 	return id;
@@ -2675,12 +2675,12 @@ AMX_DECLARE_NATIVE(Native::DCC_DeleteEmoji)
 	const auto& emoji = EmojiManager::Get()->FindEmoji(emojid);
 	if (!emoji)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid emoji id '{}'", emojid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid emoji id '{}'", emojid);
 		return 0;
 	}
 
 	EmojiManager::Get()->DeleteEmoji(emojid);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2694,14 +2694,14 @@ AMX_DECLARE_NATIVE(Native::DCC_GetEmojiName)
 	auto& emoji = EmojiManager::Get()->FindEmoji(emojid);
 	if (!emoji)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid emoji id '{}'", emojid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid emoji id '{}'", emojid);
 		return 0;
 	}
 
 	dest = emoji->GetName();
 	if (amx_SetCppString(amx, params[2], dest, params[3]) != AMX_ERR_NONE)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "couldn't set destination string");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "couldn't set destination string");
 		return -1;
 	}
 
@@ -2716,7 +2716,7 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateReaction)
 	const auto& message = MessageManager::Get()->Find(messageid);
 	if (!message)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", messageid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid message id '{}'", messageid);
 		return 0;
 	}
 
@@ -2724,13 +2724,13 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateReaction)
 	const auto& emoji = EmojiManager::Get()->FindEmoji(emojid);
 	if (!emoji)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid emoji id '{}'", emojid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid emoji id '{}'", emojid);
 		return 0;
 	}
 
 	message->AddReaction(emoji);
 	EmojiManager::Get()->DeleteEmoji(emojid);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2742,13 +2742,13 @@ AMX_DECLARE_NATIVE(Native::DCC_DeleteMessageReaction)
 	const auto& message = MessageManager::Get()->Find(messageid);
 	if (!message)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", messageid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid message id '{}'", messageid);
 		return 0;
 	}
 
 	const auto& emojid = static_cast<EmojiId_t>(params[2]);
 	cell retval = static_cast<cell>(message->DeleteReaction(emojid));
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", retval);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", retval);
 	return retval;
 }
 
@@ -2760,14 +2760,14 @@ AMX_DECLARE_NATIVE(Native::DCC_EditMessage)
 	const auto& message = MessageManager::Get()->Find(messageid);
 	if (!message)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", messageid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid message id '{}'", messageid);
 		return 0;
 	}
 
 	const auto content = amx_GetCppString(amx, params[2]);
 	if (content.length() > 2000)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"message must be shorter than 2000 characters");
 		return 0;
 	}
@@ -2775,7 +2775,7 @@ AMX_DECLARE_NATIVE(Native::DCC_EditMessage)
 	const auto& embedid = static_cast<EmbedId_t>(params[3]);
 	cell retval = static_cast<cell>(message->EditMessage(content, embedid));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", retval);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", retval);
 	return retval;
 }
 
@@ -2788,12 +2788,12 @@ AMX_DECLARE_NATIVE(Native::DCC_SetMessagePersistent)
 	bool persistent = static_cast<bool>(params[2]);
 	if (!message)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid message id '{}'", messageid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid message id '{}'", messageid);
 		return 0;
 	}
 
 	message->SetPresistent(persistent);
-	Logger::Get()->LogNative(LogLevel::INFO, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::INFO, "return value: '1'");
 	return 1;
 }
 
@@ -2806,18 +2806,18 @@ AMX_DECLARE_NATIVE(Native::DCC_CacheChannelMessage)
 
 	if (!channel_snowflake.length() || !message_snowflake.length())
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel/message length '{} {}'", channel_snowflake, message_snowflake);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel/message length '{} {}'", channel_snowflake, message_snowflake);
 		return 0;
 	}
 
 	if (!ChannelManager::Get()->FindChannelById(channel_snowflake))
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid channel snowflake '{}'", channel_snowflake);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid channel snowflake '{}'", channel_snowflake);
 		return 0;
 	}
 	else if(MessageManager::Get()->FindById(message_snowflake))
 	{
-		Logger::Get()->LogNative(LogLevel::INFO, "message is already in cache! '{}'", message_snowflake);
+		Logger::Get()->LogNative(samplog_LogLevel::INFO, "message is already in cache! '{}'", message_snowflake);
 		return 0;
 	}
 
@@ -2830,12 +2830,12 @@ AMX_DECLARE_NATIVE(Native::DCC_CacheChannelMessage)
 		amx, cb_name.c_str(), cb_format.c_str(), params, 5, cb_error);
 	if (cb_error && cb_error.get() != pawn_cb::Error::Type::EMPTY_NAME)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "could not prepare callback");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "could not prepare callback");
 		return 0;
 	}
 
 	MessageManager::Get()->CreateFromSnowflake(channel_snowflake, message_snowflake, std::move(cb));
-	Logger::Get()->LogNative(LogLevel::INFO, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::INFO, "return value: '1'");
 	return 1;
 }
 
@@ -2851,7 +2851,7 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateCommand)
 	//const auto& permissions_size = static_cast<size_t>(params[6]);
 
 	if (!GuildManager::Get()->FindGuild(guild) && guild != INVALID_GUILD_ID) {
-		Logger::Get()->LogNative(LogLevel::ERROR, "passed invalid guild id '{}'", guild);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "passed invalid guild id '{}'", guild);
 		return 0;
 	}
 
@@ -2868,7 +2868,7 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateCommand)
 			cell* array = nullptr;
 			if (amx_GetAddr(amx, params[4], &array) != AMX_ERR_NONE)
 			{
-				Logger::Get()->LogNative(LogLevel::INFO, "unable to find the array for options");
+				Logger::Get()->LogNative(samplog_LogLevel::INFO, "unable to find the array for options");
 				return 0;
 			}
 
@@ -2879,7 +2879,7 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateCommand)
 		}
 		else
 		{
-			Logger::Get()->LogNative(LogLevel::INFO, "command '{:s}' created with NO options!", name);
+			Logger::Get()->LogNative(samplog_LogLevel::INFO, "command '{:s}' created with NO options!", name);
 		}
 		*/
 
@@ -2889,7 +2889,7 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateCommand)
 			
 			if (amx_GetAddr(amx, params[4], &array) != AMX_ERR_NONE)
 			{
-				Logger::Get()->LogNative(LogLevel::INFO, "unable to find the array for permissions");
+				Logger::Get()->LogNative(samplog_LogLevel::INFO, "unable to find the array for permissions");
 				return 0;
 			}
 			
@@ -2906,7 +2906,7 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateCommand)
 				
 				if (string.length())
 				{
-					Logger::Get()->Log(LogLevel::ERROR, "role {} {}", string, i);
+					Logger::Get()->Log(samplog_LogLevel::ERROR, "role {} {}", string, i);
 					auto const& role = RoleManager::Get()->FindRoleById(string);
 					if (role) {
 						command->SetPermission(role->GetPawnId(), true);
@@ -2916,7 +2916,7 @@ AMX_DECLARE_NATIVE(Native::DCC_CreateCommand)
 		}
 		else
 		{
-			Logger::Get()->LogNative(LogLevel::INFO, "command '{:s}' created with NO permissions!", name);
+			Logger::Get()->LogNative(samplog_LogLevel::INFO, "command '{:s}' created with NO permissions!", name);
 		}*/
 		CommandOption_t option = std::unique_ptr<CommandOption>(new CommandOption());
 		option->SetType(COMMAND_OPTION_TYPE::OPTION_STRING);
@@ -2945,20 +2945,20 @@ AMX_DECLARE_NATIVE(Native::DCC_GetInteractionMentionCount)
 	CommandInteraction_t const& interaction = CommandInteractionManager::Get()->FindCommandInteraction(id);
 	if (!interaction)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid interaction id '{}'", id);
 		return 0;
 	}
 
 	cell* dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(interaction->GetMentions().size());
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -2971,7 +2971,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetInteractionMention)
 	CommandInteraction_t const& interaction = CommandInteractionManager::Get()->FindCommandInteraction(id);
 	if (!interaction)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid interaction id '{}'", id);
 		return 0;
 	}
 
@@ -2979,7 +2979,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetInteractionMention)
 	auto const& mentions = interaction->GetMentions();
 	if (offset >= mentions.size())
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"invalid offset '{}', max size is '{}'",
 			offset, mentions.size());
 		return 0;
@@ -2988,13 +2988,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetInteractionMention)
 	cell* dest = nullptr;
 	if (amx_GetAddr(amx, params[3], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(mentions.at(offset));
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -3007,14 +3007,14 @@ AMX_DECLARE_NATIVE(Native::DCC_GetInteractionContent)
 	CommandInteraction_t const& interaction = CommandInteractionManager::Get()->FindCommandInteraction(id);
 	if (!interaction)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid interaction id '{}'", id);
 		return 0;
 	}
 
 	cell ret_val = amx_SetCppString(
 		amx, params[2], interaction->GetOptions().at(0)->m_Value, params[3]) == AMX_ERR_NONE;
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '{}'", ret_val);
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '{}'", ret_val);
 	return ret_val;
 }
 
@@ -3027,7 +3027,7 @@ AMX_DECLARE_NATIVE(Native::DCC_GetInteractionChannel)
 	CommandInteraction_t const& interaction = CommandInteractionManager::Get()->FindCommandInteraction(id);
 	if (!interaction)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid interaction id '{}'", id);
 		return 0;
 	}
 
@@ -3035,13 +3035,13 @@ AMX_DECLARE_NATIVE(Native::DCC_GetInteractionChannel)
 	cell* dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(interaction->GetChannelID());
 
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -3054,19 +3054,19 @@ AMX_DECLARE_NATIVE(Native::DCC_GetInteractionGuild)
 	CommandInteraction_t const& interaction = CommandInteractionManager::Get()->FindCommandInteraction(id);
 	if (!interaction)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid interaction id '{}'", id);
 		return 0;
 	}
 
 	cell* dest = nullptr;
 	if (amx_GetAddr(amx, params[2], &dest) != AMX_ERR_NONE || dest == nullptr)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid reference");
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid reference");
 		return 0;
 	}
 
 	*dest = static_cast<cell>(interaction->GetGuildID());
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -3079,7 +3079,7 @@ AMX_DECLARE_NATIVE(Native::DCC_SendInteractionEmbed)
 	CommandInteraction_t const& interaction = CommandInteractionManager::Get()->FindCommandInteraction(id);
 	if (!interaction)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid interaction id '{}'", id);
 		return 0;
 	}
 
@@ -3087,21 +3087,21 @@ AMX_DECLARE_NATIVE(Native::DCC_SendInteractionEmbed)
 	Embed_t const& embed = EmbedManager::Get()->FindEmbed(embedid);
 	if (!embed)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid embed id '{}'", embedid);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid embed id '{}'", embedid);
 		return 0;
 	}
 
 	auto message = amx_GetCppString(amx, params[3]);
 	if (message.length() > 2000)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"message must be shorter than 2000 characters");
 		return 0;
 	}
 
 	interaction->SendEmbed(embedid, message);
 	EmbedManager::Get()->DeleteEmbed(embedid);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -3114,20 +3114,20 @@ AMX_DECLARE_NATIVE(Native::DCC_SendInteractionMessage)
 	CommandInteraction_t const& interaction = CommandInteractionManager::Get()->FindCommandInteraction(id);
 	if (!interaction)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid interaction id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid interaction id '{}'", id);
 		return 0;
 	}
 
 	auto message = amx_GetCppString(amx, params[2]);
 	if (message.length() > 2000)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR,
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR,
 			"message must be shorter than 2000 characters");
 		return 0;
 	}
 
 	interaction->SendInteractionMessage(message);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 
@@ -3140,13 +3140,13 @@ AMX_DECLARE_NATIVE(Native::DCC_DeleteCommand)
 	Command_t const& command = CommandManager::Get()->FindCommand(id);
 	if (!command)
 	{
-		Logger::Get()->LogNative(LogLevel::ERROR, "invalid command id '{}'", id);
+		Logger::Get()->LogNative(samplog_LogLevel::ERROR, "invalid command id '{}'", id);
 		return 0;
 	}
 
 	command->DeleteFromDiscord();
 	CommandManager::Get()->DeleteCommand(id);
-	Logger::Get()->LogNative(LogLevel::DEBUG, "return value: '1'");
+	Logger::Get()->LogNative(samplog_LogLevel::DEBUG, "return value: '1'");
 	return 1;
 }
 

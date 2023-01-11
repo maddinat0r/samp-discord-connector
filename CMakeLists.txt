@@ -109,4 +109,5 @@ else()
 endif()
 
 add_subdirectory(libs/log-core)
+add_subdirectory(libs/omp-sdk)
 add_subdirectory(src)
