@@ -23,7 +23,7 @@ Message::Message(MessageId_t pawn_id, json const &data) : m_PawnId(pawn_id)
 
 	if (!_valid)
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"can't construct message object: invalid JSON: \"{}\"", data.dump());
 		return;
 	}
@@ -123,7 +123,7 @@ bool Message::DeleteReaction(EmojiId_t const emojiid)
 
 		if (!emoji)
 		{
-			Logger::Get()->Log(LogLevel::ERROR, "invalid emoji id '{}'", emojiid);
+			Logger::Get()->Log(samplog_LogLevel::ERROR, "invalid emoji id '{}'", emojiid);
 			return false;
 		}
 
@@ -164,7 +164,7 @@ bool Message::EditMessage(const std::string& msg, const EmbedId_t embedid)
 		const auto& embed = EmbedManager::Get()->FindEmbed(embedid);
 		if (!embed)
 		{
-			Logger::Get()->Log(LogLevel::ERROR, "invalid embed id {}", embedid);
+			Logger::Get()->Log(samplog_LogLevel::ERROR, "invalid embed id {}", embedid);
 			return false;
 		}
 
@@ -177,15 +177,30 @@ bool Message::EditMessage(const std::string& msg, const EmbedId_t embedid)
 			{ "color", embed->GetColor() },
 			{ "footer", {
 				{"text", embed->GetFooterText()},
-				{"icon_url", embed->GetFooterIconUrl()},
+				//{"icon_url", embed->GetFooterIconUrl()},
 			}},
 			{"thumbnail", {
-				{"url", embed->GetThumbnailUrl()}
+				//{"url", embed->GetThumbnailUrl()}
 			}},
 			{"image", {
-				{"url", embed->GetImageUrl()}
+				//{"url", embed->GetImageUrl()}
 			}}
 		};
+
+		if (!embed->GetThumbnailUrl().empty())
+		{
+			data["embed"]["thumbnail"] += {"url", embed->GetThumbnailUrl()};
+		}
+
+		if (!embed->GetFooterIconUrl().empty())
+		{
+			data["embed"]["footer"] += {"icon_url", embed->GetFooterIconUrl()};
+		}
+
+		if (!embed->GetImageUrl().empty())
+		{
+			data["embed"]["image"] += {"url", embed->GetImageUrl()};
+		}
 
 		if (embed->GetFields().size())
 		{
@@ -205,7 +220,7 @@ bool Message::EditMessage(const std::string& msg, const EmbedId_t embedid)
 
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
-		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 
 	Network::Get()->Http().Patch(fmt::format("/channels/{:s}/messages/{:s}", channel->GetId(), GetId()), json_str);
 	return true;
@@ -363,12 +378,12 @@ MessageId_t MessageManager::Create(json const &data)
 
 	if (!m_Messages.emplace(id, Message_t(new Message(id, data))).first->second)
 	{
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"can't create message: duplicate key '{}'", id);
 		return INVALID_USER_ID;
 	}
 
-	Logger::Get()->Log(LogLevel::DEBUG, "created message with id '{}'", id);
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "created message with id '{}'", id);
 	return id;
 }
 
@@ -379,7 +394,7 @@ bool MessageManager::Delete(MessageId_t id)
 		return false;
 
 	m_Messages.erase(it);
-	Logger::Get()->Log(LogLevel::DEBUG, "deleted message with id '{}'", id);
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "deleted message with id '{}'", id);
 	return true;
 }
 
@@ -388,7 +403,7 @@ void MessageManager::CreateFromSnowflake(Snowflake_t channel, Snowflake_t messag
 	Network::Get()->Http().Get(fmt::format("/channels/{:s}/messages/{:s}", channel, message),
 		[this, callback](Http::Response r)
 		{
-			Logger::Get()->Log(LogLevel::DEBUG,
+			Logger::Get()->Log(samplog_LogLevel::DEBUG,
 				"message fetch response: status {}; body: {}; add: {}",
 				r.status, r.body, r.additional_data);
 			if (r.status / 100 == 2) // success

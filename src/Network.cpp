@@ -4,7 +4,7 @@
 
 void Network::Initialize(std::string const &token)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "Network::Initialize");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "Network::Initialize");
 
 	m_Http = std::unique_ptr<::Http>(new ::Http(token));
 
@@ -13,7 +13,7 @@ void Network::Initialize(std::string const &token)
 	{
 		if (res.status != 200)
 		{
-			Logger::Get()->Log(LogLevel::ERROR, "Can't retrieve Discord gateway URL: {} ({})",
+			Logger::Get()->Log(samplog_LogLevel::ERROR, "Can't retrieve Discord gateway URL: {} ({})",
 				res.reason, res.status);
 			return;
 		}
@@ -32,7 +32,7 @@ void Network::Initialize(std::string const &token)
 
 Network::~Network()
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "Network::~Network");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "Network::~Network");
 }
 
 ::Http &Network::Http()

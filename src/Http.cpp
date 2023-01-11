@@ -104,7 +104,7 @@ void Http::NetworkThreadFunc()
 
 				// no, delete rate-limit and go on
 				bucket_ratelimit.erase(pr_it);
-				Logger::Get()->Log(LogLevel::DEBUG, "rate-limit on bucket '{}' lifted",
+				Logger::Get()->Log(samplog_LogLevel::DEBUG, "rate-limit on bucket '{}' lifted",
 					entry->Request->target().to_string());
 			}
 
@@ -119,7 +119,7 @@ void Http::NetworkThreadFunc()
 				beast::http::write(*m_SslStream, *entry->Request, error_code);
 				if (error_code)
 				{
-					Logger::Get()->Log(LogLevel::ERROR, "Error while sending HTTP {} request to '{}': {}",
+					Logger::Get()->Log(samplog_LogLevel::ERROR, "Error while sending HTTP {} request to '{}': {}",
 						entry->Request->method_string().to_string(),
 						entry->Request->target().to_string(),
 						error_code.message());
@@ -131,7 +131,7 @@ void Http::NetworkThreadFunc()
 					beast::http::read(*m_SslStream, sb, response, error_code);
 					if (error_code)
 					{
-						Logger::Get()->Log(LogLevel::ERROR, "Error while retrieving HTTP {} response from '{}': {}",
+						Logger::Get()->Log(samplog_LogLevel::ERROR, "Error while retrieving HTTP {} response from '{}': {}",
 							entry->Request->method_string().to_string(),
 							entry->Request->target().to_string(),
 							error_code.message());
@@ -140,7 +140,7 @@ void Http::NetworkThreadFunc()
 					}
 					else if (response.result_int() == 429 /* rate limited */)
 					{
-						Logger::Get()->Log(LogLevel::ERROR, "Got a 429 from path '{}' (bucket '{}') this should not happen.",
+						Logger::Get()->Log(samplog_LogLevel::ERROR, "Got a 429 from path '{}' (bucket '{}') this should not happen.",
 							entry->Request->target().to_string(), GetBucketIdentifierFromURL(entry->Request->target().to_string()));
 					}
 				}
@@ -150,7 +150,7 @@ void Http::NetworkThreadFunc()
 					if (retry_counter++ >= MaxRetries || !ReconnectRetry())
 					{
 						// we failed to reconnect, discard this request
-						Logger::Get()->Log(LogLevel::WARNING, "Failed to send request, discarding");
+						Logger::Get()->Log(samplog_LogLevel::WARNING, "Failed to send request, discarding");
 						skip_entry = true;
 						break; // break out of do-while loop
 					}
@@ -167,7 +167,7 @@ void Http::NetworkThreadFunc()
 				{
 					if (bucket_urls.find(bucket_identifier->value().to_string()) == bucket_urls.end())
 					{
-						//Logger::Get()->Log(LogLevel::ERROR, "{}", entry->Request->target().to_string());
+						//Logger::Get()->Log(samplog_LogLevel::ERROR, "{}", entry->Request->target().to_string());
 						AddBucketIdentifierFromURL(entry->Request->target().to_string(), bucket_identifier->value().to_string());
 					}
 				}
@@ -180,7 +180,7 @@ void Http::NetworkThreadFunc()
 					auto lit = bucket_ratelimit.find(bucket);
 					if (lit != bucket_ratelimit.end())
 					{
-						Logger::Get()->Log(LogLevel::ERROR,
+						Logger::Get()->Log(samplog_LogLevel::ERROR,
 							"Error while processing rate-limit: already rate-limited bucket '{}'",
 							bucket);
 
@@ -207,7 +207,7 @@ void Http::NetworkThreadFunc()
 						}
 
 						std::chrono::milliseconds timepoint_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-						Logger::Get()->Log(LogLevel::DEBUG, "rate-limiting bucket {} until {} (current time: {})",
+						Logger::Get()->Log(samplog_LogLevel::DEBUG, "rate-limiting bucket {} until {} (current time: {})",
 							bucket,
 							it_r->value().to_string(),
 							timepoint_now.count());
@@ -238,7 +238,7 @@ void Http::NetworkThreadFunc()
 
 bool Http::Connect()
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "Http::Connect");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "Http::Connect");
 
 	m_SslStream.reset(new SslStream_t(m_IoService, m_SslContext));
 
@@ -250,7 +250,7 @@ bool Http::Connect()
 		beast::error_code ec{ 
 			static_cast<int>(::ERR_get_error()),
 			asio::error::get_ssl_category() };
-		Logger::Get()->Log(LogLevel::ERROR,
+		Logger::Get()->Log(samplog_LogLevel::ERROR,
 			"Can't set SNI hostname for Discord API URL: {} ({})",
 			ec.message(), ec.value());
 		return false;
@@ -262,7 +262,7 @@ bool Http::Connect()
 	auto target = r.resolve(API_HOST, "443", error);
 	if (error)
 	{
-		Logger::Get()->Log(LogLevel::ERROR, "Can't resolve Discord API URL: {} ({})",
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "Can't resolve Discord API URL: {} ({})",
 			error.message(), error.value());
 		return false;
 	}
@@ -271,7 +271,7 @@ bool Http::Connect()
 	beast::get_lowest_layer(*m_SslStream).connect(target, error);
 	if (error)
 	{
-		Logger::Get()->Log(LogLevel::ERROR, "Can't connect to Discord API: {} ({})",
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "Can't connect to Discord API: {} ({})",
 			error.message(), error.value());
 		return false;
 	}
@@ -280,7 +280,7 @@ bool Http::Connect()
 	m_SslStream->handshake(asio::ssl::stream_base::client, error);
 	if (error)
 	{
-		Logger::Get()->Log(LogLevel::ERROR, "Can't establish secured connection to Discord API: {} ({})",
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "Can't establish secured connection to Discord API: {} ({})",
 			error.message(), error.value());
 		return false;
 	}
@@ -290,48 +290,48 @@ bool Http::Connect()
 
 void Http::Disconnect()
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "Http::Disconnect");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "Http::Disconnect");
 
 	boost::system::error_code error;
 	m_SslStream->shutdown(error);
 	if (error && error != boost::asio::error::eof && error != boost::asio::ssl::error::stream_truncated)
 	{
-		Logger::Get()->Log(LogLevel::WARNING, "Error while shutting down SSL on HTTP connection: {} ({})",
+		Logger::Get()->Log(samplog_LogLevel::WARNING, "Error while shutting down SSL on HTTP connection: {} ({})",
 			error.message(), error.value());
 	}
 }
 
 bool Http::ReconnectRetry()
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "Http::ReconnectRetry");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "Http::ReconnectRetry");
 
 	unsigned int reconnect_counter = 0;
 	do
 	{
-		Logger::Get()->Log(LogLevel::INFO, "trying reconnect #{}...", reconnect_counter + 1);
+		Logger::Get()->Log(samplog_LogLevel::INFO, "trying reconnect #{}...", reconnect_counter + 1);
 
 		Disconnect();
 		if (Connect())
 		{
-			Logger::Get()->Log(LogLevel::INFO, "reconnect succeeded, resending request");
+			Logger::Get()->Log(samplog_LogLevel::INFO, "reconnect succeeded, resending request");
 			return true;
 		}
 		else
 		{
 			unsigned int seconds_to_wait = static_cast<unsigned int>(std::pow(2U, reconnect_counter));
-			Logger::Get()->Log(LogLevel::WARNING, "reconnect failed, waiting {} seconds...", seconds_to_wait);
+			Logger::Get()->Log(samplog_LogLevel::WARNING, "reconnect failed, waiting {} seconds...", seconds_to_wait);
 			std::this_thread::sleep_for(std::chrono::seconds(seconds_to_wait));
 		}
 	} while (++reconnect_counter < 3);
 
-	Logger::Get()->Log(LogLevel::ERROR, "Could not reconnect to Discord");
+	Logger::Get()->Log(samplog_LogLevel::ERROR, "Could not reconnect to Discord");
 	return false;
 }
 
 Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 	std::string const &url, std::string const &content, bool use_api)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "Http::PrepareRequest");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "Http::PrepareRequest");
 
 	auto req = std::make_shared<Request_t>();
 	req->method(method);
@@ -354,15 +354,15 @@ Http::SharedRequest_t Http::PrepareRequest(beast::http::verb const method,
 void Http::SendRequest(beast::http::verb const method, std::string const &url,
 	std::string const &content, ResponseCallback_t &&callback, bool use_api)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "Http::SendRequest");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "Http::SendRequest");
 
 	SharedRequest_t req = PrepareRequest(method, url, content, use_api);
 
-	if (callback == nullptr && Logger::Get()->IsLogLevel(LogLevel::DEBUG))
+	if (callback == nullptr && Logger::Get()->IsLogLevel(samplog_LogLevel::DEBUG))
 	{
 		callback = CreateResponseCallback([=](Response r)
 		{
-			Logger::Get()->Log(LogLevel::DEBUG, "{:s} {:s} [{:s}] --> {:d} {:s}: {:s}",
+			Logger::Get()->Log(samplog_LogLevel::DEBUG, "{:s} {:s} [{:s}] --> {:d} {:s}: {:s}",
 				beast::http::to_string(method).to_string(), url, content, r.status, r.reason, r.body);
 		});
 	}
@@ -385,7 +385,7 @@ Http::ResponseCallback_t Http::CreateResponseCallback(ResponseCb_t &&callback)
 
 void Http::Get(std::string const &url, ResponseCb_t &&callback, bool use_api)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "Http::Get");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "Http::Get");
 
 	SendRequest(beast::http::verb::get, url, "",
 		CreateResponseCallback(std::move(callback)), use_api);
@@ -394,7 +394,7 @@ void Http::Get(std::string const &url, ResponseCb_t &&callback, bool use_api)
 void Http::Post(std::string const &url, std::string const &content,
 	ResponseCb_t &&callback /*= nullptr*/)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "Http::Post");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "Http::Post");
 
 	SendRequest(beast::http::verb::post, url, content,
 		CreateResponseCallback(std::move(callback)));
@@ -402,21 +402,21 @@ void Http::Post(std::string const &url, std::string const &content,
 
 void Http::Delete(std::string const &url)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "Http::Delete");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "Http::Delete");
 
 	SendRequest(beast::http::verb::delete_, url, "", nullptr);
 }
 
 void Http::Put(std::string const &url, std::string const& content)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "Http::Put");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "Http::Put");
 
 	SendRequest(beast::http::verb::put, url, content, nullptr);
 }
 
 void Http::Patch(std::string const &url, std::string const &content)
 {
-	Logger::Get()->Log(LogLevel::DEBUG, "Http::Patch");
+	Logger::Get()->Log(samplog_LogLevel::DEBUG, "Http::Patch");
 
 	SendRequest(beast::http::verb::patch, url, content, nullptr);
 }

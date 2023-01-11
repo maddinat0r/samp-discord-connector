@@ -30,7 +30,7 @@ void ThisBot::SetNickname(Guild_t const &guild, std::string const &nickname)
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
 	{
-		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 		return;
 	}
 
@@ -47,14 +47,14 @@ bool ThisBot::CreatePrivateChannel(User_t const &user, pawn_cb::Callback_t &&cal
 	std::string json_str;
 	if (!utils::TryDumpJson(data, json_str))
 	{
-		Logger::Get()->Log(LogLevel::ERROR, "can't serialize JSON: {}", json_str);
+		Logger::Get()->Log(samplog_LogLevel::ERROR, "can't serialize JSON: {}", json_str);
 		return false;
 	}
 
 	Network::Get()->Http().Post("/users/@me/channels", json_str,
 		[this, callback](Http::Response r)
 	{
-		Logger::Get()->Log(LogLevel::DEBUG,
+		Logger::Get()->Log(samplog_LogLevel::DEBUG,
 			"DM channel create response: status {}; body: {}; add: {}",
 			r.status, r.body, r.additional_data);
 		if (r.status / 100 == 2) // success

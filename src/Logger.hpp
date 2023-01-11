@@ -7,7 +7,7 @@
 #include <fmt/format.h>
 
 using samplog::PluginLogger_t;
-using samplog::LogLevel;
+using samplog::samplog_LogLevel;
 using samplog::AmxFuncCallInfo;
 
 
@@ -61,33 +61,33 @@ private:
 	~Logger() = default;
 
 public:
-	inline bool IsLogLevel(LogLevel level)
+	inline bool IsLogLevel(samplog_LogLevel level)
 	{
 		return m_Logger.IsLogLevel(level);
 	}
 
 	template<typename... Args>
-	inline void Log(LogLevel level, const char *msg)
+	inline void Log(samplog_LogLevel level, const char *msg)
 	{
 		m_Logger.Log(level, msg);
 	}
 
 	template<typename... Args>
-	inline void Log(LogLevel level, const char *format, Args &&...args)
+	inline void Log(samplog_LogLevel level, const char *format, Args &&...args)
 	{
 		auto str = fmt::format(format, std::forward<Args>(args)...);
 		m_Logger.Log(level, str.c_str());
 	}
 
 	template<typename... Args>
-	inline void Log(LogLevel level, std::vector<AmxFuncCallInfo> const &callinfo,
+	inline void Log(samplog_LogLevel level, std::vector<AmxFuncCallInfo> const &callinfo,
 		const char *msg)
 	{
 		m_Logger.Log(level, msg, callinfo);
 	}
 
 	template<typename... Args>
-	inline void Log(LogLevel level, std::vector<AmxFuncCallInfo> const &callinfo,
+	inline void Log(samplog_LogLevel level, std::vector<AmxFuncCallInfo> const &callinfo,
 		const char *format, Args &&...args)
 	{
 		auto str = fmt::format(format, std::forward<Args>(args)...);
@@ -96,7 +96,7 @@ public:
 
 	// should only be called in native functions
 	template<typename... Args>
-	void LogNative(LogLevel level, const char *fmt, Args &&...args)
+	void LogNative(samplog_LogLevel level, const char *fmt, Args &&...args)
 	{
 		if (!IsLogLevel(level))
 			return;
@@ -115,9 +115,9 @@ public:
 	}
 
 	template<typename T>
-	inline void LogNative(const Error<T> &error)
+	inline void LogNative(const CallbackError<T> &error)
 	{
-		LogNative(LogLevel::ERROR, "{} error: {}", error.module(), error.msg());
+		LogNative(samplog_LogLevel::ERROR, "{} error: {}", error.module(), error.msg());
 	}
 
 private:

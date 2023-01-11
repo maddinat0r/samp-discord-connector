@@ -14,7 +14,8 @@
 #include <samplog/samplog.hpp>
 #include <thread>
 #include <cstdlib>
-
+#include <sdk.hpp>
+#include <Server/Components/Pawn/pawn.hpp>
 
 extern void	*pAMXFunctions;
 logprintf_t logprintf;
@@ -91,11 +92,11 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 
 		if (WaitForInitialization())
 		{
-			logprintf(" >> plugin.dc-connector: " PLUGIN_VERSION " successfully loaded.");
+			logprintf(" >> discord-connector: " PLUGIN_VERSION " successfully loaded.");
 		}
 		else
 		{
-			logprintf(" >> plugin.dc-connector: timeout while initializing data.");
+			logprintf(" >> discord-connector: timeout while initializing data.");
 
 			std::thread init_thread([bot_token]()
 			{
@@ -116,7 +117,7 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 	}
 	else
 	{
-		logprintf(" >> plugin.dc-connector: bot token not specified in environment variable or server config.");
+		logprintf(" >> discord-connector: bot token not specified in environment variable or server config.");
 		ret_val = false;
 	}
 	return ret_val;
@@ -124,14 +125,14 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 
 PLUGIN_EXPORT void PLUGIN_CALL Unload()
 {
-	logprintf("plugin.dc-connector: Unloading plugin...");
+	logprintf("discord-connector: Unloading plugin...");
 
 	DestroyEverything();
 	Logger::Singleton::Destroy();
 
 	samplog::Api::Destroy();
 
-	logprintf("plugin.dc-connector: Plugin unloaded.");
+	logprintf("discord-connector: Plugin unloaded.");
 }
 
 PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
@@ -290,4 +291,174 @@ PLUGIN_EXPORT int PLUGIN_CALL AmxUnload(AMX *amx)
 	samplog::Api::Get()->EraseAmx(amx);
 	pawn_cb::RemoveAmx(amx);
 	return AMX_ERR_NONE;
+}
+
+class DiscordComponent;
+
+DiscordComponent* discordComponent = nullptr;
+
+class DiscordComponent : public IComponent, public PawnEventHandler, public CoreEventHandler
+{
+	PROVIDE_UID(0x493DFE4F6EA1841F);
+	IPawnComponent* pawnComponent = nullptr;
+	static ICore* core;
+	
+	static void logprintfwrapped(char const* format, ...)
+	{
+		va_list params;
+		va_start(params, format);
+		core->vlogLn(LogLevel::Message, format, params);
+		va_end(params);
+	}
+#
+	StringView componentName() const override
+	{
+		return "discord-connector";
+	}
+
+	SemanticVersion componentVersion() const override
+	{
+		return SemanticVersion(0, 0, 0, 0);
+	}
+
+	void onLoad(ICore* c) override
+	{
+		core = c;
+		logprintf = DiscordComponent::logprintfwrapped;
+
+		bool ret_val = true;
+		auto bot_token = GetEnvironmentVar("SAMP_DISCORD_BOT_TOKEN");
+
+		if (bot_token.empty()) {
+			auto token = core->getConfig().getString("discord.bot_token");
+			if (!token.empty()) {
+				bot_token = token.data();
+			}
+		}
+			
+
+		if (!bot_token.empty())
+		{
+			InitializeEverything(bot_token.data());
+
+			if (WaitForInitialization())
+			{
+				logprintf(" >> discord-connector: " PLUGIN_VERSION " successfully loaded.");
+			}
+			else
+			{
+				logprintf(" >> discord-connector: timeout while initializing data.");
+
+				std::thread init_thread([bot_token]()
+					{
+						while (true)
+						{
+							std::this_thread::sleep_for(std::chrono::minutes(1));
+
+							DestroyEverything();
+							InitializeEverything(bot_token.data());
+							if (WaitForInitialization())
+								break;
+						}
+					});
+				init_thread.detach();
+
+				logprintf("                         component will proceed to retry connecting in the background.");
+			}
+		}
+		else
+		{
+			logprintf(" >> discord-connector: bot token not specified in environment variable or server config.");
+			ret_val = false;
+		}
+	}
+
+	void onInit(IComponentList* components) override
+	{
+		pawnComponent = components->queryComponent<IPawnComponent>();
+		core->getEventDispatcher().addEventHandler(this);
+		if (pawnComponent)
+		{
+			pAMXFunctions = (void*)&pawnComponent->getAmxFunctions();
+			pawnComponent->getEventDispatcher().addEventHandler(this, EventPriority_FairlyHigh);
+		}
+		else
+		{
+			core->logLn(LogLevel::Error, "discord-connector: Pawn component not loaded.");
+		}
+	}
+
+	void onAmxLoad(IPawnScript& script) override
+	{
+		amx_Register(script.GetAMX(), native_list, -1);
+		samplog::Api::Get()->RegisterAmx(script.GetAMX());
+		pawn_cb::AddAmx(script.GetAMX());
+	}
+
+	void onAmxUnload(IPawnScript& script) override
+	{
+		samplog::Api::Get()->EraseAmx(script.GetAMX());
+		pawn_cb::RemoveAmx(script.GetAMX());
+	}
+
+	void onFree(IComponent* component) override
+	{
+		if (component == pawnComponent)
+		{
+			pawnComponent = nullptr;
+			pAMXFunctions = nullptr;
+		}
+	}
+
+	void free() override
+	{
+		if (pawnComponent)
+		{
+			pawnComponent->getEventDispatcher().removeEventHandler(this);
+		}
+		core->getEventDispatcher().removeEventHandler(this);
+
+		logprintf("discord-connector: Unloading componment...");
+
+		DestroyEverything();
+		Logger::Singleton::Destroy();
+
+		samplog::Api::Destroy();
+
+		logprintf("discord-connector: Component unloaded.");
+		delete this;
+	}
+
+	void reset() override
+	{
+		// Nothing to reset for now.
+	}
+
+	void provideConfiguration(ILogger& logger, IEarlyConfig& config, bool defaults) override
+	{
+		if (defaults)
+		{
+			config.setString("discord.bot_token", "");
+		}
+		else
+		{
+			if (config.getType("discord.bot_token") == ConfigOptionType_None)
+			{
+				config.setString("discord.bot_token", "");
+			}
+		}
+	}
+
+	void onTick(Microseconds elapsed, TimePoint now) override
+	{
+		PawnDispatcher::Get()->Process();
+	}
+};
+
+ICore* DiscordComponent::core = nullptr;
+
+COMPONENT_ENTRY_POINT()
+{
+	discordComponent = new DiscordComponent();
+	return discordComponent;
 }

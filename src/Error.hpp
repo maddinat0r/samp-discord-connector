@@ -7,23 +7,23 @@ using std::string;
 
 
 template<typename T>
-class Error
+class CallbackError
 {
 	using Type = typename T::Error;
 public:
-	Error() :
+	CallbackError() :
 		m_Type(Type::NONE)
 	{ }
-	Error(Type type, string &&msg) :
+	CallbackError(Type type, string &&msg) :
 		m_Type(type),
 		m_Message(std::move(msg))
 	{ }
 	template<typename... Args>
-	Error(Type type, string &&format, Args &&...args) :
+	CallbackError(Type type, string &&format, Args &&...args) :
 		m_Type(type),
 		m_Message(fmt::format(format, std::forward<Args>(args)...))
 	{ }
-	~Error() = default;
+	~CallbackError() = default;
 
 	operator bool() const
 	{
