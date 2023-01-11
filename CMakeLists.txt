@@ -55,7 +55,7 @@ elseif(UNIX)
 		"-static-libgcc"
 		"-static-libstdc++"
 	)
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath='$ORIGIN'")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath='$ORIGIN'-static-libstdc++")
 endif()
 
 if(NOT DEFINED OPENSSL_USE_STATIC_LIBS)

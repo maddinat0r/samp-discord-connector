@@ -79,8 +79,8 @@ jobs:
       name: Install gcc/g++-multilib
       run: |
         sudo apt-get update
-        sudo apt install gcc-multilib g++-multilib
-      
+        sudo apt install gcc-8-multilib g++-8-multilib libstdc++6:i386 libc6:i386
+
     - name: Get python
       uses: actions/setup-python@v2
       with:
