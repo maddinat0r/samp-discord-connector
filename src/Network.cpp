@@ -2,14 +2,14 @@
 #include "Logger.hpp"
 
 
-void Network::Initialize(std::string const &token)
+void Network::Initialize(std::string const &token, int intents)
 {
 	Logger::Get()->Log(samplog_LogLevel::DEBUG, "Network::Initialize");
 
 	m_Http = std::unique_ptr<::Http>(new ::Http(token));
 
 	// retrieve WebSocket host URL
-	m_Http->Get("/gateway", [this, token](Http::Response res)
+	m_Http->Get("/gateway", [this, token, intents](Http::Response res)
 	{
 		if (res.status != 200)
 		{
@@ -25,7 +25,7 @@ void Network::Initialize(std::string const &token)
 		if (protocol_pos != std::string::npos)
 			gateway_url.erase(protocol_pos, 6); // 6 = length of "wss://"
 
-		m_WebSocket->Initialize(token, gateway_url);
+		m_WebSocket->Initialize(token, gateway_url, intents);
 	});
 
 }

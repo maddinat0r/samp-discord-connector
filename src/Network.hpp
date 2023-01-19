@@ -24,7 +24,7 @@ private: // variables
 	std::unique_ptr<::WebSocket> m_WebSocket;
 
 public: // functions
-	void Initialize(std::string const &token);
+	void Initialize(std::string const &token, int intents);
 
 	::Http &Http();
 	::WebSocket &WebSocket();

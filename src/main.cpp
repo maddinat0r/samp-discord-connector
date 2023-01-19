@@ -19,16 +19,16 @@
 
 extern void	*pAMXFunctions;
 logprintf_t logprintf;
+#define ALL_INTENTS 131071
 
-
-void InitializeEverything(std::string const &bot_token)
+void InitializeEverything(std::string const &bot_token, int intents)
 {
 	GuildManager::Get()->Initialize();
 	UserManager::Get()->Initialize();
 	ChannelManager::Get()->Initialize();
 	MessageManager::Get()->Initialize();
 	CommandManager::Get()->Initialize();
-	Network::Get()->Initialize(bot_token);
+	Network::Get()->Initialize(bot_token, intents);
 }
 
 void DestroyEverything()
@@ -81,14 +81,45 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 	logprintf = (logprintf_t)ppData[PLUGIN_DATA_LOGPRINTF];
 
 	bool ret_val = true;
-	auto bot_token = GetEnvironmentVar("SAMP_DISCORD_BOT_TOKEN");
+	int intents = ALL_INTENTS;
+	auto bot_intentsStr = GetEnvironmentVar("DCC_BOT_INTENTS");
+	if (!bot_intentsStr.empty())
+	{
+		try
+		{
+			intents = std::stoi(bot_intentsStr);
+		}
+		catch (...)
+		{
+			intents = ALL_INTENTS;
+		}
+	}
+	else if (bot_intentsStr.empty())
+	{
+		SampConfigReader::Get()->GetVar("discord_bot_intents", bot_intentsStr);
+		try
+		{
+			intents = std::stoi(bot_intentsStr);
+		}
+		catch (...)
+		{
+			intents = ALL_INTENTS;
+		}
+	}
 
+	auto bot_token = GetEnvironmentVar("DCC_BOT_TOKEN");
 	if (bot_token.empty())
+	{
+		bot_token = GetEnvironmentVar("SAMP_DISCORD_BOT_TOKEN");
+		logprintf(" >> discord-connector: Usage of environmental variable SAMP_DISCORD_BOT_TOKEN is deprecated for DCC_BOT_TOKEN");
+		logprintf(" >> discord-connector: This environmental variable will be removed in a later release.");
+	}
+	else if (bot_token.empty())
 		SampConfigReader::Get()->GetVar("discord_bot_token", bot_token);
 
 	if (!bot_token.empty())
 	{
-		InitializeEverything(bot_token);
+		InitializeEverything(bot_token, intents);
 
 		if (WaitForInitialization())
 		{
@@ -98,14 +129,14 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 		{
 			logprintf(" >> discord-connector: timeout while initializing data.");
 
-			std::thread init_thread([bot_token]()
+			std::thread init_thread([bot_token, intents]()
 			{
 				while (true)
 				{
 					std::this_thread::sleep_for(std::chrono::minutes(1));
 
 					DestroyEverything();
-					InitializeEverything(bot_token);
+					InitializeEverything(bot_token, intents);
 					if (WaitForInitialization())
 						break;
 				}
@@ -318,7 +349,7 @@ class DiscordComponent : public IComponent, public PawnEventHandler, public Core
 
 	SemanticVersion componentVersion() const override
 	{
-		return SemanticVersion(0, 0, 0, 0);
+		return SemanticVersion(0, 3, 6, 1);
 	}
 
 	void onLoad(ICore* c) override
@@ -327,7 +358,39 @@ class DiscordComponent : public IComponent, public PawnEventHandler, public Core
 		logprintf = DiscordComponent::logprintfwrapped;
 
 		bool ret_val = true;
-		auto bot_token = GetEnvironmentVar("SAMP_DISCORD_BOT_TOKEN");
+		int intents = ALL_INTENTS;
+		auto bot_intentsStr = GetEnvironmentVar("DCC_BOT_INTENTS");
+		if (!bot_intentsStr.empty())
+		{
+			try
+			{
+				intents = std::stoi(bot_intentsStr);
+			}
+			catch (...)
+			{
+				intents = ALL_INTENTS;
+			}
+		}
+		else if (bot_intentsStr.empty())
+		{
+			auto intents_config = core->getConfig().getInt("discord.intents");
+			if (!intents_config)
+			{
+				intents = ALL_INTENTS;
+			}
+			else
+			{
+				intents = *intents_config;
+			}
+		}
+
+		auto bot_token = GetEnvironmentVar("DCC_BOT_TOKEN");
+		if (bot_token.empty())
+		{
+			bot_token = GetEnvironmentVar("SAMP_DISCORD_BOT_TOKEN");
+			logprintf(" >> discord-connector: Usage of environmental variable SAMP_DISCORD_BOT_TOKEN is deprecated for DCC_BOT_TOKEN");
+			logprintf(" >> discord-connector: This environmental variable will be removed in a later release.");
+		}
 
 		if (bot_token.empty()) {
 			auto token = core->getConfig().getString("discord.bot_token");
@@ -335,11 +398,10 @@ class DiscordComponent : public IComponent, public PawnEventHandler, public Core
 				bot_token = token.data();
 			}
 		}
-			
 
 		if (!bot_token.empty())
 		{
-			InitializeEverything(bot_token.data());
+			InitializeEverything(bot_token.data(), intents);
 
 			if (WaitForInitialization())
 			{
@@ -349,14 +411,14 @@ class DiscordComponent : public IComponent, public PawnEventHandler, public Core
 			{
 				logprintf(" >> discord-connector: timeout while initializing data.");
 
-				std::thread init_thread([bot_token]()
+				std::thread init_thread([bot_token, intents]()
 					{
 						while (true)
 						{
 							std::this_thread::sleep_for(std::chrono::minutes(1));
 
 							DestroyEverything();
-							InitializeEverything(bot_token.data());
+							InitializeEverything(bot_token.data(), intents);
 							if (WaitForInitialization())
 								break;
 						}
@@ -439,12 +501,18 @@ class DiscordComponent : public IComponent, public PawnEventHandler, public Core
 		if (defaults)
 		{
 			config.setString("discord.bot_token", "");
+			config.setInt("discord.intents", ALL_INTENTS);
 		}
 		else
 		{
 			if (config.getType("discord.bot_token") == ConfigOptionType_None)
 			{
 				config.setString("discord.bot_token", "");
+			}
+
+			if (config.getType("discord.intents") == ConfigOptionType_None)
+			{
+				config.setInt("discord.intents", ALL_INTENTS);
 			}
 		}
 	}
@@ -462,3 +530,13 @@ COMPONENT_ENTRY_POINT()
 	discordComponent = new DiscordComponent();
 	return discordComponent;
 }
+
+
+#if defined LINUX
+// stop GLIBC 2.25, thanks. :)
+extern "C" __attribute__((visibility("default"))) int getentropy(void* buffer, size_t length)
+{
+	errno = ENOSYS;
+	return -1;
+}
+#endif

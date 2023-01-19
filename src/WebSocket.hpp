@@ -96,9 +96,10 @@ private: // variables
 	asio::steady_timer m_HeartbeatTimer;
 	std::chrono::steady_clock::duration m_HeartbeatInterval;
 	std::multimap<Event, EventCallback_t> m_EventMap;
+	int _intents;
 
 private: // functions
-	void Initialize(std::string token, std::string gateway_url);
+	void Initialize(std::string token, std::string gateway_url, int intents);
 
 	void Connect();
 	void OnResolve(beast::error_code ec,

@@ -27,13 +27,13 @@ WebSocket::~WebSocket()
 		_netThread->join();
 }
 
-void WebSocket::Initialize(std::string token, std::string gateway_url)
+void WebSocket::Initialize(std::string token, std::string gateway_url, int intents)
 {
 	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::Initialize");
 
 	_gatewayUrl = gateway_url;
 	_apiToken = token;
-
+	_intents = intents;
 	Connect();
 
 	_netThread = std::make_unique<std::thread>([this]()
@@ -417,7 +417,6 @@ void WebSocket::OnWrite(beast::error_code ec,
 	}
 }
 
-#define ALL_INTENTS 32767
 void WebSocket::Identify()
 {
 	Logger::Get()->Log(samplog_LogLevel::DEBUG, "WebSocket::Identify");
@@ -434,12 +433,12 @@ void WebSocket::Identify()
 		{ "d",{
 			{ "token", _apiToken },
 			{ "compress", false },
-			{ "intents", ALL_INTENTS },
+			{ "intents", _intents },
 			{ "large_threshold", LARGE_THRESHOLD_NUMBER },
 			{ "properties",{
 				{ "$os", os_name },
 				{ "$browser", BOOST_BEAST_VERSION_STRING },
-				{ "$device", "SA-MP DCC plugin" },
+				{ "$device", "SA-MP/open.mp DCC plugin" },
 				{ "$referrer", "" },
 				{ "$referring_domain", "" }
 			} }
