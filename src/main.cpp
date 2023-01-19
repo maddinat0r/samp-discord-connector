@@ -117,7 +117,7 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 			logprintf(" >> discord-connector: This environmental variable will be removed in a later release.");
 		}
 	}
-	else if (bot_token.empty())
+	if (bot_token.empty())
 		SampConfigReader::Get()->GetVar("discord_bot_token", bot_token);
 
 	if (!bot_token.empty())
