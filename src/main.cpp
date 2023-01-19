@@ -111,8 +111,11 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 	if (bot_token.empty())
 	{
 		bot_token = GetEnvironmentVar("SAMP_DISCORD_BOT_TOKEN");
-		logprintf(" >> discord-connector: Usage of environmental variable SAMP_DISCORD_BOT_TOKEN is deprecated for DCC_BOT_TOKEN");
-		logprintf(" >> discord-connector: This environmental variable will be removed in a later release.");
+		if (!bot_token.empty())
+		{
+			logprintf(" >> discord-connector: Usage of environmental variable SAMP_DISCORD_BOT_TOKEN is deprecated for DCC_BOT_TOKEN");
+			logprintf(" >> discord-connector: This environmental variable will be removed in a later release.");
+		}
 	}
 	else if (bot_token.empty())
 		SampConfigReader::Get()->GetVar("discord_bot_token", bot_token);
@@ -388,8 +391,11 @@ class DiscordComponent : public IComponent, public PawnEventHandler, public Core
 		if (bot_token.empty())
 		{
 			bot_token = GetEnvironmentVar("SAMP_DISCORD_BOT_TOKEN");
-			logprintf(" >> discord-connector: Usage of environmental variable SAMP_DISCORD_BOT_TOKEN is deprecated for DCC_BOT_TOKEN");
-			logprintf(" >> discord-connector: This environmental variable will be removed in a later release.");
+			if (!bot_token.empty())
+			{
+				logprintf(" >> discord-connector: Usage of environmental variable SAMP_DISCORD_BOT_TOKEN is deprecated for DCC_BOT_TOKEN");
+				logprintf(" >> discord-connector: This environmental variable will be removed in a later release.");
+			}
 		}
 
 		if (bot_token.empty()) {
