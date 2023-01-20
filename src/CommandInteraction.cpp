@@ -139,31 +139,21 @@ void CommandInteraction::SendEmbed(EmbedId_t embedid, const std::string message)
 			{ "color", embed->GetColor() },
 			{ "footer", {
 				{"text", embed->GetFooterText()},
-				//{"icon_url", embed->GetFooterIconUrl()},
+				{"icon_url", embed->GetFooterIconUrl()},
 			} },
-			{ "thumbnail", {
-				//{"url", embed->GetThumbnailUrl()}
-			} },
-			{ "image", {
-				//{"url", embed->GetImageUrl()}
-			}}
+			{ "thumbnail", json::object() },
+			{ "image", json::object() }
 		});
 	
 	if (!embed->GetThumbnailUrl().empty())
 	{
-		data["embeds"][0]["thumbnail"] += {"url", embed->GetThumbnailUrl()};
-	}
-
-	if (!embed->GetFooterIconUrl().empty())
-	{
-		data["embeds"][0]["footer"] += {"icon_url", embed->GetFooterIconUrl()};
+		data["embeds"][0]["thumbnail"]["url"] = embed->GetThumbnailUrl();
 	}
 
 	if (!embed->GetImageUrl().empty())
 	{
-		data["embeds"][0]["image"] += {"url", embed->GetImageUrl()};
+		data["embeds"][0]["image"]["url"] = embed->GetImageUrl();
 	}
-
 
 	if (embed->GetFields().size())
 	{

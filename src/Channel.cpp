@@ -204,39 +204,33 @@ void Channel::SendEmbeddedMessage(const Embed_t & embed, std::string&& msg, pawn
 {
 	json data = {
 		{ "content", std::move(msg) },
-		{ "embed", {
-			{ "title", embed->GetTitle() },
-			{ "description", embed->GetDescription() },
-			{ "url", embed->GetUrl() },
-			{ "timestamp", embed->GetTimestamp() },
-			{ "color", embed->GetColor() },
-			{ "footer", {
-				{"text", embed->GetFooterText()},
-				//{"icon_url", embed->GetFooterIconUrl()},
-			}},
-			{"thumbnail", {
-				//{"url", embed->GetThumbnailUrl()}
-			}},
-			{"image", {
-				//{"url", embed->GetImageUrl()}
-			}}
-		}}
+		{ "embeds", { json::object() } }
 	};
+
+	data["embeds"][0] = json::object({
+		{ "title", embed->GetTitle() },
+		{ "description", embed->GetDescription() },
+		{ "url", embed->GetUrl() },
+		{ "timestamp", embed->GetTimestamp() },
+		{ "color", embed->GetColor() },
+		{ "footer", {
+			{"text", embed->GetFooterText()},
+			{"icon_url", embed->GetFooterIconUrl()},
+		} },
+		{ "thumbnail", json::object() },
+		{ "image", json::object() }
+	});
 
 	if (!embed->GetThumbnailUrl().empty())
 	{
-		data["embed"]["thumbnail"] += {"url", embed->GetThumbnailUrl()};
-	}
-
-	if (!embed->GetFooterIconUrl().empty())
-	{
-		data["embed"]["footer"] += {"icon_url", embed->GetFooterIconUrl()};
+		data["embeds"][0]["thumbnail"]["url"] = embed->GetThumbnailUrl();
 	}
 
 	if (!embed->GetImageUrl().empty())
 	{
-		data["embed"]["image"] += {"url", embed->GetImageUrl()};
+		data["embeds"][0]["image"]["url"] = embed->GetImageUrl();
 	}
+
 	// Add fields (if any).
 	if (embed->GetFields().size())
 	{
@@ -249,7 +243,7 @@ void Channel::SendEmbeddedMessage(const Embed_t & embed, std::string&& msg, pawn
 				{"inline", i._inline_}
 			});
 		}
-		data["embed"]["fields"] = field_array;
+		data["embeds"][0]["fields"] = field_array;
 	}
 
 	std::string json_str;
