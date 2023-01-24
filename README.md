@@ -15,7 +15,7 @@
          "bot_token": "MYBOTTOKEN"
       }
     ```
-   Alternatively you can use the enviromental variable **SAMP_DISCORD_BOT_TOKEN** to set the token instead. **DO NOT SHARE YOUR TOKEN WITH ANYONE**
+   Alternatively you can use the enviromental variable **DCC_BOT_TOKEN** to set the token instead. **DO NOT SHARE YOUR TOKEN WITH ANYONE**
 
 How to install on a SA:MP server
 --------------------------------
@@ -23,7 +23,7 @@ How to install on a SA:MP server
 2. Edit the server configuration (*server.cfg*) as follows:
    - Windows: `plugins discord-connector`
    - Linux: `plugins discord-connector.so`
-3. Add `discord_bot_token YOURDISCORDBOTTOKEN` to your *server.cfg* file, or set it in the environment variable `SAMP_DISCORD_BOT_TOKEN` (__never share your bot token with anyone!__)
+3. Add `discord_bot_token YOURDISCORDBOTTOKEN` to your *server.cfg* file, or set it in the environment variable `DCC_BOT_TOKEN` (__never share your bot token with anyone!__)
 
 I am getting a intent error, how do I fix it?
 ---------------
