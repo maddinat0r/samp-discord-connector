@@ -216,10 +216,10 @@ stock bool:DCC_HasGuildMemberPermission(DCC_Guild:guild, DCC_User:user, permissi
 	new rolecount;
 	DCC_GetGuildRoleCount(guild, rolecount);
 
-	for (new ii; ii != rolecount; ii++)
+	for (new roleid; roleid != rolecount; roleid++)
 	{
 	    new DCC_Role:role;
-	    if(!DCC_GetGuildRole(guild, ii, role))
+	    if(!DCC_GetGuildRole(guild, roleid, role))
 	    {
 	        continue;
 	    }
