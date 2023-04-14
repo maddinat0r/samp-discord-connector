@@ -59,6 +59,48 @@ enum DCC_MessageReactionType
 #define DCC_COMMAND_SIZE (32 + 1)
 #define DCC_COMMAND_DESCRIPTION_SIZE (32 + 1)
 
+#define DCC_PERMISSION_CREATE_INSTANT_INVITE                0x1
+#define DCC_PERMISSION_KICK_MEMBERS                         0x2
+#define DCC_PERMISSION_BAN_MEMBERS                          0x4
+#define DCC_PERMISSION_ADMINISTRATOR                        0x8
+#define DCC_PERMISSION_MANAGE_CHANNELS                      0x10
+#define DCC_PERMISSION_MANAGE_GUILD                         (1 << 5)//0x20
+#define DCC_PERMISSION_ADD_REACTIONS                        0x40
+#define DCC_PERMISSION_VIEW_AUDIT_LOG                       0x80
+#define DCC_PERMISSION_PRIORITY_SPEAKER                     0x100
+#define DCC_PERMISSION_STREAM                               0x200
+#define DCC_PERMISSION_VIEW_CHANNEL                         0x400
+#define DCC_PERMISSION_SEND_MESSAGES                        0x800
+#define DCC_PERMISSION_SEND_TTS_MESSAGES                    0x1000
+#define DCC_PERMISSION_MANAGE_MESSAGES                      0x2000
+#define DCC_PERMISSION_EMBED_LINKS                          0x4000
+#define DCC_PERMISSION_ATTACH_FILES                         0x8000
+#define DCC_PERMISSION_READ_MESSAGE_HISTORY                 0x10000
+#define DCC_PERMISSION_MENTION_EVERYONE                     0X20000
+#define DCC_PERMISSION_USE_EXTERNAL_EMOJIS                  0x40000
+#define DCC_PERMISSION_VIEW_GUILD_INSIGHTS                  0x80000
+#define DCC_PERMISSION_CONNECT                              0x100000
+#define DCC_PERMISSION_SPEAK                                0x200000
+#define DCC_PERMISSION_MUTE_MEMBERS                         0x400000
+#define DCC_PERMISSION_DEAFEN_MEMBERS                       0x800000
+#define DCC_PERMISSION_MOVE_MEMBERS                         0x1000000
+#define DCC_PERMISSION_USE_VAD                              0x2000000
+#define DCC_PERMISSION_CHANGE_NICKNAME                      0x4000000
+#define DCC_PERMISSION_MANAGE_NICKNAMES                     0x8000000
+#define DCC_PERMISSION_MANAGE_ROLES                         0x10000000
+#define DCC_PERMISSION_MANAGE_WEBHOOKS                      0x20000000
+#define DCC_PERMISSION_MANAGE_EMOJIS_AND_STICKERS           0x40000000
+#define DCC_PERMISSION_USE_APPLICATION_COMMANDS             0x80000000
+#define DCC_PERMISSION_REQUEST_TO_SPEAK                     0x100000000
+#define DCC_PERMISSION_MANAGE_EVENTS                        0x200000000
+#define DCC_PERMISSION_MANAGE_THREADS                       0x400000000
+#define DCC_PERMISSION_CREATE_PUBLIC_THREADS                0x800000000
+#define DCC_PERMISSION_CREATE_PRIVATE_THREADS               0x1000000000
+#define DCC_PERMISSION_USE_EXTERNAL_STICKERS                0x2000000000
+#define DCC_PERMISSION_SEND_MESSAGES_IN_THREADS             0x4000000000
+#define DCC_PERMISSION_USE_EMBEDDED_ACTIVITIES              0x8000000000
+#define DCC_PERMISSION_MODERATE_MEMBERS                     0x10000000000
+
 // natives
 //  channels
 native DCC_Channel:DCC_FindChannelByName(const channel_name[]);
@@ -169,6 +211,41 @@ native DCC_SetGuildRoleMentionable(DCC_Guild:guild, DCC_Role:role, bool:mentiona
 native DCC_CreateGuildRole(DCC_Guild:guild, const name[], const callback[] = "", const format[] = "", {Float, _}:...);
 native DCC_Role:DCC_GetCreatedGuildRole();
 native DCC_DeleteGuildRole(DCC_Guild:guild, DCC_Role:role);
+stock bool:DCC_HasGuildMemberPermission(DCC_Guild:guild, DCC_User:user, permission)
+{
+	new rolecount;
+	DCC_GetGuildRoleCount(guild, rolecount);
+
+	for (new roleid; roleid != rolecount; roleid++)
+	{
+	    new DCC_Role:role;
+	    if(!DCC_GetGuildRole(guild, roleid, role))
+	    {
+	        continue;
+	    }
+
+	    new bool:hasrole;
+
+	    DCC_HasGuildMemberRole(guild, user, role, hasrole);
+
+	    if(!hasrole)
+	    {
+	    	continue;
+	    }
+
+	    new perm_high, perm_low;
+
+	    DCC_GetRolePermissions(role, perm_high, perm_low);
+
+	    new permissions = perm_high | perm_low;
+
+	    if((permissions & permission) == permission)
+	    {
+	    	return true;
+	    }
+	}
+	return false;
+}
 
 // bot
 native DCC_BotPresenceStatus:DCC_GetBotPresenceStatus();
