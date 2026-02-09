@@ -10,10 +10,13 @@
 #include "SampConfigReader.hpp"
 #include "Logger.hpp"
 #include "version.hpp"
+#include "Encoding.hpp"
 
 #include <samplog/samplog.hpp>
 #include <thread>
 #include <cstdlib>
+#include <algorithm>
+#include <cctype>
 #include <sdk.hpp>
 #include <Server/Components/Pawn/pawn.hpp>
 
@@ -40,25 +43,76 @@ void DestroyEverything()
 	Network::Singleton::Destroy();
 }
 
-bool WaitForInitialization()
+static bool EverythingInitialized()
+{
+	return GuildManager::Get()->IsInitialized()
+		&& UserManager::Get()->IsInitialized()
+		&& ChannelManager::Get()->IsInitialized()
+		&& CommandManager::Get()->IsInitialized();
+}
+
+static bool ReadySeen()
+{
+	// READY sets initialized=1 on these managers. GuildManager may take much longer
+	// because it waits for GUILD_CREATE events for all guilds.
+	return UserManager::Get()->IsInitialized()
+		&& ChannelManager::Get()->IsInitialized()
+		&& CommandManager::Get()->IsInitialized();
+}
+
+static unsigned int ParseUIntOrDefault(std::string const &s, unsigned int def)
+{
+	if (s.empty())
+		return def;
+	try
+	{
+		auto v = std::stoul(s);
+		if (v > 0xFFFFFFFFu)
+			return def;
+		return static_cast<unsigned int>(v);
+	}
+	catch (...)
+	{
+		return def;
+	}
+}
+
+static utils::PawnEncoding ParsePawnEncoding(std::string s)
+{
+	std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c)
+	{
+		return static_cast<char>(std::tolower(c));
+	});
+
+	if (s == "cp874" || s == "windows-874" || s == "windows_874" || s == "win874" || s == "874")
+		return utils::PawnEncoding::WINDOWS_874;
+
+	// default: assume Pawn strings are already UTF-8 (or user wants raw bytes).
+	return utils::PawnEncoding::RAW;
+}
+
+static void ConfigurePawnEncoding(std::string const &encoding_str)
+{
+	utils::SetPawnEncoding(ParsePawnEncoding(encoding_str));
+}
+
+bool WaitForInitialization(unsigned int timeout_ms)
 {
 	unsigned int const
-		SLEEP_TIME_MS = 20,
-		TIMEOUT_TIME_MS = 20 * 1000;
+		SLEEP_TIME_MS = 20;
 	unsigned int waited_time = 0;
+
+	if (timeout_ms == 0)
+		return EverythingInitialized();
+
 	while (true)
 	{
-		if (GuildManager::Get()->IsInitialized()
-			&& UserManager::Get()->IsInitialized()
-			&& ChannelManager::Get()->IsInitialized()
-			&& CommandManager::Get()->IsInitialized())
-		{
+		if (EverythingInitialized())
 			return true;
-		}
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_MS));
 		waited_time += SLEEP_TIME_MS;
-		if (waited_time > TIMEOUT_TIME_MS)
+		if (waited_time > timeout_ms)
 			break;
 	}
 	return false;
@@ -122,32 +176,83 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 
 	if (!bot_token.empty())
 	{
+		// Configure Pawn string encoding (default RAW/UTF-8).
+		{
+			auto enc = GetEnvironmentVar("DCC_PAWN_ENCODING");
+			if (enc.empty())
+				SampConfigReader::Get()->GetVar("discord_pawn_encoding", enc);
+			ConfigurePawnEncoding(enc);
+		}
+
+		unsigned int init_block_ms = 0;
+		unsigned int init_timeout_ms = 120 * 1000;
+		{
+			auto s = GetEnvironmentVar("DCC_INIT_BLOCK_MS");
+			if (s.empty())
+				SampConfigReader::Get()->GetVar("discord_init_block_ms", s);
+			init_block_ms = ParseUIntOrDefault(s, 0);
+
+			s = GetEnvironmentVar("DCC_INIT_TIMEOUT_MS");
+			if (s.empty())
+				SampConfigReader::Get()->GetVar("discord_init_timeout_ms", s);
+			init_timeout_ms = ParseUIntOrDefault(s, 120 * 1000);
+		}
+
 		InitializeEverything(bot_token, intents);
 
-		if (WaitForInitialization())
+		// Watchdog/retry thread (non-blocking): if initialization doesn't complete in time,
+		// retry connecting in the background. Important: re-check before destroying, to avoid
+		// tearing down a slow-but-successful initialization.
+		if (init_timeout_ms > 0)
 		{
-			logprintf(" >> discord-connector: " PLUGIN_VERSION " successfully loaded.");
-		}
-		else
-		{
-			logprintf(" >> discord-connector: timeout while initializing data.");
-
-			std::thread init_thread([bot_token, intents]()
+			std::thread init_thread([bot_token, intents, init_timeout_ms]()
 			{
+				if (WaitForInitialization(init_timeout_ms))
+					return;
+
+				// If READY was received, we're likely just caching large guild state.
+				if (ReadySeen())
+				{
+					logprintf(" >> discord-connector: initialization still in progress after %u ms; continuing in background.", init_timeout_ms);
+					while (!EverythingInitialized())
+						std::this_thread::sleep_for(std::chrono::seconds(1));
+					logprintf(" >> discord-connector: initialization completed.");
+					return;
+				}
+
+				logprintf(" >> discord-connector: timeout while connecting (no READY after %u ms).", init_timeout_ms);
+				logprintf("                         plugin will proceed to retry connecting in the background.");
+
 				while (true)
 				{
 					std::this_thread::sleep_for(std::chrono::minutes(1));
 
+					// If READY happens while we're waiting, don't tear down; just keep waiting.
+					if (ReadySeen())
+					{
+						while (!EverythingInitialized())
+							std::this_thread::sleep_for(std::chrono::seconds(1));
+						break;
+					}
+
+					if (EverythingInitialized())
+						break;
+
 					DestroyEverything();
 					InitializeEverything(bot_token, intents);
-					if (WaitForInitialization())
+
+					if (WaitForInitialization(init_timeout_ms))
 						break;
 				}
 			});
 			init_thread.detach();
-
-			logprintf("                         plugin will proceed to retry connecting in the background.");
 		}
+
+		// Optional blocking wait to delay server startup until ready (backwards-compatible behavior).
+		if (init_block_ms > 0 && WaitForInitialization(init_block_ms))
+			logprintf(" >> discord-connector: " PLUGIN_VERSION " successfully loaded.");
+		else
+			logprintf(" >> discord-connector: " PLUGIN_VERSION " loaded (initializing in background).");
 	}
 	else
 	{
@@ -407,32 +512,89 @@ class DiscordComponent : public IComponent, public PawnEventHandler, public Core
 
 		if (!bot_token.empty())
 		{
+			// Configure Pawn string encoding (default RAW/UTF-8).
+			{
+				std::string enc = GetEnvironmentVar("DCC_PAWN_ENCODING");
+				if (enc.empty())
+				{
+					auto cfg_enc = core->getConfig().getString("discord.pawn_encoding");
+					if (!cfg_enc.empty())
+						enc = cfg_enc.data();
+				}
+				ConfigurePawnEncoding(enc);
+			}
+
+			unsigned int init_block_ms = 0;
+			unsigned int init_timeout_ms = 120 * 1000;
+			{
+				std::string s = GetEnvironmentVar("DCC_INIT_BLOCK_MS");
+				if (s.empty())
+				{
+					auto cfg = core->getConfig().getInt("discord.init_block_ms");
+					if (cfg)
+						s = std::to_string(*cfg);
+				}
+				init_block_ms = ParseUIntOrDefault(s, 0);
+
+				s = GetEnvironmentVar("DCC_INIT_TIMEOUT_MS");
+				if (s.empty())
+				{
+					auto cfg = core->getConfig().getInt("discord.init_timeout_ms");
+					if (cfg)
+						s = std::to_string(*cfg);
+				}
+				init_timeout_ms = ParseUIntOrDefault(s, 120 * 1000);
+			}
+
 			InitializeEverything(bot_token.data(), intents);
 
-			if (WaitForInitialization())
+			if (init_timeout_ms > 0)
 			{
-				logprintf(" >> discord-connector: " PLUGIN_VERSION " successfully loaded.");
-			}
-			else
-			{
-				logprintf(" >> discord-connector: timeout while initializing data.");
+				std::thread init_thread([bot_token, intents, init_timeout_ms]()
+				{
+					if (WaitForInitialization(init_timeout_ms))
+						return;
 
-				std::thread init_thread([bot_token, intents]()
+					if (ReadySeen())
 					{
-						while (true)
+						logprintf(" >> discord-connector: initialization still in progress after %u ms; continuing in background.", init_timeout_ms);
+						while (!EverythingInitialized())
+							std::this_thread::sleep_for(std::chrono::seconds(1));
+						logprintf(" >> discord-connector: initialization completed.");
+						return;
+					}
+
+					logprintf(" >> discord-connector: timeout while connecting (no READY after %u ms).", init_timeout_ms);
+					logprintf("                         component will proceed to retry connecting in the background.");
+
+					while (true)
+					{
+						std::this_thread::sleep_for(std::chrono::minutes(1));
+
+						if (ReadySeen())
 						{
-							std::this_thread::sleep_for(std::chrono::minutes(1));
-
-							DestroyEverything();
-							InitializeEverything(bot_token.data(), intents);
-							if (WaitForInitialization())
-								break;
+							while (!EverythingInitialized())
+								std::this_thread::sleep_for(std::chrono::seconds(1));
+							break;
 						}
-					});
-				init_thread.detach();
 
-				logprintf("                         component will proceed to retry connecting in the background.");
+						if (EverythingInitialized())
+							break;
+
+						DestroyEverything();
+						InitializeEverything(bot_token.data(), intents);
+
+						if (WaitForInitialization(init_timeout_ms))
+							break;
+					}
+				});
+				init_thread.detach();
 			}
+
+			if (init_block_ms > 0 && WaitForInitialization(init_block_ms))
+				logprintf(" >> discord-connector: " PLUGIN_VERSION " successfully loaded.");
+			else
+				logprintf(" >> discord-connector: " PLUGIN_VERSION " loaded (initializing in background).");
 		}
 		else
 		{

@@ -58,6 +58,8 @@ add_samp_plugin(discord-connector
 	Command.hpp
 	CommandInteraction.cpp
 	CommandInteraction.hpp
+	Encoding.cpp
+	Encoding.hpp
 	main.cpp
 	misc.hpp
 	natives.cpp

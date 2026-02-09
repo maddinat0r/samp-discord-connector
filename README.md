@@ -1,8 +1,10 @@
 # Discord connector plugin for San Andreas Multiplayer (SA:MP)
 
-| AppVeyor CI | Total downloads | Latest release |
+**Language:** English | [ภาษาไทย](README.th.md)
+
+| CI | Total downloads | Latest release |
 | :---: | :---: | :---: |
-|  ![Build status](https://github.com/maddinat0r/samp-discord-connector/workflows/Build/badge.svg)|  [![All Releases](https://img.shields.io/github/downloads/maddinat0r/samp-discord-connector/total.svg?maxAge=86400)](https://github.com/maddinat0r/samp-discord-connector/releases)  |  [![latest release](https://img.shields.io/github/release/maddinat0r/samp-discord-connector.svg?maxAge=86400)](https://github.com/maddinat0r/samp-discord-connector/releases) <br> [![Github Releases](https://img.shields.io/github/downloads/maddinat0r/samp-discord-connector/latest/total.svg?maxAge=86400)](https://github.com/maddinat0r/samp-discord-connector/releases)  |  
+|  [![Build status](https://github.com/GimmickPlus/samp-discord-connector/actions/workflows/build.yml/badge.svg)](https://github.com/GimmickPlus/samp-discord-connector/actions/workflows/build.yml) |  [![All Releases](https://img.shields.io/github/downloads/GimmickPlus/samp-discord-connector/total.svg?maxAge=86400)](https://github.com/GimmickPlus/samp-discord-connector/releases)  |  [![latest release](https://img.shields.io/github/release/GimmickPlus/samp-discord-connector.svg?maxAge=86400)](https://github.com/GimmickPlus/samp-discord-connector/releases) <br> [![Github Releases](https://img.shields.io/github/downloads/GimmickPlus/samp-discord-connector/latest/total.svg?maxAge=86400)](https://github.com/GimmickPlus/samp-discord-connector/releases)  |  
 -------------------------------------------------
 **This plugin allows you to control a Discord bot from within your PAWN script.**
 
@@ -24,6 +26,24 @@ How to install on a SA:MP server
    - Windows: `plugins discord-connector`
    - Linux: `plugins discord-connector.so`
 3. Add `discord_bot_token YOURDISCORDBOTTOKEN` to your *server.cfg* file, or set it in the environment variable `DCC_BOT_TOKEN` (__never share your bot token with anyone!__)
+
+Pawn Encoding / Thai (Windows-874)
+--------------------------------
+If your Pawn scripts are encoded as Windows-874 (Thai), configure the plugin to convert between Windows-874 <-> UTF-8:
+- SA:MP (`server.cfg`): `discord_pawn_encoding windows-874`
+- open.mp (`config.json`): `"discord": { "pawn_encoding": "windows-874" }`
+- Environment variable: `DCC_PAWN_ENCODING=windows-874`
+
+Startup / Initialization Wait
+-----------------------------
+By default the plugin initializes in the background (so it does not delay server startup). If you want to block server startup until Discord data is initialized:
+- SA:MP (`server.cfg`): `discord_init_block_ms 20000`
+- open.mp (`config.json`): `"discord": { "init_block_ms": 20000 }`
+- Environment variable: `DCC_INIT_BLOCK_MS=20000`
+
+If you want to control when the plugin considers initialization "timed out" and starts retrying in the background:
+- `discord_init_timeout_ms` / `discord.init_timeout_ms` / `DCC_INIT_TIMEOUT_MS`
+  Default is `120000` (120 seconds).
 
 I am getting a intent error, how do I fix it?
 ---------------
