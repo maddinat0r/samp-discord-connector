@@ -1,5 +1,5 @@
 {
-    "user": "aujiz11",
+    "user": "maddinat0r",
     "repo": "samp-discord-connector",
     "resources": [
         {
@@ -24,7 +24,7 @@
         }
     ],
     "runtime": {
-        "plugins": ["aujiz11/samp-discord-connector"]
+        "plugins": ["maddinat0r/samp-discord-connector"]
     },
     "contributors": [
         "maddinat0r",
