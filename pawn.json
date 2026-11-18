@@ -1,30 +1,30 @@
 {
-    "user": "maddinat0r",
+    "user": "aujiz11",
     "repo": "samp-discord-connector",
     "resources": [
         {
             "name": "^discord-connector-.+-[Ll]inux\\.tar\\.gz$",
             "platform": "linux",
             "archive": true,
-            "includes": ["discord-connector-.+\\/pawno\\/include"],
-            "plugins": ["discord-connector-.+\\/plugins\\/discord-connector\\.so"],
+            "includes": ["pawno/include"],
+            "plugins": ["plugins/discord-connector\\.so"],
             "files": {
-                "discord-connector-.+\\/log-core2.so": "log-core2.so"
+                "log-core2\\.so": "log-core2.so"
             }
         },
         {
-            "name": "^discord-connector-.+-win(32)?.zip$",
+            "name": "^discord-connector-.+-win(32)?\\.zip$",
             "platform": "windows",
             "archive": true,
-            "includes": ["discord-connector-.+\\/pawno\\/include"],
-            "plugins": ["discord-connector-.+\\/plugins\\/discord-connector\\.dll"],
+            "includes": ["pawno/include"],
+            "plugins": ["plugins/discord-connector\\.dll"],
             "files": {
-                "discord-connector-.+\\/log-core2.dll": "log-core2.dll"
+                "log-core2\\.dll": "log-core2.dll"
             }
         }
     ],
     "runtime": {
-        "plugins": ["maddinat0r/samp-discord-connector"]
+        "plugins": ["aujiz11/samp-discord-connector"]
     },
     "contributors": [
         "maddinat0r",
